@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-outside-service
+  namespace: clover-system
+spec:
+  ports:
+  - protocol: TCP
+    targetPort: 27017
+    port: 30017
+    nodePort: 30017
+  type: LoadBalancer
+  selector:
+    name: mongo

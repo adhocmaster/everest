@@ -1,0 +1,46 @@
+kind: ConfigMap
+metadata:
+  name: grafana-ds-config
+  namespace: everest
+apiVersion: v1
+data:
+  prom-datasource.yaml: |-
+    apiVersion: 1
+    datasources:
+    - name: Prometheus
+      # <string, required> datasource type. Required
+      type: prometheus
+      # <string, required> access mode. direct or proxy. Required
+      access: proxy
+      # <int> org id. will default to orgId 1 if not specified
+      # orgId: 2
+      # <string> url
+      # url: http://prometheus-service.default.svc.cluster.local:9090
+      url: http://outside-prometheus:9090
+      # <string> database password, if used
+      password:
+      # <string> database user, if used
+      user:
+      # <string> database name, if used
+      database:
+      # <bool> enable/disable basic auth
+      basicAuth: false
+      # <bool> mark as default datasource. Max one per org
+      isDefault: false
+      # <map> fields that will be converted to json and stored in json_data
+      jsonData:
+         httpMethod: GET
+      version: 1
+      # <bool> allow users to edit datasources from the UI.
+      editable: true
+  all-dashboard.yaml: |-
+    apiVersion: 1
+    providers:
+    - name: 'default'
+      orgId: 1
+      folder: ''
+      type: file
+      disableDeletion: false
+      updateIntervalSeconds: 10 #how often Grafana will scan for changed dashboards
+      options:
+        path: "/var/lib/grafana/dashboards"

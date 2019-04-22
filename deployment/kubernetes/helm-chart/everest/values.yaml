@@ -1,0 +1,99 @@
+#
+# Copyright 2017-2018 The Everest Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under the License
+# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+# or implied. See the License for the specific language governing permissions and limitations under
+# the License.
+#
+#
+# Description: default values for namespace for all helm chart
+#
+# WARNING: These could/would override
+#          the values defined in values.yaml on each
+#          of the helm chart under the umbrella chart 'charts'
+#
+# Default values for each charts under umbrella chart.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+## ------------------------------------------------------
+## Grafana
+## ------------------------------------------------------
+
+namespace: everest
+
+grafana:
+  namespace: everest
+  enabled: true
+  image: grafana/grafana:latest
+  imagePullPolicy: IfNotPresent
+  containerPort: 3000
+  portOutside: 30003
+  typeOutside: NodePort
+  limitsCpu: 200m
+  limitsMemory: 200Mi
+  requestsCpu: 200m
+  requestsMemory: 200Mi
+  envAnonymousEnabled: true
+  adminUsername: YWRtaW4=
+  adminPassword: YWRtaW4=
+  secretType: Opaque
+  # URL of prometheus service of Istio (to get all Istio metric on target cluster)
+  outsidePrometheusPort: 9090
+  outsidePrometheusEndpointAddress: 35.224.142.142
+  outsidePrometheusEndpointPort: 9090
+  
+collector-ui:
+  namespace: everest
+  enabled: true
+  image: iharijono/collector-ui
+  imageTag: latest
+  imagePullPolicy: Always
+  containerPort: 8888
+  portOutside: 30008
+  typeOutside: NodePort
+  limitsCpu: 200m
+  limitsMemory: 200Mi
+  requestsCpu: 200m
+  requestsMemory: 200Mi
+  envCcollectorPollInterval: 60000
+  # the address of jaeger (tracing) service whose tracing data is collected
+  envCcollectorCloverJaegerHost: 35.238.70.37
+  # the port number of jaeger Istio (tracing) service whose tracing data is collected
+  envCcollectorCloverJaegerPort: 80
+  # the address of jaeger CLOVISOR (tracing) service whose tracing data is collected
+  envCcollectorClovisorJaegerHost: 35.238.152.244
+  # the port number of jaeger CLOVISOR (tracing) service whose tracing data is collected
+  envCcollectorClovisorJaegerPort: 80
+  # URL of grafana service of everest (to graphically show all kubernetes metric on target cluster)
+  envCcollectorGrafanaUrl: "http://master:30003"
+  # URL of grafana service of Istio (to graphically show all Istio metric on target cluster)
+  envCcollectorIgrafanaUrl: "http://35.238.226.128:3000"
+  envCcollectorWithMongo: true
+  # URL of mongodb service where collector will save the data
+  envCcollectorMongoRoute: "mongodb://mongo-service:27017/everest"
+
+mongodb:
+  namespace: everest
+  enabled: true
+  replicas: 1
+  image: mongo
+  imagePullPolicy: IfNotPresent
+  containerPort: 27017
+  portOutside: 30017
+  typeOutside: NodePort
+  limitsCpu: 200m
+  limitsMemory: 200Mi
+  requestsCpu: 200m
+  requestsMemory: 200Mi
+
+
+
+
+

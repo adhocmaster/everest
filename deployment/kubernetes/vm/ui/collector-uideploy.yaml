@@ -1,0 +1,67 @@
+#
+# Copyright 2017-2018 The Everest Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under the License
+# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+# or implied. See the License for the specific language governing permissions and limitations under
+# the License.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: everest
+  name: collector-ui-deployment
+  labels:
+    app: collector-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collector-ui
+  template:
+    metadata:
+      labels:
+        app: collector-ui
+    spec:
+      containers:
+      - name: collector-ui
+        image: iharijono/collector-ui:latest
+        imagePullPolicy: Always
+        resources:
+        # keep request = limit to keep this container in guaranteed class
+          limits:
+            cpu: 150m
+            memory: 150Mi
+          requests:
+            cpu: 150m
+            memory: 150Mi
+        ports:
+          - containerPort: 8888
+            name: http
+        env:
+          - name: CCOLLECTOR_POLL_INTERVAL
+            value: "60000"
+          - name: CCOLLECTOR_CLOVER_JAEGER_HOST
+            value: "35.238.70.37"
+          - name: CCOLLECTOR_CLOVER_JAEGER_PORT
+            value: "80"
+          - name: CCOLLECTOR_CLOVISOR_JAEGER_HOST
+            value: "35.238.152.244"
+          - name: CCOLLECTOR_CLOVISOR_JAEGER_PORT
+            value: "80"
+          - name: CCOLLECTOR_GRAFANA_URL
+            value: "http://master:30003"
+          - name: CCOLLECTOR_IGRAFANA_URL
+            value: "http://35.238.226.128:3000"
+          - name: CCOLLECTOR_WITH_MONGO
+            value: "true"
+          - name: CCOLLECTOR_MONGO_ROUTE
+            value: "mongodb://mongo-service:27017/everest"
+
+
+
