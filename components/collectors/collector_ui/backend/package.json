@@ -1,0 +1,33 @@
+{
+  "name": "collector",
+  "version": "1.0.0",
+  "description": "Backend Collector for Clover/Clovisor",
+  "main": "server.js",
+  "scripts": {
+    "test": "react-scripts test",
+    "start": "node src/server.js"
+  },
+  "author": "Indra G Harijono",
+  "keywords": [
+    "Clover",
+    "Web",
+    "UI",
+    "Visibility",
+    "Clovisor",
+    "Istio",
+    "Mesh"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "mongoose": "^5.5.0",
+    "morgan": "^1.9.1",
+    "react-scripts": "^2.1.8"
+  },
+  "devDependencies": {
+    "supertest": "^4.0.2"
+  }
+}
