@@ -1,5 +1,11 @@
 # Deploying/Installing Everest Software package on kubernetes
 
+## Assumptions/Requirements
+- It is assumed the Kubernetes (docker etc.) is installed.    
+- It is assumed that clover project and clovisor are installed.   
+- It is assumed you know how kubectl works and how to set the kube config file to point to your kubernetes cluster.    
+  
+
 ## Setting up
 There are currently 2 ways to deploy everest software packages into kubernetes.
 ### Using Helm (Recommended)
