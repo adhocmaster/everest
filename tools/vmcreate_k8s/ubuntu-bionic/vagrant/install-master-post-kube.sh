@@ -1,10 +1,12 @@
 #!/bin/bash
 
-NODE_IP_NW=$1
-LAST_MASTER_IP=$2
-NUM_NODE=$3
+CLOUD_TYPE=$1
 
-echo "---> Calling install-master-post-kube.sh -$NODE_IP_NW- -$LAST_MASTER_IP- -$NUM_NODE-"
+echo "---> Calling install-master-post-kube.sh -$CLOUD_TYPE-"
+if [ "$CLOUD_TYPE" = "" ]
+then
+    CLOUD_TYPE="vm"
+fi
 
 
 echo "---> Installing Helm and Tille"
@@ -48,89 +50,39 @@ echo "Installing Tiller"
 kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
 helm init
 
+echo "Installing Istio"
+curl -L https://git.io/getLatestIstio | sh -
+ISTIO_VER=`ls -td -- */ | head -n 1 | cut -d'/' -f1`
+echo "Installed Istio Version: $ISTIO_VER"
+IPATH=`pwd`/$ISTIO_VER/bin
+export PATH="$PATH:$IPATH"
+(cd $ISTIO_VER; for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done)
+sleep 30
+
+echo "Setting up permissive demo ISTIO"
+
+SVC_TYPE="NodePort"
+if [ "$CLOUD_TYPE" = "vm" ]
+then
+    sed -i 's/LoadBalancer/NodePort/g' $ISTIO_VER/install/kubernetes/istio-demo.yaml
+else
+    SVC_TYPE="LoadBalancer"
+fi
+
+(cd $ISTIO_VER; kubectl apply -f install/kubernetes/istio-demo.yaml)
+kubectl label namespace default istio-injection=enabled
+(cd $ISTIO_VER; kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml)
+(cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml)
+
+(cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml)
+kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=istio-grafana-outside    
+
+
+#export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+#export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 
 #MYDEV=/vagrant/mydev
-#SKYLARK_ROOT=/vagrant/mydev/skylark/skylark
-#MYELIOT=$MYDEV/skylark/skylark/flink-eliot/tools/deployment/kubernetes
-#$MYELIOT/deploy.sh -root $SKYLARK_ROOT
-
-#
-# Let's set up all Kubernetes services and all stuffs for Eliot/Flink jobs
-#
-# Kafka (needs helm above)
-### (cd $SKYLARK_ROOT/cp-helm-charts; helm install --name kafka .)
-### (cd $SKYLARK_ROOT/eliot-prometheus-charts; helm install --name prometheus .)
-### (cd $SKYLARK_ROOT/eliot-helm-charts; helm install --name eliot .)
-
-
-
-### 
-### #
-### # Cassandra
-### # WARNING: Replace this with cassandra service from others such as from clover etc. if you already
-### # have one running
-### # 
-### MYDEV_CASSANDRA=$MYDEV/skylark/skylark/cassandra-kubernetes
-### kubectl apply -f $MYDEV_CASSANDRA
-### 
-### # Monitoring
-### # InfluxDB
-### MYDEV_MONITORING=$MYDEV/skylark/skylark/monitoring-eliot
-### kubectl create -f $MYDEV_MONITORING/00-namespace.yaml
-### MYDEV_INFLUXDB=$MYDEV_MONITORING/influxdb
-### kubectl create -f $MYDEV_INFLUXDB/10influxdb-service.yaml
-### kubectl create -f $MYDEV_INFLUXDB/20influxdb-deployment.yaml
-### # Grafana
-### MYDEV_GRAFANA=$MYDEV_MONITORING/grafana
-### kubectl create -f $MYDEV_GRAFANA/10grafana-service.yaml
-### kubectl create -f $MYDEV_GRAFANA/20grafana-deployment.yaml
-### kubectl create -f $MYDEV_GRAFANA/30grafana-outside-service.yaml
-### 
-### # Kafka
-### MYDEV_KAFKA=$MYDEV/skylark/skylark/kafka-clover
-### 
-### #kubectl create -f $MYDEV_KAFKA/kafka-service/00-namespace.yml
-### #kubectl apply -R -f $MYDEV_KAFKA/kafka-service/rbac-namespace-default
-### #kubectl apply -R -f $MYDEV_KAFKA/kafka-service/zookeeper
-### #kubectl apply -R -f $MYDEV_KAFKA/kafka-service/kafka
-### #kubectl apply -R -f $MYDEV_KAFKA/kafka-service/outside-services
-### 
-### kubectl apply -R -f $MYDEV_KAFKA/kafka-service
-### #kubectl apply -R -f $MYDEV_KAFKA/kafka-service-dashboard
-### 
-### # Flink
-### MYDEV_FLINK=$MYDEV/skylark/skylark/flink-kubernetes/session-cluster
-### MYDEV_FLINK_SHARE=$MYDEV/skylark/skylark/flink-kubernetes/session-cluster/shared-storage
-### kubectl apply -f $MYDEV_FLINK/0flink-namespace.yaml
-### kubectl apply -f $MYDEV_FLINK_SHARE/00pv.yaml
-### kubectl apply -f $MYDEV_FLINK_SHARE/01pvc.yaml
-### 
-### kubectl apply -f $MYDEV_FLINK/00jobmanager-service.yaml
-### kubectl apply -f $MYDEV_FLINK/01jobmanager-deployment.yaml
-### kubectl apply -f $MYDEV_FLINK/02taskmanager-deployment.yaml
-### kubectl apply -f $MYDEV_FLINK/03flink-outside-service.yaml
-### 
-### #
-### # Eliot Tools
-### #
-### MYDEV_ELIOT_TOOLS=$MYDEV/skylark/skylark/flink-eliot/tools/deployment/kubernetes
-### kubectl apply -f $MYDEV_ELIOT_TOOLS/tools/eliot-tools.yaml
 ### 
 ### 
-echo "Installing Python Stuffs"
-apt-get install -y python
-apt-get install -y python-pip
-pip install requests
-pip install redis
-pip install cassandra-driver
-#pip install requests pymongo
-#
-echo "Installing MERN Stuffs"
-apt update
-apt install -y nodejs
-apt install -y npm
-npm install -g create-react-app
-
-apt install -y mongodb
 
 

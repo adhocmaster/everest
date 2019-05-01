@@ -38,13 +38,14 @@ install_it() {
 
     if [ "$OP" = "up" ]
     then
+	KUBE_DIR=$HOME
         un_or_install_kube
-        export KUBECONFIG=$(pwd)/kubeconfig.yml
+        export KUBECONFIG=$KUBE_DIR/kubeconfig.yml
         vagrant ssh master -c 'sudo cat /etc/kubernetes/admin.conf' > $KUBECONFIG
-        echo 'export KUBECONFIG=$(pwd)/kubeconfig.yml' > kubeconfig.sh 
-	echo "alias kc='kubectl'" >> kubeconfig.sh
-	chmod ugo+x kubeconfig.sh
-	source kubeconfig.sh
+        echo "export KUBECONFIG=$KUBE_DIR/kubeconfig.yml" > $KUBE_DIR/kubeconfig.sh 
+	echo "alias kc='kubectl'" >> $KUBE_DIR/kubeconfig.sh
+	chmod ugo+x $KUBE_DIR/kubeconfig.sh
+	source $KUBE_DIR/kubeconfig.sh
     else
         un_or_install_kube
     fi
