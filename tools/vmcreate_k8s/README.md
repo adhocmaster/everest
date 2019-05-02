@@ -16,21 +16,21 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 `% git clone https://github.com/iharijono/everest.git`
 2. go to the directory 'everest/tools/vmcreate_k8s'.   
 `% cd everest/tools/vmcreate_k8s`
-3. execute 'kube.sh'. Optional you can configure your kubernetes cluster before executing it by setting environment variables:
-   - NODES: setting how many nodes of kubernetes cluster you will instantiate, default is 3.
+3. execute 'kube.sh'. Optionally you can configure your kubernetes cluster before executing it by setting environment variables:
+   - NODES: setting how many nodes of kubernetes cluster you will instantiate, default is 3.   
    For example:   
-   `% ./kube.sh`
-   will create kubernetes cluster with 3 nodes.
-   `% NODES=5 ./kube.sh`
-   will create kubernetes cluster with 5 nodes.
+   `% ./kube.sh`    
+   will create kubernetes cluster with 3 nodes.    
+   `% NODES=5 ./kube.sh`    
+   will create kubernetes cluster with 5 nodes.    
 
 
 ## How to clean up
 1. execute 'kube.sh -d'. WARNING: if you create kubernetes with NODES environment variabler set (see above), you MUST use the same environment variable again!!!, for example (corresponding to above):   
-   `% ./kube.sh -d`
-   will delete kubernetes cluster with 3 nodes.
-   `% NODES=5 ./kube.sh -d`
-   will delete kubernetes cluster with 5 nodes.
+   `% ./kube.sh -d`    
+   will delete kubernetes cluster with 3 nodes.    
+   `% NODES=5 ./kube.sh -d`    
+   will delete kubernetes cluster with 5 nodes.    
 
 ## Troubleshooting
 TBD
