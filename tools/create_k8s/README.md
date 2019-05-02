@@ -39,7 +39,7 @@ The rest of the steps from checking dependencies and system configurations to do
 2. Navigate to the directory present inside the everest directory.
 `cd tools/create_k8s/`
 
-3. Edit the *hosts* file. Remove all the IP addresses present in the file by default and simply add the IP address of your master machine/VM under the *master* group and the addresses of your slave machines/VM under the *slaves* group. 
+3. Edit the *hosts* file under kube-cluster directory. Remove all the IP addresses present in the file by default and simply add the IP address of your master machine/VM under the *master* group and the addresses of your slave machines/VM under the *slaves* group. 
 
 4. Check if Ansible is able to reach all the RasPis by running the following ping command-
 `$ansible kube-cluster -m ping`

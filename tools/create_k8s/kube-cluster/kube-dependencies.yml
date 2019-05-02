@@ -7,6 +7,20 @@
        state: present
        update_cache: true
 
+   - name: run Docker without sudo for user 'kube'
+     become: yes
+     become_user: kube
+     shell: sudo usermod -a -G docker kube
+     args:
+       chdir: $HOME
+
+   - name: turn off the swap
+     become: yes
+     become_user: kube
+     shell: sudo swapoff -a
+     args:
+       chdir: $HOME
+
    - name: install APT Transport HTTPS
      apt:
        name: apt-transport-https

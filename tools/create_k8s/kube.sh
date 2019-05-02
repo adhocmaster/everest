@@ -18,10 +18,10 @@ check_dirs() {
 un_or_install_kube() {
     if [ "a$KUBE" = "a" ]
     then
-	ansible-playbook -i hosts ~/kube-cluster/initial.yml
-	ansible-playbook -i hosts ~/kube-cluster/kube-dependencies.yml
-	ansible-playbook -i hosts ~/kube-cluster/master.yml
-	ansible-playbook -i hosts ~/kube-cluster/workers.yml
+	ansible-playbook -i ./kube-cluster/hosts ./kube-cluster/initial.yml
+	ansible-playbook -i ./kube-cluster/hosts ./kube-cluster/kube-dependencies.yml
+	ansible-playbook -i ./kube-cluster/hosts ./kube-cluster/master.yml
+	ansible-playbook -i ./kube-cluster/hosts ./kube-cluster/workers.yml
     else
 	echo "NOT YET IMPLEMENTED"
     fi
