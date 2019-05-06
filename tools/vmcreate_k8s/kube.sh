@@ -27,10 +27,7 @@ check_dirs() {
 }
 
 un_or_install_kube() {
-    if [ "a$KUBE" = "a" ]
-    then
-        vagrant $OP
-    fi
+    vagrant $OP
 }
 
 install_it() {
