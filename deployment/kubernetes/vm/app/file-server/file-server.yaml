@@ -1,0 +1,235 @@
+#
+# Copyright 2018-2019 The Everest Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License. You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software distributed under the License
+# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+# or implied. See the License for the specific language governing permissions and limitations under
+# the License.
+#
+
+##################################################################################################
+# Fibo remote service
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: fibo
+  labels:
+    app: fibo
+    service: fibo
+spec:
+  ports:
+  - port: 9001
+    name: http
+  selector:
+    app: fibo
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fibo-v1
+  labels:
+    app: fibo
+    version: v1
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: fibo
+        version: v1
+    spec:
+      containers:
+      - name: fibo
+        image: iharijono/file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9001
+        env:
+        - name: FS_PORT
+          value: "9001"
+        - name: FS_NO_VIDEO
+          value: "true"
+        - name: FS_NO_FILE
+          value: "true"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "fibo"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "9001"
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fibo-v2
+  labels:
+    app: fibo
+    version: v2
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: fibo
+        version: v2
+    spec:
+      containers:
+      - name: fibo
+        image: iharijono/file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9001
+        env:
+        - name: FS_PORT
+          value: "9001"
+        - name: FS_NO_VIDEO
+          value: "true"
+        - name: FS_NO_FILE
+          value: "true"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "fibo"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "9001"
+---
+##################################################################################################
+# FS services
+##################################################################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: fs
+  labels:
+    app: fs
+    service: fs
+spec:
+  ports:
+  - port: 9000
+    name: http
+  selector:
+    app: fs
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fs-v1
+  labels:
+    app: fs
+    version: v1
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fs
+        version: v1
+    spec:
+      containers:
+      - name: fs
+        image: iharijono/file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+        env:
+        # - name: FS_PORT
+        #   value: "9000"
+        # - name: FS_NO_VIDEO
+        #   value: "false"
+        # - name: FS_NO_FILE
+        #   value: "false"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "fibo"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "9001"
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fs-v2
+  labels:
+    app: fs
+    version: v2
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fs
+        version: v2
+    spec:
+      containers:
+      - name: fs
+        image: iharijono/file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+        env:
+        # - name: FS_PORT
+        #   value: "9000"
+        # - name: FS_NO_VIDEO
+        #   value: "false"
+        # - name: FS_NO_FILE
+        #   value: "false"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "fibo"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "9001"
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fs-v3
+  labels:
+    app: fs
+    version: v3
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: fs
+        version: v3
+    spec:
+      containers:
+      - name: fs
+        image: iharijono/file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+        env:
+        # - name: FS_PORT
+        #   value: "9000"
+        # - name: FS_NO_VIDEO
+        #   value: "false"
+        # - name: FS_NO_FILE
+        #   value: "false"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "fibo"
+        - name: FS_FIBO_REMOTE_HOST
+          value: "9001"
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: fs-standalone-v1
+  labels:
+    app: fs
+    version: standalone-v1
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: fs
+        version: standalone-v1
+    spec:
+      containers:
+      - name: fs
+        image: iharijono/file-server:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+---
