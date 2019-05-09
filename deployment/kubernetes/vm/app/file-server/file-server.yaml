@@ -11,7 +11,9 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 #
-
+# How to Test: kubectl exec -it $(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}') -c ratings -- curl http://fs.everest-app:9000/fibo?n=3
+#
+#
 ##################################################################################################
 # Fibo remote service
 ##################################################################################################
@@ -51,15 +53,17 @@ spec:
         ports:
         - containerPort: 9001
         env:
-        - name: FS_PORT
+        - name: EVEREST_FS_VERBOSE
+          value: "true"
+        - name: EVEREST_FS_PORT
           value: "9001"
-        - name: FS_NO_VIDEO
+        - name: EVEREST_FS_NO_VIDEO
           value: "true"
-        - name: FS_NO_FILE
+        - name: EVEREST_FS_NO_FILE
           value: "true"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_HOST
           value: "fibo"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
 ---
 apiVersion: extensions/v1beta1
@@ -84,15 +88,17 @@ spec:
         ports:
         - containerPort: 9001
         env:
-        - name: FS_PORT
+        - name: EVEREST_FS_VERBOSE
+          value: "true"
+        - name: EVEREST_FS_PORT
           value: "9001"
-        - name: FS_NO_VIDEO
+        - name: EVEREST_FS_NO_VIDEO
           value: "true"
-        - name: FS_NO_FILE
+        - name: EVEREST_FS_NO_FILE
           value: "true"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_HOST
           value: "fibo"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
 ---
 ##################################################################################################
@@ -134,15 +140,17 @@ spec:
         ports:
         - containerPort: 9000
         env:
-        # - name: FS_PORT
+        - name: EVEREST_FS_VERBOSE
+          value: "true"
+        # - name: EVEREST_FS_PORT
         #   value: "9000"
-        # - name: FS_NO_VIDEO
+        # - name: EVEREST_FS_NO_VIDEO
         #   value: "false"
-        # - name: FS_NO_FILE
+        # - name: EVEREST_FS_NO_FILE
         #   value: "false"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_HOST
           value: "fibo"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
 ---
 apiVersion: extensions/v1beta1
@@ -167,15 +175,17 @@ spec:
         ports:
         - containerPort: 9000
         env:
-        # - name: FS_PORT
+        - name: EVEREST_FS_VERBOSE
+          value: "true"
+        # - name: EVEREST_FS_PORT
         #   value: "9000"
-        # - name: FS_NO_VIDEO
+        # - name: EVEREST_FS_NO_VIDEO
         #   value: "false"
-        # - name: FS_NO_FILE
+        # - name: EVEREST_FS_NO_FILE
         #   value: "false"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_HOST
           value: "fibo"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
 ---
 apiVersion: extensions/v1beta1
@@ -200,15 +210,17 @@ spec:
         ports:
         - containerPort: 9000
         env:
-        # - name: FS_PORT
+        - name: EVEREST_FS_VERBOSE
+          value: "true"
+        # - name: EVEREST_FS_PORT
         #   value: "9000"
-        # - name: FS_NO_VIDEO
+        # - name: EVEREST_FS_NO_VIDEO
         #   value: "false"
-        # - name: FS_NO_FILE
+        # - name: EVEREST_FS_NO_FILE
         #   value: "false"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_HOST
           value: "fibo"
-        - name: FS_FIBO_REMOTE_HOST
+        - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
 ---
 apiVersion: extensions/v1beta1
@@ -232,4 +244,7 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 9000
+        env:
+        - name: EVEREST_FS_VERBOSE
+          value: "true"
 ---

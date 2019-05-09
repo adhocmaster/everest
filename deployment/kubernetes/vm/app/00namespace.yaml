@@ -12,18 +12,15 @@
 # the License.
 #
 
+#
+#
+# in order to allow istio automatic side car insertion
+# do:
+# % kubectl label namespace everest-app istio-injection=enabled
+#
+#
+
 apiVersion: v1
-kind: Service
+kind: Namespace
 metadata:
-  name: file-server-outside
-  labels:
-    app: fs
-    service: fs
-spec:
-  ports:
-  - port: 9000
-    name: http
-    nodePort: 30009
-  type: NodePort 
-  selector:
-    app: fs
+  name: everest-app

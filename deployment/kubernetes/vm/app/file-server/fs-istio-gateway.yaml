@@ -11,6 +11,7 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 #
+# How to test: 
 
 ##################################################################################################
 # Istio Gateway for FS app of everest project
@@ -42,15 +43,33 @@ spec:
   http:
   - match:
     - uri:
-        exact: /fibo
+        prefix: /fibo
     - uri:
-        exact: /fibo_remote
+        prefix: /fibo_remote
     - uri:
-        exact: /file
+        prefix: /file
     - uri:
-        exact: /video
+        prefix: /video
     route:
     - destination:
         host: fs
         port:
           number: 9000
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: fibo
+spec:
+  hosts:
+  - fibo
+  http:
+  - match:
+    - uri:
+        prefix: /fibo
+    route:
+    - destination:
+        host: fibo
+        port:
+          number: 9001
+---
