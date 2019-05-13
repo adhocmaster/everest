@@ -21,8 +21,15 @@
 # Declare variables to be passed into your templates.
 #
 #
-
-namespace: everest
+#
+#
+#
+# WARNING WARNING WARNING!!!!!
+# you need to check the 'envCcollectorCloverJaegerHost' below if they are correct on your environment
+# you need to check the 'envCcollectorClovisorJaegerHost' below if they are correct on your environment
+# you need to check the 'envCcollectorGrafanaUrl' below if they are correct on your environment
+# you need to check the 'envCcollectorIgrafanaUrl' below if they are correct on your environment
+#
 enabled: true
 image: iharijono/collector-ui
 imageTag: latest

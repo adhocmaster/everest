@@ -14,7 +14,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ .Values.namespace }}
   name: collector-ui-deployment
   labels:
     app: collector-ui

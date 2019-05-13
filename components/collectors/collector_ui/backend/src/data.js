@@ -21,29 +21,29 @@ var prom_urls = {}
 var log_dir = ""
 
 // now initialize our collecting function which is triggered every INTERVAL seconds
-const DEFAULT_POLL_INTERVAL = 60 * 1000; //60 seconds
-const DEFAULT_FACTOR_POLL_TO_START = 60; //30 minute to grab the jaeger info
-var POLL_INTERVAL;
-var jaegers = [];
-var proms = [];
-var VERBOSE = false;
-var LOG_IT = false;
+const DEFAULT_POLL_INTERVAL = 60 * 1000 //60 seconds
+const DEFAULT_FACTOR_POLL_TO_START = 60 //30 minute to grab the jaeger info
+var POLL_INTERVAL
+var jaegers = []
+var proms = []
+var VERBOSE = false
+var LOG_IT = false
 
 
-const DEFAULT_CLOVER_JAEGER_ID="Clover-Istio";
-const DEFAULT_CLOVER_JAEGER_HOST="master";
-const DEFAULT_CLOVER_JAEGER_PORT="32544"; // istio-tracing
-const DEFAULT_CLOVISOR_JAEGER_ID="Clovisor";
-const DEFAULT_CLOVISOR_JAEGER_HOST="master";
-const DEFAULT_CLOVISOR_JAEGER_PORT="32484"; // jaeger-deployment
-const DEFAULT_CLOVER_PROM_ID="Clover-Istio";
-const DEFAULT_CLOVER_PROM_HOST="master";
-const DEFAULT_CLOVER_PROM_PORT="31448"; //istio-prometheus
-const DEFAULT_AUX_JAEGERS = "";
-const DEFAULT_AUX_PROMS = "";
+const DEFAULT_CLOVER_JAEGER_ID="Clover-Istio"
+const DEFAULT_CLOVER_JAEGER_HOST="master"
+const DEFAULT_CLOVER_JAEGER_PORT="32544" // istio-tracing
+const DEFAULT_CLOVISOR_JAEGER_ID="Clovisor"
+const DEFAULT_CLOVISOR_JAEGER_HOST="master"
+const DEFAULT_CLOVISOR_JAEGER_PORT="32484" // jaeger-deployment
+const DEFAULT_CLOVER_PROM_ID="Clover-Istio"
+const DEFAULT_CLOVER_PROM_HOST="master"
+const DEFAULT_CLOVER_PROM_PORT="31448" //istio-prometheus
+const DEFAULT_AUX_JAEGERS = ""
+const DEFAULT_AUX_PROMS = ""
+const DEFAULT_REST_AUX = ""
 
-
-var fs = require('fs');
+var fs = require('fs')
 
 /**
  *
@@ -256,8 +256,8 @@ async function _trace_jaeger() {
 		all_jobs.push(jaegers[index+1][3].collect())
 		await Promise.all(all_jobs)
 		//combine_jaegers(jaegers[index][3].traces, jaegers[index+1][3].traces)
+		console.log("Ready to Insert Traces wait ... " + JSON.stringify(jaegers[index][3].traces, null, 2))
 		if(MONGO != null) {
-			console.log("Insert Traces wait ... " + JSON.stringify(jaegers[index][3].traces, null, 2))
 			let origin = {id: jaegers[index][2],
 				type: 'clover',
 				tracer_url: jaegers[index][0] + ':' + jaegers[index][1] 
@@ -324,6 +324,7 @@ var PROM_HOST="master";
 var PROM_PORT="";
 var PROM_URL='http://' + PROM_HOST + ':' + PROM_PORT;
 async function _trace_prom() {
+	//console.log("_trace_prom")
     for(let prom of proms) {
 		let prom_id = prom[2]
 		restDataProm[prom_id] = {}
@@ -346,10 +347,15 @@ function _add_prom(h, p, id) {
     proms.push([h, p, id]);
 }
 
+var WITHOUT_TRACE=false
+var WITHOUT_PROM=false
 function ccollector() {
-    console.log("*************** Capture Tracing/Monitoring Data, Date: " + new Date())
-	_trace_jaeger()
-	//_trace_prom()
+	console.log("*************** Capture Tracing/Monitoring Data, Date: " + new Date() + ` without-tracing=${WITHOUT_TRACE} without-prom=${WITHOUT_PROM}`)
+	if(!WITHOUT_TRACE)
+		_trace_jaeger()
+	if(!WITHOUT_PROM)
+		_trace_prom()
+	
     setTimeout(ccollector, POLL_INTERVAL)
 }
 
@@ -357,12 +363,19 @@ const _change_poll_interval = (interval) => {
     POLL_INTERVAL = interval;
 }
 
-const _start_collector = () => {
+const _without_trace = (on_off) => {
+	WITHOUT_TRACE = on_off;
+}
+const _without_prom = (on_off) => {
+    WITHOUT_PROM = on_off;
+}
+
+const _start_collector = (rest_aux='') => {
     console.log("Start CCollector, Continously Collecting Tracing and Monitoring from Jaeger and Prometheus")
 	console.log("Start At               	: " + Date.now())
 	let clovisor = false
     for(let jaeger of jaegers) {
-		let t = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover')
+		let t = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
 		clovisor = !clovisor
 		t.verbose = VERBOSE
 		t.startCaptureInMsec = POLL_INTERVAL
@@ -394,7 +407,7 @@ const _get_rt_traces = async () => {
 		let jaeger_id = jaeger[2]
 		retData[jaeger_id] = {}
 		if(jaeger.length > 3) {
-			let jaegerObj = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover')
+			let jaegerObj = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
 			clovisor = !clovisor
 			jaegerObj.startCaptureInMsec = (POLL_INTERVAL * DEFAULT_FACTOR_POLL_TO_START)
 			await jaegerObj.collect()
@@ -432,6 +445,7 @@ module.exports = {
     DEFAULT_CLOVER_PROM_PORT: DEFAULT_CLOVER_PROM_PORT,
     DEFAULT_AUX_JAEGERS: DEFAULT_AUX_JAEGERS,
     DEFAULT_AUX_PROMS: DEFAULT_AUX_PROMS,
+	DEFAULT_REST_AUX: DEFAULT_REST_AUX,
     trace_it() {
 		_trace_it();
     },
@@ -447,8 +461,8 @@ module.exports = {
     change_poll_interval(interval) {
 		_change_poll_interval(interval);
     },
-    start_collector() {
-		_start_collector();
+    start_collector(rest_aux) {
+		_start_collector(rest_aux);
 	},
 	set_db(mongo) {
 		_set_db(mongo)
@@ -458,7 +472,14 @@ module.exports = {
 	},
 	get_rt_proms() {
 		return(_get_rt_proms())
-	}
+	},
+	without_trace(on_off) {
+		return(_without_trace(on_off))
+	},
+	without_prom(on_off) {
+		return(_without_prom(on_off))
+	},
+
 };
 
 //_add_prom(CLOVER_PROM_HOST, CLOVER_PROM_PORT, CLOVER_PROM_ID);

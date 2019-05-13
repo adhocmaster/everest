@@ -29,7 +29,7 @@ class Tracer {
         return "clover"
     }
 
-    constructor(host=Tracer.TRACE_HOST, port=Tracer.TRACE_PORT, id=Tracer.TRACE_ID, type=Tracer.TRACE_TYPE) {
+    constructor(host=Tracer.TRACE_HOST, port=Tracer.TRACE_PORT, id=Tracer.TRACE_ID, type=Tracer.TRACE_TYPE, rest_aux='') {
       this._verbose = false
       this._id = id
       this._host = host
@@ -37,8 +37,8 @@ class Tracer {
       this._type = type
       this._services = []
       this._traces = {}
-      this._url0 = 'http://' + this._host + ':' + this._port + '/api/services'
-      this._url1 = 'http://' + this._host + ':' + this._port + '/api/traces?service='
+      this._url0 = 'http://' + this._host + ':' + this._port + `${rest_aux}/api/services`
+      this._url1 = 'http://' + this._host + ':' + this._port + `${rest_aux}/api/traces?service=`
     }
     get id() {
       return this._id
@@ -77,8 +77,8 @@ class Tracer {
         try {
             const response = await axios.get(this._url0)
             const data = response.data
-            if(this._verbose)
-                console.log(data)
+            // if(this._verbose)
+            //     console.log(data)
             if(data.errors === null) {
                 this._services = data.data
                 let all_jobs = []
@@ -117,8 +117,8 @@ class Tracer {
         try {
             const response = await axios.get(trace_url)
             const data = response.data
-            if(this._verbose)
-                console.log(data)
+            // if(this._verbose)
+            //     console.log(data)
             if(data.errors === null) {
                 if(data.data.length > 0) {                    
                     let c_data = data.data;	    
@@ -132,6 +132,7 @@ class Tracer {
                             })
                         })
                         this._traces[service] = c_data
+                        console.log(title + " URL -> " + trace_url + " get DATA DONE LEN = " + c_data.length)
                     }
                 }
                 // console.log("Traces LEN " + this._traces.length)

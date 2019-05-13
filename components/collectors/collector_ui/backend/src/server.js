@@ -22,6 +22,8 @@ const DS = require('./data')
 
 const DEFAULT_VERBOSE = false
 const DEFAULT_WITH_MONGO = false
+const DEFAULT_WITHOUT_TRACE = false
+const DEFAULT_WITHOUT_PROM = false
 
 // (optional) only made for logging and
 // bodyParser, parses the request body to be a readable json format
@@ -50,6 +52,9 @@ AUX_JAEGERS = process.env.CCOLLECTOR_AUX_JAEGERS || DS.DEFAULT_AUX_JAEGERS;
 AUX_PROMS = process.env.CCOLLECTOR_AUX_PROMS || DS.DEFAULT_AUX_PROMS;
 VERBOSE = process.env.CCOLLECTOR_VERBOSE || DEFAULT_VERBOSE
 WITH_MONGO = process.env.CCOLLECTOR_WITH_MONGO || DEFAULT_WITH_MONGO
+WITHOUT_TRACE = process.env.CCOLLECTOR_WITHOUT_TRACE || DEFAULT_WITHOUT_TRACE
+WITHOUT_PROM = process.env.CCOLLECTOR_WITHOUT_PROM || DEFAULT_WITHOUT_PROM
+REST_AUX = process.env.CCOLLECTOR_REST_AUX || DS.DEFAULT_REST_AUX;
 
 aux_jaeger_list = AUX_JAEGERS.split(",");
 aux_prom_list = AUX_PROMS.split(",");
@@ -78,7 +83,9 @@ if(WITH_MONGO) {
 	mongo = new Mongo(MONGO_ROUTE)
 	DS.set_db(mongo)
 }
-DS.start_collector()
+DS.without_trace(WITHOUT_TRACE)
+DS.without_prom(WITHOUT_PROM)
+DS.start_collector(REST_AUX)
 
 
 // append /api for our http requests

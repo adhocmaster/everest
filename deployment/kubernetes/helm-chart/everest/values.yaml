@@ -26,10 +26,7 @@
 ## Grafana
 ## ------------------------------------------------------
 
-namespace: everest
-
 grafana:
-  namespace: everest
   enabled: true
   image: grafana/grafana:latest
   imagePullPolicy: IfNotPresent
@@ -50,7 +47,6 @@ grafana:
   outsidePrometheusEndpointPort: 9090
   
 collector-ui:
-  namespace: everest
   enabled: true
   image: iharijono/collector-ui
   imageTag: latest
@@ -79,8 +75,7 @@ collector-ui:
   # URL of mongodb service where collector will save the data
   envCcollectorMongoRoute: "mongodb://mongo-service:27017/everest"
 
-mongodb:
-  namespace: everest
+mongo:
   enabled: true
   replicas: 1
   image: mongo

@@ -22,7 +22,6 @@
 #
 #
 
-namespace: everest
 enabled: true
 image: grafana/grafana:latest
 imagePullPolicy: IfNotPresent

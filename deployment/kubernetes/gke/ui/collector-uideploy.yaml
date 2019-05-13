@@ -44,6 +44,8 @@ spec:
           - containerPort: 8888
             name: http
         env:
+          - name: CCOLLECTOR_VERBOSE
+            value: "true"
           - name: CCOLLECTOR_POLL_INTERVAL
             value: "60000"
           - name: CCOLLECTOR_CLOVER_JAEGER_HOST
@@ -51,7 +53,7 @@ spec:
           - name: CCOLLECTOR_CLOVER_JAEGER_PORT
             value: "16686"
           - name: CCOLLECTOR_CLOVISOR_JAEGER_HOST
-            value: "jaeger-query.clover-system"
+            value: "jaeger-query.clovisor"
           - name: CCOLLECTOR_CLOVISOR_JAEGER_PORT
             value: "80"
           - name: CCOLLECTOR_CLOVER_PROM_HOST
@@ -59,13 +61,14 @@ spec:
           - name: CCOLLECTOR_CLOVER_PROM_PORT
             value: "9090"
           - name: CCOLLECTOR_GRAFANA_URL
-            value: "http://146.148.81.15:30003"
+            value: "http://104.154.25.193:30003"
           - name: CCOLLECTOR_IGRAFANA_URL
             value: "http://35.238.226.128:3000"
-          # - name: CCOLLECTOR_WITH_MONGO
-          #   value: "true"
-          # - name: CCOLLECTOR_MONGO_ROUTE
-          #   value: "mongodb://mongo-service:27017/everest"
-
+          - name: CCOLLECTOR_WITH_MONGO
+            value: "true"
+          - name: CCOLLECTOR_MONGO_ROUTE
+            value: "mongodb://mongo-service:27017/everest"
+          - name: CCOLLECTOR_WITHOUT_PROM
+            value: "true"
 
 

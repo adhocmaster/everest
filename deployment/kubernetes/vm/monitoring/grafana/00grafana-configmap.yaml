@@ -1,7 +1,6 @@
 kind: ConfigMap
 metadata:
   name: grafana-ds-config
-  namespace: everest
 apiVersion: v1
 data:
   prom-datasource.yaml: |-
@@ -16,7 +15,8 @@ data:
       # orgId: 2
       # <string> url
       # url: http://prometheus-service.default.svc.cluster.local:9090
-      url: http://outside-prometheus:9090
+      # url: http://prometheus-outside:9090
+      url: http://prometheus.istio-system:9090
       # <string> database password, if used
       password:
       # <string> database user, if used

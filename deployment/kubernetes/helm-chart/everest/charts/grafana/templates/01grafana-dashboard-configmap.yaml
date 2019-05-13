@@ -16,7 +16,6 @@
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-config
-  namespace: {{ .Values.namespace }}
 apiVersion: v1
 data:
   kube.json: |-

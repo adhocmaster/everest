@@ -22,7 +22,6 @@
 #
 #
 
-namespace: everest
 enabled: true
 image: iharijono/collector-ui
 imageTag: latest

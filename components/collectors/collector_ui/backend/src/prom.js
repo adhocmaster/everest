@@ -89,8 +89,8 @@ class Prom {
         try {
             const response = await axios.get(this._url_all_metrics)
             const data = response.data
-            if(this._verbose)
-                console.log(data)
+            // if(this._verbose)
+            //     console.log(data)
             if(data.status == "success") {
                 let metric_names = data.data
                 let all_jobs = []
@@ -128,8 +128,8 @@ class Prom {
             const response = await axios.get(url)
             const data = response.data
             if(data.status == "success") {
-                if(this._verbose)
-                    console.log(JSON.stringify(data.data, null, 2))
+                // if(this._verbose)
+                //     console.log(JSON.stringify(data.data, null, 2))
  
                 //console.log(`Metric=${data.data.result[0].metric.__name__} Job=${data.data.result[0].metric.job}
                 //Value=${data.data.result[0].value}`)

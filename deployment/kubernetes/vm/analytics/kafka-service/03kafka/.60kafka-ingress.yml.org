@@ -1,0 +1,33 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: outside-0
+  namespace: kafka
+spec:
+  selector:
+    app: kafka
+    kafka-broker-id: "0"
+  ports:
+  - protocol: TCP
+    port: 9094
+    targetPort: 9094
+    nodePort: 32400
+  type: NodePort
+---
+#apiVersion: extensions/v1beta1
+#kind: Ingress
+#metadata:
+#  name: kafka-ingress
+#  namespace: kafka
+#  annotations:
+#    kubernetes.io/ingress.class: traefik
+#spec:
+#  rules:
+#  - host: kafka.iharijono.io
+#    http:
+#      paths:
+#      - path: /
+#        backend:
+#          serviceName: outside-0
+#          servicePort: 32400

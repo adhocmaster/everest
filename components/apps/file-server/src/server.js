@@ -28,6 +28,7 @@ const mime = require('mime')
 const axios = require('axios')
 
 const cpu_task = require('./cpu-task')
+const goal = require('./goal')
 
 const DEFAULT_VERBOSE = false
 const FS_PORT_DEFAULT = 9000
@@ -84,6 +85,21 @@ app.get('/fibo_remote', async (req, res) => {
     .catch(error => {
       console.log(error);
     })
+})
+
+const GUIDE_ARG_DEFAULT = 10
+app.get('/guide', function(req, res) {
+    let n = req.query.goal || GUIDE_ARG_DEFAULT
+
+    if(VERBOSE) {
+        console.log(`guide: ${goal}`)
+    }
+
+    return res.json(
+      {
+        "data": guide.goal(goal)
+      }
+    )
 })
 
 var DEFAULT_VIDEO = 'sample.mp4'

@@ -11,10 +11,16 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 #
+#
+#
+#
+# WARNING WARNING WARNING!!!!!
+# you need to check the 'CCOLLECTOR_IGRAFANA_URL' below if they are correct on your environment
+# you need to check the 'CCOLLECTOR_CLOVISOR_JAEGER_HOST' below if they are correct on your environment
+#
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: everest
   name: collector-ui-deployment
   labels:
     app: collector-ui
@@ -46,22 +52,43 @@ spec:
         env:
           - name: CCOLLECTOR_POLL_INTERVAL
             value: "60000"
+          # new jaeger rest api
+          - name: CCOLLECTOR_REST_AUX
+            value: "/jaeger"
           - name: CCOLLECTOR_CLOVER_JAEGER_HOST
-            value: "35.238.70.37"
+            #value: "35.238.70.37"
+            value: "jaeger-query.istio-system"
           - name: CCOLLECTOR_CLOVER_JAEGER_PORT
-            value: "80"
+            #value: "80"
+            value: "16686"
           - name: CCOLLECTOR_CLOVISOR_JAEGER_HOST
-            value: "35.238.152.244"
+            #value: "35.238.152.244"
+            value: "jaeger-query.istio-system"
           - name: CCOLLECTOR_CLOVISOR_JAEGER_PORT
-            value: "80"
+            #value: "80"
+            value: "16686"
+          - name: CCOLLECTOR_CLOVER_PROM_ID
+            value: "clover_prom"
+          - name: CCOLLECTOR_CLOVER_PROM_HOST
+            value: "prometheus.istio-system"
+          - name: CCOLLECTOR_CLOVER_PROM_PORT
+            value: "9090"
           - name: CCOLLECTOR_GRAFANA_URL
             value: "http://master:30003"
           - name: CCOLLECTOR_IGRAFANA_URL
-            value: "http://35.238.226.128:3000"
+            #value: "http://35.238.226.128:3000"
+            value: "http://master:30546"
           - name: CCOLLECTOR_WITH_MONGO
-            value: "true"
+            value: "false"
           - name: CCOLLECTOR_MONGO_ROUTE
             value: "mongodb://mongo-service:27017/everest"
+          - name: CCOLLECTOR_VERBOSE
+            value: "true"
+          # - name: CCOLLECTOR_WITHOUT_TRACE
+          #   value: "true"
+          - name: CCOLLECTOR_WITHOUT_PROM
+            value: "true"
+          
 
 
 

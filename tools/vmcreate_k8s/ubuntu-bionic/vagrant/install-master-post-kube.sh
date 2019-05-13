@@ -76,13 +76,34 @@ kubectl label namespace default istio-injection=enabled
 
 (cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml)
 kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=istio-grafana-outside    
-
-
+#
+# WARNING:
+# who serves outside: 
+#       istio-system jaeger-query
+#       kubectl expose -n istio-system svc jaeger-query --type=$SVC_TYPE --name=istio-query-outside 
+#       istio-system prometheus
+#       kubectl expose -n istio-system svc prometheus --type=$SVC_TYPE --name=istio-prometheus-outside 
+#
 #export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
 #export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
 
 #MYDEV=/vagrant/mydev
 ### 
 ### 
+# sudo apt-get install git
+# git clone https://github.com/iharijono/everest.git
+
+# EVEREST_APP_DIR="./everest/deployment/kubernetes/vm/app"
+# EVEREST_NAMESPACE="everest-app"
+# EVEREST_NAMESPACE_N="-n $EVEREST_NAMESPACE"
+# if [ "$EVEREST_NAMESPACE" != "default" ]
+# then
+#     kubectl create namespace $EVEREST_NAMESPACE
+# fi
+# kubectl label namespace $EVEREST_NAMESPACE istio-injection=enabled
+# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_NAMESPACE_N)
+
 
 

@@ -11,16 +11,31 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 #
-
 #
 #
-# in order to allow istio automatic side car insertion
-# do:
-# % kubectl label namespace everest-app istio-injection=enabled
+# WARNING WARNING WARNING!!!!!
+# you need to check the 'addresses' below if they are correct on your environment
 #
+# outside-prometheus must point to istio prometheus
 #
-
+kind: Service
 apiVersion: v1
-kind: Namespace
 metadata:
-  name: everest-app
+  name: prometheus.istio-system
+spec:
+  ports:
+  - port: 9090
+    targetPort: 9090
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: prometheus.istio-system
+subsets:
+  - addresses:
+      #VM prometheus Istio, BUG BUG BUG
+      #- ip: prometheus.istio-system
+      #GKE prometheus Istio
+      - ip: 35.224.142.142
+    ports:
+      - port: 9090

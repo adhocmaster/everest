@@ -11,23 +11,16 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 #
-kind: Service
+
 apiVersion: v1
+kind: Service
 metadata:
-  name: outside-prometheus
-  namespace: everest
+  name: collector-ui-outside
 spec:
   ports:
-  - port: 9090
-    targetPort: 9090
----
-kind: Endpoints
-apiVersion: v1
-metadata:
-  name: outside-prometheus
-  namespace: everest
-subsets:
-  - addresses:
-      - ip: 35.224.142.142
-    ports:
-      - port: 9090
+  - port: 8888
+    nodePort: 30008
+  type: NodePort 
+  selector:
+    app: collector-ui
+  

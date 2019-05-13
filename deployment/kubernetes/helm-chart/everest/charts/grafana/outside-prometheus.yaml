@@ -12,7 +12,21 @@
 # the License.
 #
 
+kind: Service
 apiVersion: v1
-kind: Namespace
 metadata:
-  name: everest
+  name: outside-prometheus
+spec:
+  ports:
+  - port: {{ .Values.outsidePrometheusPort }}
+    targetPort: {{ .Values.outsidePrometheusPort }}
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: outside-prometheus
+subsets:
+  - addresses:
+      - ip: {{ .Values.outsidePrometheusEndpointAddress }}
+    ports:
+      - port: {{ .Values.outsidePrometheusEndpointPort }}
