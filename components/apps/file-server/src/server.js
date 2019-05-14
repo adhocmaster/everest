@@ -15,6 +15,9 @@
  * How to stress the CPU:
  *  % curl -o fibo.res http://localhost:9000/fibo?n=50
  *  % curl -o fibo.res http://localhost:9000/fibo_remote?n=50
+ * 
+ *  % curl -o guide.res http://localhost:9000/guide?goal=1
+ *  % curl -o guide.res http://localhost:9000/guide_remote?goal=1
  **/
 
 "use strict"
@@ -28,9 +31,9 @@ const mime = require('mime')
 const axios = require('axios')
 
 const cpu_task = require('./cpu-task')
-const goal = require('./goal')
+const guide = require('./guide')
 
-const DEFAULT_VERBOSE = false
+const DEFAULT_VERBOSE = true
 const FS_PORT_DEFAULT = 9000
 const FS_NO_VIDEO_DEFAULT = false
 const FS_NO_FILE_DEFAULT = false
@@ -87,9 +90,9 @@ app.get('/fibo_remote', async (req, res) => {
     })
 })
 
-const GUIDE_ARG_DEFAULT = 10
+const GUIDE_ARG_DEFAULT = 0
 app.get('/guide', function(req, res) {
-    let n = req.query.goal || GUIDE_ARG_DEFAULT
+    let goal = req.query.goal || GUIDE_ARG_DEFAULT
 
     if(VERBOSE) {
         console.log(`guide: ${goal}`)
@@ -101,6 +104,39 @@ app.get('/guide', function(req, res) {
       }
     )
 })
+app.get('/guide_remote', function(req, res) {
+    let goal = req.query.goal || GUIDE_ARG_DEFAULT
+
+    if(VERBOSE) {
+        console.log(`guide_remote: ${goal}`)
+    }
+
+    return res.json(
+      {
+        "data": guide.goal_remote(goal)
+      }
+    )
+})
+
+app.get('/guide_fibo', function(req, res) {
+    let goal = req.query.goal || GUIDE_ARG_DEFAULT
+
+    if(VERBOSE) {
+        console.log(`guide_fibo: ${goal}`)
+    }
+
+    return res.json(
+      {
+        "data": guide.goal_fibo(goal)
+      }
+    )
+})
+
+guide.DEFAULT_FIBO_REMOTE_HOST = FIBO_REMOTE_HOST
+guide.DEFAULT_FIBO_REMOTE_PORT = FIBO_REMOTE_PORT
+console.log("V " + VERBOSE)
+guide.VERBOSE = VERBOSE
+
 
 var DEFAULT_VIDEO = 'sample.mp4'
 var DEFAULT_FILE = 'eliot.jar'
@@ -218,6 +254,6 @@ if(!FS_NO_FILE) {
 }
 
 app.listen(FS_PORT, function () {
-    if(VERBOSE)
-        console.log('Listening on port ' + FS_PORT + '!')
+    // if(VERBOSE)
+    console.log('Listening on port ' + FS_PORT + '!')
 })

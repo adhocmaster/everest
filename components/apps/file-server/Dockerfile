@@ -10,6 +10,7 @@ RUN mkdir -p ./src
 COPY src ./src
 WORKDIR /app/src
 RUN npm install
+RUN npm rebuild
 
 EXPOSE 9000 9001
 

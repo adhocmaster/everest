@@ -47,6 +47,12 @@ spec:
     - uri:
         prefix: /fibo_remote
     - uri:
+        prefix: /guide
+    - uri:
+        prefix: /guide_remote
+    - uri:
+        prefix: /guide_fibo
+    - uri:
         prefix: /file
     - uri:
         prefix: /video

@@ -49,6 +49,8 @@ spec:
       containers:
       - name: fibo
         image: iharijono/file-server:latest
+        # command: [ "/bin/sh", "-c", "--" ]
+        # args: [ "while true; do sleep 30; done;" ]
         imagePullPolicy: Always
         ports:
         - containerPort: 9001
@@ -66,41 +68,41 @@ spec:
         - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
 ---
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: fibo-v2
-  labels:
-    app: fibo
-    version: v2
-spec:
-  replicas: 2
-  template:
-    metadata:
-      labels:
-        app: fibo
-        version: v2
-    spec:
-      containers:
-      - name: fibo
-        image: iharijono/file-server:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 9001
-        env:
-        - name: EVEREST_FS_VERBOSE
-          value: "true"
-        - name: EVEREST_FS_PORT
-          value: "9001"
-        - name: EVEREST_FS_NO_VIDEO
-          value: "true"
-        - name: EVEREST_FS_NO_FILE
-          value: "true"
-        - name: EVEREST_FS_FIBO_REMOTE_HOST
-          value: "fibo"
-        - name: EVEREST_FS_FIBO_REMOTE_PORT
-          value: "9001"
----
+# apiVersion: extensions/v1beta1
+# kind: Deployment
+# metadata:
+#   name: fibo-v2
+#   labels:
+#     app: fibo
+#     version: v2
+# spec:
+#   replicas: 1
+#   template:
+#     metadata:
+#       labels:
+#         app: fibo
+#         version: v2
+#     spec:
+#       containers:
+#       - name: fibo
+#         image: iharijono/file-server:latest
+#         imagePullPolicy: Always
+#         ports:
+#         - containerPort: 9001
+#         env:
+#         - name: EVEREST_FS_VERBOSE
+#           value: "true"
+#         - name: EVEREST_FS_PORT
+#           value: "9001"
+#         - name: EVEREST_FS_NO_VIDEO
+#           value: "true"
+#         - name: EVEREST_FS_NO_FILE
+#           value: "true"
+#         - name: EVEREST_FS_FIBO_REMOTE_HOST
+#           value: "fibo"
+#         - name: EVEREST_FS_FIBO_REMOTE_PORT
+#           value: "9001"
+# ---
 ##################################################################################################
 # FS services
 ##################################################################################################
@@ -126,7 +128,7 @@ metadata:
     app: fs
     version: v1
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
@@ -152,76 +154,76 @@ spec:
           value: "fibo"
         - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: fs-v2
-  labels:
-    app: fs
-    version: v2
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: fs
-        version: v2
-    spec:
-      containers:
-      - name: fs
-        image: iharijono/file-server:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 9000
-        env:
-        - name: EVEREST_FS_VERBOSE
-          value: "true"
-        # - name: EVEREST_FS_PORT
-        #   value: "9000"
-        # - name: EVEREST_FS_NO_VIDEO
-        #   value: "false"
-        # - name: EVEREST_FS_NO_FILE
-        #   value: "false"
-        - name: EVEREST_FS_FIBO_REMOTE_HOST
-          value: "fibo"
-        - name: EVEREST_FS_FIBO_REMOTE_PORT
-          value: "9001"
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: fs-v3
-  labels:
-    app: fs
-    version: v3
-spec:
-  replicas: 1
-  template:
-    metadata:
-      labels:
-        app: fs
-        version: v3
-    spec:
-      containers:
-      - name: fs
-        image: iharijono/file-server:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 9000
-        env:
-        - name: EVEREST_FS_VERBOSE
-          value: "true"
-        # - name: EVEREST_FS_PORT
-        #   value: "9000"
-        # - name: EVEREST_FS_NO_VIDEO
-        #   value: "false"
-        # - name: EVEREST_FS_NO_FILE
-        #   value: "false"
-        - name: EVEREST_FS_FIBO_REMOTE_HOST
-          value: "fibo"
-        - name: EVEREST_FS_FIBO_REMOTE_PORT
-          value: "9001"
+# ---
+# apiVersion: extensions/v1beta1
+# kind: Deployment
+# metadata:
+#   name: fs-v2
+#   labels:
+#     app: fs
+#     version: v2
+# spec:
+#   replicas: 1
+#   template:
+#     metadata:
+#       labels:
+#         app: fs
+#         version: v2
+#     spec:
+#       containers:
+#       - name: fs
+#         image: iharijono/file-server:latest
+#         imagePullPolicy: Always
+#         ports:
+#         - containerPort: 9000
+#         env:
+#         - name: EVEREST_FS_VERBOSE
+#           value: "true"
+#         # - name: EVEREST_FS_PORT
+#         #   value: "9000"
+#         # - name: EVEREST_FS_NO_VIDEO
+#         #   value: "false"
+#         # - name: EVEREST_FS_NO_FILE
+#         #   value: "false"
+#         - name: EVEREST_FS_FIBO_REMOTE_HOST
+#           value: "fibo"
+#         - name: EVEREST_FS_FIBO_REMOTE_PORT
+#           value: "9001"
+# ---
+# apiVersion: extensions/v1beta1
+# kind: Deployment
+# metadata:
+#   name: fs-v3
+#   labels:
+#     app: fs
+#     version: v3
+# spec:
+#   replicas: 1
+#   template:
+#     metadata:
+#       labels:
+#         app: fs
+#         version: v3
+#     spec:
+#       containers:
+#       - name: fs
+#         image: iharijono/file-server:latest
+#         imagePullPolicy: Always
+#         ports:
+#         - containerPort: 9000
+#         env:
+#         - name: EVEREST_FS_VERBOSE
+#           value: "true"
+#         # - name: EVEREST_FS_PORT
+#         #   value: "9000"
+#         # - name: EVEREST_FS_NO_VIDEO
+#         #   value: "false"
+#         # - name: EVEREST_FS_NO_FILE
+#         #   value: "false"
+#         - name: EVEREST_FS_FIBO_REMOTE_HOST
+#           value: "fibo"
+#         - name: EVEREST_FS_FIBO_REMOTE_PORT
+#           value: "9001"
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -231,7 +233,7 @@ metadata:
     app: fs
     version: standalone-v1
 spec:
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:

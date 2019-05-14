@@ -40,6 +40,8 @@ echo "$admin_token"
 echo "$admin_token" > $GENERATED_DIR/dashboard_token
 echo "-----> login to dashboard with the above token"
 
+uname -r > $GENERATED_DIR/vagrantvm_uname.txt
+
 echo https://$IPADDR:`kubectl -n kube-system get svc kubernetes-dashboard -o=jsonpath='{.spec.ports[0].port}'`
 
 
@@ -84,26 +86,93 @@ kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=istio-grafana
 #       istio-system prometheus
 #       kubectl expose -n istio-system svc prometheus --type=$SVC_TYPE --name=istio-prometheus-outside 
 #
+# GKE:
+# export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+# export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].port}')
+# export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].port}')
+# with hostname:
+# export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+#
+# VM:
 #export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
 #export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+#export INGRESS_HOST=master
+#
+# export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+#
+#
+#
 
 #MYDEV=/vagrant/mydev
 ### 
 ### 
-# sudo apt-get install git
-# git clone https://github.com/iharijono/everest.git
-
-# EVEREST_APP_DIR="./everest/deployment/kubernetes/vm/app"
-# EVEREST_NAMESPACE="everest-app"
-# EVEREST_NAMESPACE_N="-n $EVEREST_NAMESPACE"
-# if [ "$EVEREST_NAMESPACE" != "default" ]
-# then
-#     kubectl create namespace $EVEREST_NAMESPACE
-# fi
-# kubectl label namespace $EVEREST_NAMESPACE istio-injection=enabled
-# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_NAMESPACE_N)
-# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_NAMESPACE_N)
-# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_NAMESPACE_N)
+sudo apt-get install git
+git clone https://github.com/iharijono/everest.git
 
 
 
+
+#
+#
+# EVEREST APP SAMPLE
+#
+#
+echo "Install Everest Sample Apps"
+EVEREST_APP_DIR="./everest/deployment/kubernetes/vm/app"
+EVEREST_APP_NAMESPACE="everest-app"
+EVEREST_APP_NAMESPACE_N="-n $EVEREST_APP_NAMESPACE"
+if [ "$EVEREST_APP_NAMESPACE" != "default" ]
+then
+    kubectl create namespace $EVEREST_APP_NAMESPACE
+fi
+kubectl label namespace $EVEREST_APP_NAMESPACE istio-injection=enabled
+(cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_APP_NAMESPACE_N)
+(cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
+(cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-server.yaml $EVEREST_APP_NAMESPACE_N)
+(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
+(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+#
+#
+#
+
+#
+#
+# EVEREST ANALYTICS
+#
+#
+
+echo "Install ALL Everest Apps"
+EVEREST_NAMESPACE="everest"
+EVEREST_NAMESPACE_N="-n $EVEREST_NAMESPACE"
+if [ "$EVEREST_APP_NAMESPACE" != "default" ]
+then
+    kubectl create namespace $EVEREST_NAMESPACE
+fi
+
+#
+# EVEREST services
+#
+EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
+kubectl apply -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+#
+# EVEREST Mongo
+#
+EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
+kubectl apply -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+#
+# EVEREST MONITORING
+#
+EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
+(cd $EVEREST_MONITORING_DIR; kubectl apply -f grafana/ $EVEREST_NAMESPACE_N)
+#
+# EVEREST UI
+#
+EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
+kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
+#
+# EVEREST ANALYTICS
+#
+# EVEREST_ANALYTICS_DIR="./everest/deployment/kubernetes/vm/analytics"
+# (cd $EVEREST_ANALYTICS_DIR; kubectl apply -f kafka-service/ $EVEREST_NAMESPACE_N)
+# 
