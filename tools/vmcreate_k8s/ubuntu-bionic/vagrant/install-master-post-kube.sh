@@ -72,12 +72,23 @@ else
 fi
 
 (cd $ISTIO_VER; kubectl apply -f install/kubernetes/istio-demo.yaml)
-kubectl label namespace default istio-injection=enabled
-(cd $ISTIO_VER; kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml)
-(cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml)
-
-(cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml)
 kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=istio-grafana-outside    
+
+# echo "Install Bookinfo Sample Apps"
+# BOOKINFO_APP_DIR="./everest/deployment/kubernetes/vm/app"
+# BOOKINFO_APP_NAMESPACE="bookinfo"
+# BOOKINFO_APP_NAMESPACE_N="-n $BOOKINFO_APP_NAMESPACE"
+# if [ "$BOOKINFO_APP_NAMESPACE" != "default" ]
+# then
+#     kubectl create namespace $BOOKINFO_APP_NAMESPACE
+# fi
+# kubectl label namespace $BOOKINFO_APP_NAMESPACE istio-injection=enabled
+
+# (cd $ISTIO_VER; kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml $BOOKINFO_APP_NAMESPACE_N)
+# (cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml $BOOKINFO_APP_NAMESPACE_N)
+
+# (cd $ISTIO_VER; kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml $BOOKINFO_APP_NAMESPACE_N)
+
 #
 # WARNING:
 # who serves outside: 
