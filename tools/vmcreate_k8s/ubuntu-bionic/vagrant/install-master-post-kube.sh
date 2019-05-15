@@ -187,5 +187,5 @@ if [ "$KAFKA_APP_NAMESPACE" != "default" ]
 then
     kubectl create namespace $KAFKA_NAMESPACE
 fi
-kubectl apply -R -f $KAFKA_DIR
+kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
 

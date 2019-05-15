@@ -5,11 +5,18 @@
 # Supported CLOUD_TYPE: vm, gke, aws
 #
 CLOUD_TYPE = ENV["CLOUD_TYPE"] || "vm"
-NUM_CPU = ENV["NUM_CPU"] || 1
-NUM_MEM = ENV["NUM_MEM"] || 1
+NUM_CPU = ENV["NUM_CPU"] || "2"
+NUM_MEM = ENV["NUM_MEM"] || "1"
 
-MASTER_MEM = NUM_MEM * 2048
-SLAVE_MEM = NUM_MEM * 4096
+
+MASTER_MEM = NUM_MEM.to_i * 2048
+SLAVE_MEM = NUM_MEM.to_i * 4096
+
+#puts "SETTING MASTER MEM -> #{MASTER_MEM}"
+#puts "SETTING SLAVE MEM -> #{SLAVE_MEM}"
+#puts "SETTING MASTER NUM CPU -> #{NUM_CPU}"
+#puts "SETTING SLAVE NUM CPU -> #{NUM_CPU} * 2"
+
 
 NUM_NODE = ENV["NODES"] || 2
 KUBEADM_POD_NETWORK_CIDR = "10.244.0.0/16"
@@ -78,8 +85,8 @@ Vagrant.configure("2") do |config|
     # Customize the amount of memory on the VM:
     # vb.memory = "4096"
     # vb.cpus = 2
-    vb.memory = "#{SLAVE_MEM}"
-    vb.cpus = NUM_CPU * 2
+    vb.memory = SLAVE_MEM.to_s
+    vb.cpus = (NUM_CPU.to_i * 2).to_s
   end
   #
   # View the documentation for the provider you are using for more
@@ -96,7 +103,7 @@ Vagrant.configure("2") do |config|
     node.vm.provider "virtualbox" do |vb|
       # vb.memory = "2048"
       # vb.cpus = 2
-      vb.memory = "#{MASTER_MEM}"
+      vb.memory = MASTER_MEM.to_s
       vb.cpus = NUM_CPU
     end
     
