@@ -77,8 +77,9 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     # Customize the amount of memory on the VM:
     # vb.memory = "4096"
+    # vb.cpus = 2
     vb.memory = "#{SLAVE_MEM}"
-    vb.cpus = 2
+    vb.cpus = NUM_CPU * 2
   end
   #
   # View the documentation for the provider you are using for more
@@ -94,8 +95,9 @@ Vagrant.configure("2") do |config|
     node.vm.network :private_network, ip: MASTER_IP
     node.vm.provider "virtualbox" do |vb|
       # vb.memory = "2048"
+      # vb.cpus = 2
       vb.memory = "#{MASTER_MEM}"
-      vb.cpus = 2
+      vb.cpus = NUM_CPU
     end
     
     # install vnc, firefox and x windows
