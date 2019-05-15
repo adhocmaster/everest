@@ -6,6 +6,11 @@
 # ++ kubectl get node some-node '-o=go-template={{index .metadata.labels "failure-domain.beta.kubernetes.io/zone"}}'
 # Error from server (Forbidden): User "system:serviceaccount:kafka:default" cannot get nodes at the cluster scope.: "Unknown user \"system:serviceaccount:kafka:default\""
 #
+#
+#
+# WARNING:
+# namespce below must match the namespace of kafka
+#
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -34,4 +39,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: default
-  namespace: default
+  namespace: kafka
+

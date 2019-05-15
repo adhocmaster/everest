@@ -5,6 +5,11 @@
 # Supported CLOUD_TYPE: vm, gke, aws
 #
 CLOUD_TYPE = ENV["CLOUD_TYPE"] || "vm"
+NUM_CPU = ENV["NUM_CPU"] || 1
+NUM_MEM = ENV["NUM_MEM"] || 1
+
+MASTER_MEM = NUM_MEM * 2048
+SLAVE_MEM = NUM_MEM * 4096
 
 NUM_NODE = ENV["NODES"] || 2
 KUBEADM_POD_NETWORK_CIDR = "10.244.0.0/16"
@@ -71,7 +76,8 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
     # Customize the amount of memory on the VM:
-    vb.memory = "8192"
+    # vb.memory = "4096"
+    vb.memory = "#{SLAVE_MEM}"
     vb.cpus = 2
   end
   #
@@ -87,7 +93,8 @@ Vagrant.configure("2") do |config|
     node.vm.hostname = "master"
     node.vm.network :private_network, ip: MASTER_IP
     node.vm.provider "virtualbox" do |vb|
-      vb.memory = "4096"
+      # vb.memory = "2048"
+      vb.memory = "#{MASTER_MEM}"
       vb.cpus = 2
     end
     

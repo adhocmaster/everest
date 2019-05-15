@@ -1,0 +1,22 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: kafka-client-demo
+  namespace: test-kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kafka-client-demo
+  template:
+    metadata:
+      labels:
+        app: kafka-client-demo
+    spec:
+      containers:
+      - name: kafka-client-demo
+        image: iharijono/kafka-client-demo:v0.1
+        env:
+        - name: KAFKA_BOOTSTRAPPER
+          value: bootstrap.kafka:9092
+        imagePullPolicy: IfNotPresent

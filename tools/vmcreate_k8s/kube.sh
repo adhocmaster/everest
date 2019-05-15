@@ -30,20 +30,36 @@ un_or_install_kube() {
     vagrant $OP
 }
 
+create_storage() {
+    # $VAGRANT ssh master -c 'mkdir -p /tmp/data-zoo-0; mkdir -p /tmp/data-kafka-0'
+    # $VAGRANT ssh node-1 -c 'mkdir -p /tmp/data-zoo-1; mkdir -p /tmp/data-kafka-1'
+    # $VAGRANT ssh node-2 -c 'mkdir -p /tmp/data-zoo-2; mkdir -p /tmp/data-kafka-2'
+    echo "NOOP"
+}
+
+delete_storage() {
+    # $VAGRANT ssh master -c 'sudo rm -rf /tmp/data*'
+    # $VAGRANT ssh node-1 -c 'sudo rm -rf /tmp/data*'
+    # $VAGRANT ssh node-2 -c 'sudo rm -rf /tmp/data*'
+    echo "NOOP"
+}
+
 install_it() {
     echo "---> vagrant $OP"
 
     if [ "$OP" = "up" ]
     then
-	KUBE_DIR=$HOME
+	    KUBE_DIR=$HOME
         un_or_install_kube
         export KUBECONFIG=$KUBE_DIR/kubeconfig.yml
         vagrant ssh master -c 'sudo cat /etc/kubernetes/admin.conf' > $KUBECONFIG
         echo "export KUBECONFIG=$KUBE_DIR/kubeconfig.yml" > $KUBE_DIR/kubeconfig.sh 
-	echo "alias kc='kubectl'" >> $KUBE_DIR/kubeconfig.sh
-	chmod ugo+x $KUBE_DIR/kubeconfig.sh
-	source $KUBE_DIR/kubeconfig.sh
+        echo "alias kc='kubectl'" >> $KUBE_DIR/kubeconfig.sh
+        chmod ugo+x $KUBE_DIR/kubeconfig.sh
+        source $KUBE_DIR/kubeconfig.sh
+        create_storage
     else
+        delete_storage
         un_or_install_kube
     fi
 
