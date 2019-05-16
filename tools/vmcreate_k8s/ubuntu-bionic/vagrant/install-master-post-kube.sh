@@ -69,10 +69,10 @@ then
     sed -i 's/LoadBalancer/NodePort/g' $ISTIO_VER/install/kubernetes/istio-demo.yaml
 else
     SVC_TYPE="LoadBalancer"
+    # TODO TODO TODO
 fi
 
 (cd $ISTIO_VER; kubectl apply -f install/kubernetes/istio-demo.yaml)
-kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=istio-grafana-outside    
 
 # echo "Install Bookinfo Sample Apps"
 # BOOKINFO_APP_DIR="./everest/deployment/kubernetes/vm/app"

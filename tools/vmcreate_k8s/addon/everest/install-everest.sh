@@ -58,7 +58,7 @@ fi
 kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
 
 echo "DONE Installing Kafka, wait ..."
-sleep 30
+sleep 120
 
 #
 #
@@ -112,7 +112,29 @@ EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
 # EVEREST UI
 #
 EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
-kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
+COLLECTOR_UI_TMPL="$EVEREST_UI_DIR/collector-uideploy.yaml.TMPL"
+COLLECTOR_UI_YML="/tmp/collector-uideploy.yaml"
+IGRAFANA_SVC_NAME="istio-grafana-outside"
+CLOUD_TYPE="vm"
+if [ "$CLOUD_TYPE" = "vm" ]
+then
+    SVC_TYPE="NodePort"
+    kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
+    # PORT_TCP=`kc describe svc istio-grafana-outside -n istio-system |grep $SVC_TYPE | grep -v Type`
+    # IGRAFANA_PORT=`echo $PORT_TCP | awk {'print $3'} | cut -d '/' -f 1`
+    IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IGRAFANA_SVC_NAME`
+    IGRAFANA_HOST="master"
+else
+    # TODO TODO TODO
+    SVC_TYPE="LoadBalancer"
+    kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
+    IGRAFANA_PORT=3000
+    IGRAFANA_HOST="TBD"
+fi
+echo "Setting IGRAFANA to $IGRAFANA_HOST:$IGRAFANA_PORT on $COLLECTOR_UI_TMPL"
+sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
+# kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
+kubectl apply -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
 
 echo "DONE Installing Everest Service ..."
 

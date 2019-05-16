@@ -64,12 +64,15 @@ spec:
         resources:
           requests:
             cpu: 512m
-            memory: 1Gi
+            memory: 500Mi
+            # memory: 1Gi
           limits:
             # This limit was intentionally set low as a reminder that
             # the entire kubernetes-kafka is meant to be tweaked
             # before you run production workloads
-            memory: 1Gi
+            # memory: 1Gi
+            cpu: 512m
+            memory: 500Mi
         readinessProbe:
             tcpSocket:
               port: 9092
