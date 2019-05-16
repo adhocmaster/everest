@@ -44,6 +44,7 @@ delete_storage() {
     echo "NOOP"
 }
 
+INSTALL_EVEREST_SCRIPT=./addon/everest/install-everest.sh 
 install_it() {
     echo "---> vagrant $OP"
 
@@ -58,6 +59,7 @@ install_it() {
         chmod ugo+x $KUBE_DIR/kubeconfig.sh
         source $KUBE_DIR/kubeconfig.sh
         create_storage
+        echo "$INSTALL_EVEREST_SCRIPT"
     else
         delete_storage
         un_or_install_kube

@@ -87,6 +87,7 @@ Vagrant.configure("2") do |config|
     # vb.cpus = 2
     vb.memory = SLAVE_MEM.to_s
     vb.cpus = (NUM_CPU.to_i * 2).to_s
+    # vb.cpus = NUM_CPU
   end
   #
   # View the documentation for the provider you are using for more

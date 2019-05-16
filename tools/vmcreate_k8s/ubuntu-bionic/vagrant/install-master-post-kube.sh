@@ -118,74 +118,74 @@ kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=istio-grafana
 ### 
 ### 
 
-echo "Retrievee Everest software by git"
-sudo apt-get install git
-git clone https://github.com/iharijono/everest.git
+# echo "Retrieve Everest software by git"
+# sudo apt-get install git
+# git clone https://github.com/iharijono/everest.git
 
-#
-#
-# EVEREST APP SAMPLE
-#
-#
-echo "Install Everest Sample Apps"
-EVEREST_APP_DIR="./everest/deployment/kubernetes/vm/app"
-EVEREST_APP_NAMESPACE="everest-app"
-EVEREST_APP_NAMESPACE_N="-n $EVEREST_APP_NAMESPACE"
-if [ "$EVEREST_APP_NAMESPACE" != "default" ]
-then
-    kubectl create namespace $EVEREST_APP_NAMESPACE
-fi
-kubectl label namespace $EVEREST_APP_NAMESPACE istio-injection=enabled
-(cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-server.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+# #
+# #
+# # EVEREST APP SAMPLE
+# #
+# #
+# echo "Install Everest Sample Apps"
+# EVEREST_APP_DIR="./everest/deployment/kubernetes/vm/app"
+# EVEREST_APP_NAMESPACE="everest-app"
+# EVEREST_APP_NAMESPACE_N="-n $EVEREST_APP_NAMESPACE"
+# if [ "$EVEREST_APP_NAMESPACE" != "default" ]
+# then
+#     kubectl create namespace $EVEREST_APP_NAMESPACE
+# fi
+# kubectl label namespace $EVEREST_APP_NAMESPACE istio-injection=enabled
+# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_APP_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-server.yaml $EVEREST_APP_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
+# (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
 
-echo "Install ALL Everest Apps"
-EVEREST_NAMESPACE="everest"
-EVEREST_NAMESPACE_N="-n $EVEREST_NAMESPACE"
-if [ "$EVEREST_APP_NAMESPACE" != "default" ]
-then
-    kubectl create namespace $EVEREST_NAMESPACE
-fi
+# echo "Install ALL Everest Apps"
+# EVEREST_NAMESPACE="everest"
+# EVEREST_NAMESPACE_N="-n $EVEREST_NAMESPACE"
+# if [ "$EVEREST_APP_NAMESPACE" != "default" ]
+# then
+#     kubectl create namespace $EVEREST_NAMESPACE
+# fi
 
-#
-# EVEREST services
-#
-EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
-kubectl apply -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
-#
-# EVEREST Mongo
-#
-EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
-kubectl apply -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
-#
-# EVEREST MONITORING
-#
-EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
-(cd $EVEREST_MONITORING_DIR; kubectl apply -f grafana/ $EVEREST_NAMESPACE_N)
-#
-# EVEREST UI
-#
-EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
-kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
+# #
+# # EVEREST services
+# #
+# EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
+# kubectl apply -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+# #
+# # EVEREST Mongo
+# #
+# EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
+# kubectl apply -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+# #
+# # EVEREST MONITORING
+# #
+# EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
+# (cd $EVEREST_MONITORING_DIR; kubectl apply -f grafana/ $EVEREST_NAMESPACE_N)
+# #
+# # EVEREST UI
+# #
+# EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
+# kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
 
-#
-#
-# EVEREST ANALYTICS
-#
-#  WARNING WARNING WARNING: adjust namespace in kafka-service/00rbac-namespace-default/10-node-reader.yml
-#
-echo "Installing Kafka ..."
-KAFKA_NAMESPACE="kafka"
-KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
-KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
+# #
+# #
+# # EVEREST ANALYTICS
+# #
+# #  WARNING WARNING WARNING: adjust namespace in kafka-service/00rbac-namespace-default/10-node-reader.yml
+# #
+# echo "Installing Kafka ..."
+# KAFKA_NAMESPACE="kafka"
+# KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
+# KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
 
-if [ "$KAFKA_APP_NAMESPACE" != "default" ]
-then
-    kubectl create namespace $KAFKA_NAMESPACE
-fi
-kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
+# if [ "$KAFKA_APP_NAMESPACE" != "default" ]
+# then
+#     kubectl create namespace $KAFKA_NAMESPACE
+# fi
+# kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
 
