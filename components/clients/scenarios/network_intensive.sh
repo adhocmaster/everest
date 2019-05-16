@@ -48,8 +48,8 @@ run_network() {
     echo "Testing Scenario: Network Usages"
 
     for i in `seq 1 11`
-    echo "Download files and video Nr. $i"
     do
+        echo "Download files and video Nr. $i"
         for URL in $URLS
         do
             res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`

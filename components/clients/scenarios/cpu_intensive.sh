@@ -46,8 +46,11 @@ run_cpu() {
     echo "Testing Scenario: CPU Usages"
 
     for i in `seq 40 45`
-    echo "Run Computation Nr. $i"
     do
+        
+        
+        echo "Run Computation Nr. $i"
+
         for _URL in $URLS
         do
             URL="$_URL""$i"

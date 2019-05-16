@@ -48,8 +48,8 @@ run_network() {
     echo "Testing Scenario: CPU + Network Usages"
 
     for i in `seq 1 11`
-    echo "Download files and video Nr. $i"
     do
+        echo "Download files and video Nr. $i"
         for URL in $URLS
         do
             res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`
@@ -67,8 +67,8 @@ run_cpu() {
     echo "Testing Scenario: CPU Usages"
 
     for i in `seq 40 45`
-    echo "Run Computation Nr. $i"
     do
+        echo "Run Computation Nr. $i"
         for _URL in $URLS
         do
             URL="$_URL""$i"
