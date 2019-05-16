@@ -39,8 +39,9 @@ check() {
 }
 
 
-URLS="http://${GATEWAY_URL}/productpage \
-    http://${GATEWAY_URL}/fibo?n=3 \
+#URLS="http://${GATEWAY_URL}/productpage
+
+URLS="http://${GATEWAY_URL}/fibo?n=3 \
     http://${GATEWAY_URL}/fibo_remote?n=3 \
     http://${GATEWAY_URL}/file?name=everest.ppt \
     http://${GATEWAY_URL}/video?name=small.mp4"
