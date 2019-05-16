@@ -39,6 +39,27 @@ echo "Retrieve Everest software by git"
 sudo apt-get install git
 git clone https://github.com/iharijono/everest.git
 
+
+#
+#
+# EVEREST ANALYTICS
+#
+#  WARNING WARNING WARNING: adjust namespace in kafka-service/00rbac-namespace-default/10-node-reader.yml
+#
+echo "Installing Kafka ..."
+KAFKA_NAMESPACE="kafka"
+KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
+KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
+
+if [ "$KAFKA_APP_NAMESPACE" != "default" ]
+then
+    kubectl create namespace $KAFKA_NAMESPACE
+fi
+kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
+
+echo "DONE Installing Kafka, wait ..."
+sleep 30
+
 #
 #
 # EVEREST APP SAMPLE
@@ -59,6 +80,10 @@ kubectl label namespace $EVEREST_APP_NAMESPACE istio-injection=enabled
 (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-server.yaml $EVEREST_APP_NAMESPACE_N)
 (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
 (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+
+echo "DONE Installing Everest Sample Apps, wait ..."
+sleep 10
+
 
 echo "Install ALL Everest Apps"
 EVEREST_NAMESPACE="everest"
@@ -89,23 +114,6 @@ EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
 EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
 kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
 
-#
-#
-# EVEREST ANALYTICS
-#
-#  WARNING WARNING WARNING: adjust namespace in kafka-service/00rbac-namespace-default/10-node-reader.yml
-#
-echo "Installing Kafka ..."
-KAFKA_NAMESPACE="kafka"
-KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
-KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
-
-if [ "$KAFKA_APP_NAMESPACE" != "default" ]
-then
-    kubectl create namespace $KAFKA_NAMESPACE
-fi
-kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
-
-
+echo "DONE Installing Everest Service ..."
 
 popd
