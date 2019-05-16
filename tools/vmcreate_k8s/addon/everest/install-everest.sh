@@ -115,10 +115,14 @@ EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
 COLLECTOR_UI_TMPL="$EVEREST_UI_DIR/collector-uideploy.yaml.TMPL"
 COLLECTOR_UI_YML="/tmp/collector-uideploy.yaml"
 IGRAFANA_SVC_NAME="istio-grafana-outside"
+KIALI_SVC_NAME="istio-kiali-outside"
+TRACING_SVC_NAME="istio-tracing-outside"
 CLOUD_TYPE="vm"
 if [ "$CLOUD_TYPE" = "vm" ]
 then
     SVC_TYPE="NodePort"
+    kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$KIALI_SVC_NAME    
+    kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$TRACING_SVC_NAME    
     kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
     # PORT_TCP=`kc describe svc istio-grafana-outside -n istio-system |grep $SVC_TYPE | grep -v Type`
     # IGRAFANA_PORT=`echo $PORT_TCP | awk {'print $3'} | cut -d '/' -f 1`
@@ -127,6 +131,8 @@ then
 else
     # TODO TODO TODO
     SVC_TYPE="LoadBalancer"
+    kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$KIALI_SVC_NAME  
+    kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$TRACING_SVC_NAME  
     kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
     IGRAFANA_PORT=3000
     IGRAFANA_HOST="TBD"
