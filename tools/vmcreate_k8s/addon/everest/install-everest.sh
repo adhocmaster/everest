@@ -97,17 +97,17 @@ fi
 # EVEREST services
 #
 EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
-kubectl apply -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+kubectl apply -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
 #
 # EVEREST Mongo
 #
 EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
-kubectl apply -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+kubectl apply -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
 #
 # EVEREST MONITORING
 #
 EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
-(cd $EVEREST_MONITORING_DIR; kubectl apply -f grafana/ $EVEREST_NAMESPACE_N)
+(cd $EVEREST_MONITORING_DIR; kubectl apply -R -f grafana/ $EVEREST_NAMESPACE_N)
 #
 # EVEREST UI
 #
