@@ -279,7 +279,7 @@ function runRouteChat(callback) {
 function main() {
   async.series([
     runGetFeature,
-    //runGetFeatureHeavy,
+    runGetFeatureHeavy,
     runListFeatures,
     runRecordRoute,
     runRouteChat
