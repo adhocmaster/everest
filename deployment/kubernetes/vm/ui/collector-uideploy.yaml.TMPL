@@ -52,7 +52,7 @@ spec:
         env:
           - name: CCOLLECTOR_POLL_INTERVAL
             value: "60000"
-          # new jaeger rest api
+          # new jaeger rest api, only in VM/the newest istio
           - name: CCOLLECTOR_REST_AUX
             value: "/jaeger"
           - name: CCOLLECTOR_CLOVER_JAEGER_HOST
@@ -79,7 +79,7 @@ spec:
             #value: "http://35.238.226.128:3000"
             value: "http://___IGRAFANA_HOST___:___IGRAFANA_PORT___"
           - name: CCOLLECTOR_IKIALI_URL
-            value: "http://___IKIALI_HOST___:___IKIALI_PORT___"
+            value: "http://___IKIALI_HOST___:___IKIALI_PORT___/kiali/console"
           - name: CCOLLECTOR_ITRACING_URL
             value: "http://___ITRACING_HOST___:___ITRACING_PORT___"
           - name: CCOLLECTOR_WITH_MONGO

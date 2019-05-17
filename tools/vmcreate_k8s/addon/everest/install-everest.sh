@@ -115,32 +115,41 @@ EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
 COLLECTOR_UI_TMPL="$EVEREST_UI_DIR/collector-uideploy.yaml.TMPL"
 COLLECTOR_UI_YML="/tmp/collector-uideploy.yaml"
 IGRAFANA_SVC_NAME="istio-grafana-outside"
-KIALI_SVC_NAME="istio-kiali-outside"
-TRACING_SVC_NAME="istio-tracing-outside"
+IKIALI_SVC_NAME="istio-kiali-outside"
+ITRACING_SVC_NAME="istio-tracing-outside"
 CLOUD_TYPE="vm"
 if [ "$CLOUD_TYPE" = "vm" ]
 then
     SVC_TYPE="NodePort"
-    kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$KIALI_SVC_NAME    
-    kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$TRACING_SVC_NAME    
+    kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME    
+    kubectl expose -n istio-system svc jaeger-query --type=$SVC_TYPE --name=$ITRACING_SVC_NAME    
     kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
     # PORT_TCP=`kc describe svc istio-grafana-outside -n istio-system |grep $SVC_TYPE | grep -v Type`
     # IGRAFANA_PORT=`echo $PORT_TCP | awk {'print $3'} | cut -d '/' -f 1`
     IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IGRAFANA_SVC_NAME`
     IGRAFANA_HOST="master"
+    IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
+    IKIALI_HOST="master"
+    ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $ITRACING_SVC_NAME`
+    ITRACING_HOST="master"
 else
     # TODO TODO TODO
     SVC_TYPE="LoadBalancer"
-    kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$KIALI_SVC_NAME  
-    kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$TRACING_SVC_NAME  
+    # kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME  
+    # IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
+    kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$ITRACING_SVC_NAME  
     kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
-    IGRAFANA_PORT=3000
-    IGRAFANA_HOST="TBD"
+    ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $IGRAFANA_SVC_NAME`
+    IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $IGRAFANA_SVC_NAME`
+    ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $ITRACING_SVC_NAME`
+    ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $ITRACING_SVC_NAME`
 fi
 echo "Setting IGRAFANA to $IGRAFANA_HOST:$IGRAFANA_PORT on $COLLECTOR_UI_TMPL"
-sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
+echo "Setting IKIALI to $IKIALI_HOST:$IKIALI_PORT on $COLLECTOR_UI_TMPL"
+echo "Setting ITRACING to $ITRACING_HOST:$ITRACING_PORT on $COLLECTOR_UI_TMPL"
+sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g;s/___IKIALI_HOST___:___IKIALI_PORT___/$IKIALI_HOST:$IKIALI_PORT/g;s/___ITRACING_HOST___:___ITRACING_PORT___/$ITRACING_HOST:$ITRACING_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
 # kubectl apply -f $EVEREST_UI_DIR $EVEREST_NAMESPACE_N
-kubectl apply -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
+# kubectl apply -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
 
 echo "DONE Installing Everest Service ..."
 

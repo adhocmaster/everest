@@ -370,10 +370,12 @@ const _without_prom = (on_off) => {
     WITHOUT_PROM = on_off;
 }
 
+var var_rest_aux = ''
 const _start_collector = (rest_aux='') => {
     console.log("Start CCollector, Continously Collecting Tracing and Monitoring from Jaeger and Prometheus")
 	console.log("Start At               	: " + Date.now())
 	let clovisor = false
+	var_rest_aux = rest_aux
     for(let jaeger of jaegers) {
 		let t = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
 		clovisor = !clovisor
@@ -394,6 +396,8 @@ const _start_collector = (rest_aux='') => {
 	if(MONGO != null) {
 		console.log("MongoDB    : " + MONGO.route)
 	}
+
+
     console.log("Poll Interval               	: " + POLL_INTERVAL + " msec");    
     ccollector();
 };
@@ -407,7 +411,7 @@ const _get_rt_traces = async () => {
 		let jaeger_id = jaeger[2]
 		retData[jaeger_id] = {}
 		if(jaeger.length > 3) {
-			let jaegerObj = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
+			let jaegerObj = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', var_rest_aux)
 			clovisor = !clovisor
 			jaegerObj.startCaptureInMsec = (POLL_INTERVAL * DEFAULT_FACTOR_POLL_TO_START)
 			await jaegerObj.collect()

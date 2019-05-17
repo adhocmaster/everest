@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import Tabs from 'react-bootstrap/Tabs'
 import Tab from 'react-bootstrap/Tab'
 import TraceList from './Traces'
-import MainProm from './MainProm'
+// import MainProm from './MainProm'
+import Monitoring from './Monitoring'
 import Debug from './Debug'
 import Analytics from './Analytics'
 
@@ -54,8 +55,9 @@ class MainPanel extends Component {
 		<Tab eventKey="trace" title="Traces">
 		<TraceList data={this.state.data}/>
 		</Tab>
-		<Tab eventKey="prom" title="Prometheus">
-		<MainProm />
+		{/* <Tab eventKey="prom" title="Prometheus"> */}
+		<Tab eventKey="monitoring" title="Monitoring">
+		<Monitoring />
 		</Tab>
 		<Tab eventKey="analytics" title="Analytics">
 		<Analytics data={this.state.prom_data}/>

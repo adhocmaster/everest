@@ -20,6 +20,17 @@ const DEFAULT_GRAFANA_URL = 'http://master:30003'
 var GRAFANA_URL = process.env.CCOLLECTOR_GRAFANA_URL || DEFAULT_GRAFANA_URL
 const DEFAULT_IGRAFANA_URL = 'http://master:30004'
 var IGRAFANA_URL = process.env.CCOLLECTOR_IGRAFANA_URL || DEFAULT_IGRAFANA_URL
+const DEFAULT_IKIALI_URL = 'http://master:30005'
+var IKIALI_URL = process.env.CCOLLECTOR_IKIALI_URL || DEFAULT_IKIALI_URL
+const DEFAULT_ITRACING_URL = 'http://master:30006'
+var ITRACING_URL = process.env.CCOLLECTOR_ITRACING_URL || DEFAULT_ITRACING_URL
+
+console.log('-------------------------------------------')
+console.log('Service from Istio:')
+console.log(`IGRAFANA ---> ${IGRAFANA_URL}`)
+console.log(`IKIALI ---> ${IKIALI_URL}`)
+console.log(`ITRACING ---> ${ITRACING_URL}`)
+console.log('-------------------------------------------')
 
 // this is our main retrieval methods 
 // it retrieve clover data from Prometheus
@@ -54,6 +65,19 @@ module.exports = (router = new Router()) => {
 	    }
     )
   })
-
+  router.get('/kiali_url', async (req, res) => {
+    res.json(
+        {
+            "data": IKIALI_URL
+	    }
+    )
+  })
+  router.get('/tracing_url', async (req, res) => {
+    res.json(
+        {
+            "data": ITRACING_URL
+	    }
+    )
+  })    
   return router
 }
