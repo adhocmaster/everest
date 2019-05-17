@@ -31,6 +31,8 @@ import numpy
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 DEFAULT_GUIDE_PORT = '9999'
 GUIDE_PORT = DEFAULT_GUIDE_PORT
+DEFAULT_MAX_COL_ROW = 128
+MAX_COL_ROW  = DEFAULT_MAX_COL_ROW 
 VERBOSE = False
 MESSAGE_NUM = 0
 
@@ -87,8 +89,7 @@ class RouteGuideServicer(route_guide_pb2_grpc.RouteGuideServicer):
         if feature is None:
             # row = 1024
             # col = 1024
-            row = 256
-            col = 256
+            row = col = DEFAULT_MAX_COL_ROW if MAX_COL_ROW > DEFAULT_MAX_COL_ROW else MAX_COL_ROW
 
             if(request.latitude > 0):
                 row = (request.latitude % row)
@@ -180,5 +181,8 @@ if __name__ == '__main__':
         GUIDE_PORT = os.environ.get('EVEREST_GUIDE_PORT')
     if "EVEREST_GUIDE_VERBOSE" in os.environ:
         VERBOSE = os.environ.get('EVEREST_GUIDE_VERBOSE') == 'True' or os.environ.get('EVEREST_GUIDE_VERBOSE') == 'true' 
+    if "EVEREST_GUIDE_MAX_COL_ROW" in os.environ:
+        MAX_COL_ROW = int(os.environ.get('EVEREST_GUIDE_MAX_COL_ROW'))
+
     logging.basicConfig()
     serve()

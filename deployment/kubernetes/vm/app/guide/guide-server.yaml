@@ -59,6 +59,8 @@ spec:
           value: "true"
         - name: EVEREST_GUIDE_PORT
           value: "9999"
+        - name: EVEREST_GUIDE_MAX_COL_ROW
+          value: 64
 ---
 # apiVersion: extensions/v1beta1
 # kind: Deployment
