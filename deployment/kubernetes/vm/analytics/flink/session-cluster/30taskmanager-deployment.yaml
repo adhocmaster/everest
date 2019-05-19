@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: flink-taskmanager
+spec:
+  serviceName: "flink-dns"
+  selector:
+    matchLabels:
+      app: flink
+      component: taskmanager
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: flink
+        component: taskmanager
+    spec:
+      containers:
+      - name: taskmanager
+#        image: flink:latest
+        image: flink:1.7.1-hadoop26-scala_2.12-alpine
+        imagePullPolicy: IfNotPresent
+        args:
+        - taskmanager
+        ports:
+        - containerPort: 6121
+          name: data
+        - containerPort: 6122
+          name: rpc
+        - containerPort: 6125
+          name: query
+        - containerPort: 9250
+          name: prom
+        env:
+        - name: JOB_MANAGER_RPC_ADDRESS
+          value: flink-jobmanager
+        - name: HADOOP_CLASSPATH
+          value: /opt/flink/opt/flink-metrics-prometheus-1.7.1.jar
+        volumeMounts:
+        - name: flink-config
+          mountPath: /opt/flink/conf/flink-conf.yaml
+          subPath: flink-conf.yaml
+        resources:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 512Mi
+      volumes:
+      - name: flink-config
+        configMap:
+          name: flink-configmap

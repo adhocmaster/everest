@@ -1,0 +1,49 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: flink-jobmanager
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: flink
+        component: jobmanager
+    spec:
+      containers:
+      - name: jobmanager
+#        image: flink:latest
+        image: flink:1.7.1-hadoop26-scala_2.12-alpine
+        imagePullPolicy: IfNotPresent
+        args:
+        - jobmanager
+        ports:
+        - containerPort: 6123
+          name: rpc
+        - containerPort: 6124
+          name: blob
+        - containerPort: 6125
+          name: query
+        - containerPort: 8081
+          name: ui
+        - containerPort: 9250
+          name: prom
+        resources:
+          requests:
+            memory: 512Mi
+          limits:
+            memory: 512Mi
+        env:
+        - name: JOB_MANAGER_RPC_ADDRESS
+          value: flink-jobmanager
+        - name: HADOOP_CLASSPATH
+          value: /opt/flink/opt/flink-metrics-prometheus-1.7.1.jar
+        volumeMounts:
+        - name: flink-config
+          mountPath: /opt/flink/conf/flink-conf.yaml
+          subPath: flink-conf.yaml
+      volumes:
+      - name: flink-config
+        configMap:
+          name: flink-configmap
+
