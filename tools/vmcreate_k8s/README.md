@@ -38,11 +38,11 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
    will create kubernetes cluster with 5 nodes. The master and slaves will have 5 CPUs and Master with 8 GB and slave with 16 GB memory each. In addition to that, it will jump start all everest related artifacts.       
    if you want to delete or initialize ONLY everest project, use '-i':     
    ```% ./kube.sh -d -i ```  
-   it will uninstall istio, everest and everest related artifacts, leave the k8s cluster intact     
+   it will uninstall everest and everest related artifacts, leave the k8s cluster intact     
     ```% ./kube.sh -i ```  
-   it will install istio, everest and everest related artifacts, without installing kubernetes
+   it will install everest and everest related artifacts, without installing kubernetes
     ```% ./kube.sh -k ```  
-   it will install kubernetes cluster only      
+   it will install kubernetes cluster + istio only      
 
 
 
