@@ -53,8 +53,8 @@ git clone https://github.com/iharijono/everest.git
 #
 if [ "$KUBE_CREATE" = "create" ]
 then
-    echo "Patching istio-ingressgateway: patch istio-ingressgateway -p '{spec:{type: NodePort}}'"
-    kubectl patch istio-ingressgateway -n istio-system -p '{"spec":{"type": "NodePort"}}'
+    echo "Patching istio-ingressgateway: patch svc istio-ingressgateway -n istio-system -p '{spec:{type: NodePort}}'"
+    kubectl patch svc istio-ingressgateway -n istio-system -p '{"spec":{"type": "NodePort"}}'
 fi
 
 #
@@ -71,7 +71,6 @@ KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
 if [ "$KAFKA_APP_NAMESPACE" != "default" ]
 then
     kubectl $KUBE_CREATE namespace $KAFKA_NAMESPACE
-
 fi
 if [ "$KUBE_CREATE" = "create" ]
 then
