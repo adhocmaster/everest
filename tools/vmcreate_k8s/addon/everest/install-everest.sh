@@ -17,6 +17,15 @@
 #     - kubeconfig
 #     - kubectl
 #
+OP=$1
+if [ "$OP" = "-d" ]
+then
+    KUBE_CREATE="delete"
+    KUBE_APPLY="delete"
+else
+    KUBE_CREATE="create"
+    KUBE_APPLY="apply"
+fi
 
 pushd /tmp
 
@@ -39,6 +48,14 @@ echo "Retrieve Everest software by git"
 sudo apt-get install git
 git clone https://github.com/iharijono/everest.git
 
+#
+# Let's patch original istio-system first
+#
+if [ "$KUBE_CREATE" = "create" ]
+then
+    echo "Patching istio-ingressgateway: patch istio-ingressgateway -p '{spec:{type: NodePort}}'"
+    kubectl patch istio-ingressgateway -n istio-system -p '{"spec":{"type": "NodePort"}}'
+fi
 
 #
 #
@@ -46,110 +63,127 @@ git clone https://github.com/iharijono/everest.git
 #
 #  WARNING WARNING WARNING: adjust namespace in kafka-service/00rbac-namespace-default/10-node-reader.yml
 #
-echo "Installing Kafka ..."
+
 KAFKA_NAMESPACE="kafka"
 KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
 KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
 
 if [ "$KAFKA_APP_NAMESPACE" != "default" ]
 then
-    kubectl create namespace $KAFKA_NAMESPACE
-fi
-kubectl apply -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
+    kubectl $KUBE_CREATE namespace $KAFKA_NAMESPACE
 
-echo "DONE Installing Kafka, wait ..."
-sleep 120
+fi
+if [ "$KUBE_CREATE" = "create" ]
+then
+    echo "Installing Kafka ..."
+    kubectl $KUBE_APPLY -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
+    echo "DONE Installing Kafka, wait ..."
+    sleep 120
+fi
 
 #
 #
 # EVEREST APP SAMPLE
 #
 #
-echo "Install Everest Sample Apps"
+
 EVEREST_APP_DIR="./everest/deployment/kubernetes/vm/app"
 EVEREST_APP_NAMESPACE="everest-app"
 EVEREST_APP_NAMESPACE_N="-n $EVEREST_APP_NAMESPACE"
 if [ "$EVEREST_APP_NAMESPACE" != "default" ]
 then
-    kubectl create namespace $EVEREST_APP_NAMESPACE
+    kubectl $KUBE_CREATE namespace $EVEREST_APP_NAMESPACE
 fi
-kubectl label namespace $EVEREST_APP_NAMESPACE istio-injection=enabled
-(cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-server.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
-(cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+if [ "$KUBE_CREATE" = "create" ]
+then
+    echo "Install Everest Sample Apps"
+    kubectl label namespace $EVEREST_APP_NAMESPACE istio-injection=enabled
+    (cd $EVEREST_APP_DIR; kubectl apply -f file-server/file-server.yaml $EVEREST_APP_NAMESPACE_N)
+    (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
+    (cd $EVEREST_APP_DIR; kubectl apply -f file-server/fs-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+    (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-server.yaml $EVEREST_APP_NAMESPACE_N)
+    (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-gateway.yaml $EVEREST_APP_NAMESPACE_N)
+    (cd $EVEREST_APP_DIR; kubectl apply -f guide/guide-istio-destinationrules.yaml $EVEREST_APP_NAMESPACE_N)
+    echo "DONE Installing Everest Sample Apps, wait ..."
+    sleep 10
+fi
 
-echo "DONE Installing Everest Sample Apps, wait ..."
-sleep 10
-
-
-echo "Install ALL Everest Apps"
 EVEREST_NAMESPACE="everest"
 EVEREST_NAMESPACE_N="-n $EVEREST_NAMESPACE"
 if [ "$EVEREST_APP_NAMESPACE" != "default" ]
 then
-    kubectl create namespace $EVEREST_NAMESPACE
+    kubectl $KUBE_CREATE namespace $EVEREST_NAMESPACE
 fi
 
-#
-# EVEREST services
-#
-EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
-kubectl apply -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
-#
-# EVEREST Mongo
-#
-EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
-kubectl apply -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
-#
-# EVEREST MONITORING
-#
-EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
-(cd $EVEREST_MONITORING_DIR; kubectl apply -R -f grafana/ $EVEREST_NAMESPACE_N)
-#
-# EVEREST UI
-#
-EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
-COLLECTOR_UI_TMPL="$EVEREST_UI_DIR/collector-uideploy.yaml.TMPL"
-COLLECTOR_UI_YML="/tmp/collector-uideploy.yaml"
-IGRAFANA_SVC_NAME="istio-grafana-outside"
-IKIALI_SVC_NAME="istio-kiali-outside"
-ITRACING_SVC_NAME="istio-tracing-outside"
-CLOUD_TYPE="vm"
-if [ "$CLOUD_TYPE" = "vm" ]
+if [ "$KUBE_CREATE" = "create" ]
 then
-    SVC_TYPE="NodePort"
-    kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME    
-    kubectl expose -n istio-system svc jaeger-query --type=$SVC_TYPE --name=$ITRACING_SVC_NAME    
-    kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
-    # PORT_TCP=`kc describe svc istio-grafana-outside -n istio-system |grep $SVC_TYPE | grep -v Type`
-    # IGRAFANA_PORT=`echo $PORT_TCP | awk {'print $3'} | cut -d '/' -f 1`
-    IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IGRAFANA_SVC_NAME`
-    IGRAFANA_HOST="master"
-    IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
-    IKIALI_HOST="master"
-    ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $ITRACING_SVC_NAME`
-    ITRACING_HOST="master"
-else
-    # TODO TODO TODO
-    SVC_TYPE="LoadBalancer"
-    # kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME  
-    # IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
-    kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$ITRACING_SVC_NAME  
-    kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
-    ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $IGRAFANA_SVC_NAME`
-    IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $IGRAFANA_SVC_NAME`
-    ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $ITRACING_SVC_NAME`
-    ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $ITRACING_SVC_NAME`
-fi
-echo "Setting IGRAFANA to $IGRAFANA_HOST:$IGRAFANA_PORT on $COLLECTOR_UI_TMPL"
-echo "Setting IKIALI to $IKIALI_HOST:$IKIALI_PORT on $COLLECTOR_UI_TMPL"
-echo "Setting ITRACING to $ITRACING_HOST:$ITRACING_PORT on $COLLECTOR_UI_TMPL"
-sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g;s/___IKIALI_HOST___:___IKIALI_PORT___/$IKIALI_HOST:$IKIALI_PORT/g;s/___ITRACING_HOST___:___ITRACING_PORT___/$ITRACING_HOST:$ITRACING_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
-kubectl apply -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
+    echo "Install Everest ..."
+    #
+    # EVEREST services
+    #
+    EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
+    kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+    #
+    # EVEREST Mongo
+    #
+    EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
+    kubectl $KUBE_APPLY -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+    #
+    # EVEREST MONITORING
+    #
+    EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
+    (cd $EVEREST_MONITORING_DIR; kubectl $KUBE_APPLY -R -f grafana/ $EVEREST_NAMESPACE_N)
+    #
+    # EVEREST UI
+    #
+    echo "Installing Everest Collector and Web UI..."
 
-echo "DONE Installing Everest Service ..."
+    EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
+    COLLECTOR_UI_TMPL="$EVEREST_UI_DIR/collector-uideploy.yaml.TMPL"
+    COLLECTOR_UI_YML="/tmp/collector-uideploy.yaml"
+    IGRAFANA_SVC_NAME="istio-grafana-outside"
+    IKIALI_SVC_NAME="istio-kiali-outside"
+    ITRACING_SVC_NAME="istio-tracing-outside"
+    CLOUD_TYPE="vm"
+    if [ "$CLOUD_TYPE" = "vm" ]
+    then
+        SVC_TYPE="NodePort"
+        kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME    
+        kubectl expose -n istio-system svc jaeger-query --type=$SVC_TYPE --name=$ITRACING_SVC_NAME    
+        kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
+        # PORT_TCP=`kc describe svc istio-grafana-outside -n istio-system |grep $SVC_TYPE | grep -v Type`
+        # IGRAFANA_PORT=`echo $PORT_TCP | awk {'print $3'} | cut -d '/' -f 1`
+        IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IGRAFANA_SVC_NAME`
+        IGRAFANA_HOST="master"
+        IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
+        IKIALI_HOST="master"
+        ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $ITRACING_SVC_NAME`
+        ITRACING_HOST="master"
+    else
+        # TODO TODO TODO
+        SVC_TYPE="LoadBalancer"
+        # kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME  
+        # IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
+        kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$ITRACING_SVC_NAME  
+        kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
+        ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $IGRAFANA_SVC_NAME`
+        IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $IGRAFANA_SVC_NAME`
+        ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $ITRACING_SVC_NAME`
+        ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $ITRACING_SVC_NAME`
+    fi
+    echo "Setting IGRAFANA to $IGRAFANA_HOST:$IGRAFANA_PORT on $COLLECTOR_UI_TMPL"
+    echo "Setting IKIALI to $IKIALI_HOST:$IKIALI_PORT on $COLLECTOR_UI_TMPL"
+    echo "Setting ITRACING to $ITRACING_HOST:$ITRACING_PORT on $COLLECTOR_UI_TMPL"
+    sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g;s/___IKIALI_HOST___:___IKIALI_PORT___/$IKIALI_HOST:$IKIALI_PORT/g;s/___ITRACING_HOST___:___ITRACING_PORT___/$ITRACING_HOST:$ITRACING_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
+    kubectl $KUBE_APPLY -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
+
+
+    echo "Installing Everest Analytics: Flink..."
+    EVEREST_FLINK_DIR="./everest/deployment/kubernetes/vm/analytics/flink"
+    kubectl $KUBE_APPLY -R -f $EVEREST_FLINK_DIR $EVEREST_NAMESPACE_N
+
+
+    echo "DONE Installing All Everest Apps and Services ..."
+fi
 
 popd

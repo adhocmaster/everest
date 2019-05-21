@@ -27,15 +27,26 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 
    For example:       
    ```% ./kube.sh```         
-   will create kubernetes cluster with 3 nodes. There is always 1 Master and the rest are slaves.     
+   will create kubernetes cluster with 3 nodes. There is always 1 Master and the rest are slaves. In addition to that, it will jump start all everest related artifacts.    
    ```% NODES=5 ./kube.sh```           
-   will create kubernetes cluster with 5 nodes.    
-   ```% NUM_CPU=5 ./kube.sh```           
-   will create kubernetes cluster with 3 nodes. The master and slaves will have 5 CPUs and 2 GB memory.    
-   ```% NUM_MEM=4 ./kube.sh```           
-   will create kubernetes cluster with 3 nodes. The master and slaves will have 2 CPUs and Master with 8 GB and slave with 16 GB memory each.     
+   will create kubernetes cluster with 5 nodes. In addition to that, it will jump start all everest related artifacts.   
+   ```% NUM_CPU=5 ./kube.sh```            
+   will create kubernetes cluster with 3 nodes. The master and slaves will have 5 CPUs and 2 GB memory. In addition to that, it will jump start all everest related artifacts.   
+   ```% NUM_MEM=4 ./kube.sh```              
+   will create kubernetes cluster with 3 nodes. The master and slaves will have 2 CPUs and Master with 8 GB and slave with 16 GB memory each. In addition to that, it will jump start all everest related artifacts.       
    ```% NUM_CPU=5 NUM_MEM=4 NODES=5 ./kube.sh```            
-   will create kubernetes cluster with 5 nodes. The master and slaves will have 5 CPUs and Master with 8 GB and slave with 16 GB memory each.     
+   will create kubernetes cluster with 5 nodes. The master and slaves will have 5 CPUs and Master with 8 GB and slave with 16 GB memory each. In addition to that, it will jump start all everest related artifacts.       
+   if you want to delete or initialize ONLY everest project, use '-i':     
+   ```% ./kube.sh -d -i ```  
+   it will uninstall istio, everest and everest related artifacts, leave the k8s cluster intact     
+    ```% ./kube.sh -i ```  
+   it will install istio, everest and everest related artifacts, without installing kubernetes
+    ```% ./kube.sh -k ```  
+   it will install kubernetes cluster only      
+
+
+
+
 4. After ./kube.sh is finished:     
    - Check everything is up:
     ```% source ~/kubeconfig.sh```

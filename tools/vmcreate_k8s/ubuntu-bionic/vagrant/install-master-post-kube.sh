@@ -53,6 +53,7 @@ kubectl create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-adm
 helm init
 
 echo "Installing Istio"
+EXPECTED_ISTIO_VER="istio-1.1.4"
 curl -L https://git.io/getLatestIstio | sh -
 ISTIO_VER=`ls -td -- */ | head -n 1 | cut -d'/' -f1`
 echo "Installed Istio Version: $ISTIO_VER"
@@ -64,13 +65,13 @@ sleep 30
 echo "Setting up permissive demo ISTIO"
 
 SVC_TYPE="NodePort"
-if [ "$CLOUD_TYPE" = "vm" ]
-then
-    sed -i 's/LoadBalancer/NodePort/g' $ISTIO_VER/install/kubernetes/istio-demo.yaml
-else
-    SVC_TYPE="LoadBalancer"
-    # TODO TODO TODO
-fi
+# if [ "$CLOUD_TYPE" = "vm" ]
+# then
+#     sed -i 's/LoadBalancer/NodePort/g' $ISTIO_VER/install/kubernetes/istio-demo.yaml
+# else
+#     SVC_TYPE="LoadBalancer"
+#     # TODO TODO TODO
+# fi
 
 (cd $ISTIO_VER; kubectl apply -f install/kubernetes/istio-demo.yaml)
 

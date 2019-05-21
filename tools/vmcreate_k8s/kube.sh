@@ -11,6 +11,8 @@ OP="up"
 SCRIPT_DIRS="ubuntu"
 KUBE=""
 FORCE=""
+EVEREST_ONLY=""
+KUBE_ONLY=""
 
 check_dirs() {
     if [ "a$KUBE" = "a" ]
@@ -50,7 +52,12 @@ install_it() {
 
     if [ "$OP" = "up" ]
     then
-	    KUBE_DIR=$HOME
+        if [ "$EVEREST_ONLY" = "yes" ]
+        then
+            $INSTALL_EVEREST_SCRIPT
+            return
+        fi
+        KUBE_DIR=$HOME
         un_or_install_kube
         export KUBECONFIG=$KUBE_DIR/kubeconfig.yml
         vagrant ssh master -c 'sudo cat /etc/kubernetes/admin.conf' > $KUBECONFIG
@@ -59,10 +66,18 @@ install_it() {
         chmod ugo+x $KUBE_DIR/kubeconfig.sh
         source $KUBE_DIR/kubeconfig.sh
         create_storage
-        echo "installing all everest ---> -$INSTALL_EVEREST_SCRIPT-"
-        $INSTALL_EVEREST_SCRIPT
+        if [ "$KUBE_ONLY" = "" ]
+        then
+            echo "installing all everest ---> -$INSTALL_EVEREST_SCRIPT-"
+            $INSTALL_EVEREST_SCRIPT
+        fi
     else
         delete_storage
+        if [ "$EVEREST_ONLY" = "yes" ]
+        then
+            $INSTALL_EVEREST_SCRIPT  -d
+            return
+        fi
         un_or_install_kube
     fi
 
@@ -72,14 +87,24 @@ for arg in "$@"
 do
     case "$1" in
 	-h)
-	    echo "kube.sh [-h] [-i] [-d] [-f]"
+	    echo "kube.sh [-h] [-i] [-d] [-k] [-f]"
 	    echo "deploy or undeploy kubernetes on vm using vagrant"
+        echo "-i deploy or undeploy everest only"
+        echo "-k install k8s cluster only"
 	    echo "-d undeploy vm based kubernetes, by default it is going to deploy"
 	    echo "-f delete force (apply only for '-d')"
 	    exit
 	    ;;
 	-d)
 	    OP="destroy -f"
+	    shift
+	    ;;
+	-k)
+	    KUBE_ONLY="yes"
+	    shift
+	    ;;
+	-i)
+	    EVEREST_ONLY="yes"
 	    shift
 	    ;;
 	-f)
