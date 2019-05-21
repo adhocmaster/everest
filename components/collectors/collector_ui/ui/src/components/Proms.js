@@ -26,7 +26,8 @@ class PromList extends Component {
         return (
 	    <div id="parent">
 			<p>Everest Grafana Host (Kubernetes): {this.state.grafana_url}</p>
-			<IFrame src={this.state.grafana_url} height="1000" width="900"/>
+			{/* <IFrame src={this.state.grafana_url} height="1000" width="900"/> */}
+			<IFrame src={this.state.grafana_url}/>
         </div>
         )
     }

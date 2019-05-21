@@ -14,6 +14,9 @@ See 'package.json' in each subproject directories.
 
 In each sub project directory, you can run:
 
+### `./build.sh`
+It will build a docker image and push into iharijono docker hub. Change the repo if necessary
+
 ### `npm start`
 Subproject 'ui':
 Runs the app in the development mode.<br>

@@ -26,8 +26,9 @@ class IstioG extends Component {
         return (
 	    <div id="parent">
 			<p>Istio Grafana URL: {this.state.iGrafana_url}</p>
-			<IFrame src={this.state.iGrafana_url} height="1000" width="900"/>
-        </div>
+			{/* <IFrame src={this.state.iGrafana_url} height="1000" width="900"/> */}
+			<IFrame src={this.state.iGrafana_url}/>
+			</div>
         )
     }
 }
