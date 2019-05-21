@@ -45,7 +45,7 @@ run_mem() {
     echo
     echo "Testing Scenario: Memory Usages"
 
-    for i in `seq 200 210`
+    for i in `seq 32 64`
     do
         echo "Run Computation Nr. $i"
         for _URL in $URLS
