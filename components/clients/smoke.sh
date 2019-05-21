@@ -75,7 +75,12 @@ echo
 
 URLS="http://${GATEWAY_URL}/guide_remote?goal=1 \
 http://${GATEWAY_URL}/guide_fibo?goal=1 \
-http://${GATEWAY_URL}/guide_remote?goal=2"
+http://${GATEWAY_URL}/guide_remote?goal=2 \
+http://${GATEWAY_URL}/guide_remote?goal=32 \
+http://${GATEWAY_URL}/guide_remote?goal=64 \
+http://${GATEWAY_URL}/guide_remote?goal=512"
+
+echo
 echo
 echo "Testing: Remote Guide Grpc via REST"
 for URL in $URLS
