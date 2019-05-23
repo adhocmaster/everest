@@ -1,0 +1,7 @@
+kafka-python==1.4.3
+cassandra-driver==3.16.0
+pytest==4.0.0
+pytest-cov==2.6.0
+requests==2.18.4
+mock==2.0.0
+tornado==5.1.1
