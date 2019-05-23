@@ -10,6 +10,13 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 ## Requirements
 - Virtualbox
 - Vagrant
+- add some ip and host mapping into your machine. In linux, it is /etc/hosts. the hostname 'master' is mandatory, the rest is optional.
+  ```
+# Kubernetes vagrant VMs
+192.168.26.10 master
+192.168.26.11 node-0
+192.168.26.12 node-1
+  ```
 
 ## How to start/create
 1. Clone the project everest (URL is temp!!!) to your local machine which has vagrant and virtualbox installed.     
