@@ -371,7 +371,7 @@
     <powermock.version>2.0.0-beta.5</powermock.version>
     <influxdb.version>2.3</influxdb.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jackson.version>2.9.8</jackson.version>
+    <jackson.version>2.9.9</jackson.version>
     <mockito.version>2.21.0</mockito.version>
     <cassandra.version>3.6.0</cassandra.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
