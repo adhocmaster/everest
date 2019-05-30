@@ -27,7 +27,9 @@ else
     KUBE_APPLY="apply"
 fi
 
-pushd /tmp
+ORG_DIR=`pwd`
+# pushd /tmp
+cd /tmp
 
 #
 # WARNING WARNING WARNING: be careful here
@@ -185,4 +187,5 @@ then
     echo "DONE Installing All Everest Apps and Services ..."
 fi
 
-popd
+#popd
+cd $ORG_DIR
