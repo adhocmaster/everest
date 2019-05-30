@@ -35,13 +35,36 @@ public class EverestCollectorDataT<V> {
         this.namespace = namespace;
         this.value = v;
     }
+
     public String getContainerName() {
         return containerName;
     }
-    public String getPodName() {return podName;}
-    public String getNamespace() {return namespace;}
+
+    public void setContainerName(String containerName) {
+        this.containerName = containerName;
+    }
+
+    public String getPodName() {
+        return podName;
+    }
+
+    public void setPodName(String podName) {
+        this.podName = podName;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
     public V getValue() {
         return value;
     }
 
+    public void setValue(V value) {
+        this.value = value;
+    }
 }

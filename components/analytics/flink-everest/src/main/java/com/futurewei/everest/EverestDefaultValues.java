@@ -30,7 +30,8 @@ public interface EverestDefaultValues {
     Double VALID_VALUE_HIGH_BOUND = 100.0;
     int THRESHOLD_HIGH = 20;
     int THRESHOLD_CRITICAL = 10;
-    String BOOTSTRAP_SERVERS = "bootstrap.kafka.svc.cluster.local:9092";
+    //String BOOTSTRAP_SERVERS = "bootstrap.kafka.svc.cluster.local:9092";
+    String BOOTSTRAP_SERVERS = "localhost:9092";
     String WINDOW_SIZE = "5"; //sec
 
     /*

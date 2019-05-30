@@ -1,150 +1,145 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2018-2019 The Everest Authors
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ *
  */
+
 
 package com.futurewei.everest.functions;
 
 import com.futurewei.everest.EverestDefaultValues;
-import com.futurewei.everest.datatypes.KafkaEvent;
+import com.futurewei.everest.datatypes.EverestCollectorData;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.dropwizard.metrics.DropwizardMeterWrapper;
 import org.apache.flink.metrics.Counter;
-import org.apache.flink.metrics.Meter;
 import org.apache.flink.metrics.Gauge;
+import org.apache.flink.metrics.Meter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * A {@link FilterFunction} that continuously filter bad values (lower than lower bound or higher than higher bound).
- */
-public class ValidValueFilter extends RichFilterFunction<KafkaEvent<String, Double, Double>> {
-
+public class ValidValueFilter extends RichFilterFunction<EverestCollectorData> {
+    /**
+     * A {@link FilterFunction} that continuously filter bad values (lower than lower bound or higher than higher bound).
+     */
     private static final long serialVersionUID = 8273479696640156346L;
-    private transient Counter validCounter;
-    private transient Counter invalidCounter;
-    private transient Meter valueThroughput;
-    private transient int sensorNumbers = 0;
-    private transient int gwNumbers = 0;
-    private transient int invalidSensorNumbers;
-    private transient List<String> gwSeen;
-    private transient List<String> sensorSeen;
-    private transient List<String> invalidSensorSeen;
-    private transient int criticalSensorNumbers = 0;
+    private transient Counter validCpuCounter;
+    private transient Counter invalidCpuCounter;
+    private transient Counter validMemCounter;
+    private transient Counter invalidMemCounter;
+    private transient Meter dataThroughput;
+    private transient int clusterNumbers = 0;
+    private transient List<String> clusterSeen;
+    private transient int criticalCpuNumbers = 0;
+    private transient int criticalMemNumbers = 0;
 
     @Override
     public void open(Configuration config) {
-        this.validCounter = getRuntimeContext()
+        this.validCpuCounter = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .counter("number_valid_values");
-        this.invalidCounter = getRuntimeContext()
+                .addGroup("EverestMetrics")
+                .counter("valid_cpu_counter");
+        this.invalidCpuCounter = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .counter("number_invalid_values");
+                .addGroup("EverestMetrics")
+                .counter("invalid_cpu_counter");
+        this.validMemCounter = getRuntimeContext()
+                .getMetricGroup()
+                .addGroup("EverestMetrics")
+                .counter("valid_mem_counter");
+        this.invalidMemCounter = getRuntimeContext()
+                .getMetricGroup()
+                .addGroup("EverestMetrics")
+                .counter("invalid_mem_counter");
         getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .gauge("number_gw", new Gauge<Integer>() {
+                .addGroup("EverestMetrics")
+                .gauge("cluster_numbers", new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return gwNumbers;
-                    }
-        });
-        getRuntimeContext()
-                .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .gauge("number_sensor", new Gauge<Integer>() {
-                    @Override
-                    public Integer getValue() {
-                        return sensorNumbers;
+                        return clusterNumbers;
                     }
                 });
 
         getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .gauge("number_invalid_sensor", new Gauge<Integer>() {
+                .addGroup("EverestMetrics")
+                .gauge("critical_mem_number", new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return invalidSensorNumbers;
-                    }
-        });
-
-        getRuntimeContext()
-                .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .gauge("number_critical_sensor", new Gauge<Integer>() {
-                    @Override
-                    public Integer getValue() {
-                        return criticalSensorNumbers;
+                        return criticalCpuNumbers;
                     }
                 });
-        gwSeen = new ArrayList<String>();
-        sensorSeen = new ArrayList<String>();
-        invalidSensorSeen = new ArrayList<String>();
+        getRuntimeContext()
+                .getMetricGroup()
+                .addGroup("EverestMetrics")
+                .gauge("critical_mem_number", new Gauge<Integer>() {
+                    @Override
+                    public Integer getValue() {
+                        return criticalMemNumbers;
+                    }
+                });
+
+        clusterSeen = new ArrayList<String>();
         com.codahale.metrics.Meter dropwizardMeter = new com.codahale.metrics.Meter();
-        this.valueThroughput = getRuntimeContext()
+        this.dataThroughput = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EliotMetrics")
-                .meter("value_throughput", new DropwizardMeterWrapper(dropwizardMeter));
+                .addGroup("EverestMetrics")
+                .meter("data_throughput", new DropwizardMeterWrapper(dropwizardMeter));
     }
 
+    /**
+     * BUG BUG BUG
+     * @param everestCollectorData
+     * @return
+     * @throws Exception
+     */
     @Override
-    public boolean filter(KafkaEvent<String, Double, Double> event) throws Exception {
-        boolean isValid = event.getValue() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && event.getValue() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND &&
-                event.getValue0() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && event.getValue0() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+    public boolean filter(EverestCollectorData everestCollectorData) throws Exception {
+        if(dataThroughput != null)
+            dataThroughput.markEvent();
 
-        if(valueThroughput != null)
-            valueThroughput.markEvent();
+        boolean isValid = true;
+        List<EverestCollectorData.CpuData> cpuDatas = everestCollectorData.getCpuData();
+        for(EverestCollectorData.CpuData cpuData : cpuDatas) {
+//            System.out.println("\nValidValueFilter CPU ID -> " + cpuData.getId());
+//            System.out.println("\nValidValueFilter Data CPU VALUE -> " + cpuData.getValue());
+            isValid = isValid && cpuData.getValue() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && cpuData.getValue() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+        }
 
-        if(validCounter != null && isValid)
-            this.validCounter.inc();
+        if(validCpuCounter != null && isValid)
+            this.validCpuCounter.inc();
         else {
-            if (invalidCounter != null) {
-                this.invalidCounter.inc();
-                invalidSensorNumbers++;
+            if (invalidCpuCounter != null) {
+                this.invalidCpuCounter.inc();
             }
         }
 
-        if(gwSeen != null) {
-            String sid = event.getId();
-            String[] parts = sid.split(":");
-            String gw = parts[0]; // gateway ID
-            if(!gwSeen.contains(gw)) {
-                gwSeen.add(gw);
-                gwNumbers = gwSeen.size();
-            }
-            if(!sensorSeen.contains(sid)) {
-                sensorSeen.add(sid);
-                sensorNumbers = sensorSeen.size();
-            }
 
-            if(!isValid) {
-                if(!invalidSensorSeen.contains(sid)) {
-                    invalidSensorSeen.add(sid);
-                }
-            } else {
-                if(invalidSensorSeen.contains(sid)) {
-                    invalidSensorSeen.remove(sid);
-                }
+        if(clusterSeen != null) {
+            String cid = everestCollectorData.getCluster_id();
+            if(!clusterSeen.contains(cid)) {
+                clusterSeen.add(cid);
+                clusterNumbers = clusterSeen.size();
             }
-            invalidSensorNumbers = invalidSensorSeen.size();
         }
         return isValid;
     }

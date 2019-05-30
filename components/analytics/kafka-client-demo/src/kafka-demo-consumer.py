@@ -33,8 +33,9 @@ from __future__ import print_function  # python 2/3 compatibility
 import os
 import sys # used to exit
 from kafka import KafkaConsumer
+import json
 
-def main(bootstrapper, kafka_topic, group_id):
+def main(bootstrapper, kafka_topic, group_id, _json=False):
     print('Start Kafka Consumer to {}, topic {}, group id {}'.format(bootstrapper, kafka_topic, group_id))
 
     #group_id=group_id, 
@@ -44,7 +45,20 @@ def main(bootstrapper, kafka_topic, group_id):
     try:
         print("Consumer with bootstrapper {} on topic {} ready!".format(bootstrapper, kafka_topic))
         for message in consumer:
-            print(message.value)
+            # print(message.value)
+            try:       
+                #print(bdata)
+                if _json is True:
+                    bdata = message.value.decode('utf8')
+                    data = json.loads(bdata)
+                    for key, value in data.items() :
+                        print ('KEY: {} VALUE: {}'.format(key, value))
+                else:
+                    print(message.value)
+ 
+                #print("VALUE " + str(data['top']))
+            except Exception as e:
+                print("error: {0}".format(e))
     except KeyboardInterrupt:
         sys.exit()
 
@@ -61,6 +75,7 @@ if __name__ == "__main__":
     parser.add_argument("-b", "--bootstrapper", help="kafka bootstrapper address, default is {0}".format(BOOTSTRAPPER), default=BOOTSTRAPPER)
     parser.add_argument("-t", "--topic", help="topic to create and on which the messages are published, default is {0}".format(TOPIC), default=TOPIC)
     parser.add_argument("-g", "--group", help="Kafka Group ID, default is {0}".format(GROUP_ID), default=GROUP_ID)
+    parser.add_argument("-j", "--json", help="send json formatted values", action='store_true')
     
     args = parser.parse_args()
 
@@ -81,4 +96,4 @@ if __name__ == "__main__":
     if args.group != '':
         GROUP_ID = args.group
 
-    main(BOOTSTRAPPER, TOPIC, GROUP_ID)
+    main(BOOTSTRAPPER, TOPIC, GROUP_ID, args.json)

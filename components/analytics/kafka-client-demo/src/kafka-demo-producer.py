@@ -34,25 +34,38 @@ import os
 import time
 import datetime
 from random import randint
+import json
 
 from kafka import KafkaProducer
 
 SLEEP_TIME=5
 ITERATION=1
 
-def main(bootstrapper, kafka_topic, sleep_time=SLEEP_TIME, iteration=ITERATION, invalid=False):
+def main(bootstrapper, kafka_topic, sleep_time=SLEEP_TIME, iteration=ITERATION, invalid=False, _json=False):
     print('Start Kafka Producer to {}, topic {}'.format(bootstrapper, kafka_topic))
     
     producer = KafkaProducer(bootstrap_servers=bootstrapper)
+    # json data
+    # json_data = {'cpu': "mycpu", 'mem': "mymem", 'cluster': "mycluster", 'net': int(round(time.time() * 1000))}
+    json_data = {'cluster_id' : 'mycluster_id', 'cpuData': [], 'memData': [],
+                'ts': int(round(time.time() * 1000))}
+    for i in range(1,5):
+        json_data['cpuData'].append({'value': 1.0 + float(i), 'id': 'cont id ' + str(i)})
+        json_data['memData'].append({'value': 10.0 + float(i), 'containerName': 'cont name ' + str(i), 'podName': 'my podName',
+        'namespace': 'myname space'})
+        # json_data['cluster'].append({'mem_tot': 15.0 + float(i), 'cpu_tot': 15.0 + float(i), 'net_tot': i * 1000})
     # Must send bytes
     messages = []
     dusages = []
     # Send the messages
-    for i in range(100):
+    for i in range(10):
         now = datetime.datetime.now()
         ts_millisec = now.timestamp() * 1000
         dusages.append(-1) if invalid is True else dusages.append(0)
-        messages.append(str.encode('ID{},{},{},DESCRIPTION{}'.format(i, dusages[i], int(ts_millisec), i)))
+        if _json is True:
+            messages.append(json.dumps(json_data).encode('utf-8'))
+        else:
+            messages.append(str.encode('ID{},{},{},DESCRIPTION{}'.format(i, dusages[i], int(ts_millisec), i)))
     for m in messages:
         print('Sending {}'.format(m))
         producer.send(kafka_topic, m)
@@ -61,11 +74,14 @@ def main(bootstrapper, kafka_topic, sleep_time=SLEEP_TIME, iteration=ITERATION, 
     counter = 0
     while iteration == -1 or iteration > counter:
         print('Iteration Nr. {}'.format(counter))
-        for i in range(100):
+        for i in range(0):
             dusages[i] = randint(0, 100) if invalid is False else randint(0, 100) * -1
             now = datetime.datetime.now()
             ts_millisec = now.timestamp() * 1000
-            messages.append(str.encode('ID{},{},{},DESCRIPTION{}'.format(i, dusages[i], int(ts_millisec), i)))
+            if _json is True:
+                messages.append(json.dumps(json_data).encode('utf-8'))
+            else:
+                messages.append(str.encode('ID{},{},{},DESCRIPTION{}'.format(i, dusages[i], int(ts_millisec), i)))
             if sleep_time > 0:
                 time.sleep(sleep_time/1000.0)
         for m in messages:
@@ -89,6 +105,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--delay", help="delay sending the data in milli second, default is {0}".format(SLEEP_TIME), default=SLEEP_TIME)
     parser.add_argument("-i", "--iter", help="how many time to send bulk data, default is {0}".format(ITERATION), default=ITERATION)
     parser.add_argument("-z", "--invalid", help="send only disk usage with negative values", action='store_true')
+    parser.add_argument("-j", "--json", help="send json formatted values", action='store_true')
     
     args = parser.parse_args()
 
@@ -111,4 +128,4 @@ if __name__ == "__main__":
     if args.iter != '':
         ITERATION = int(args.iter)
 
-    main(BOOTSTRAPPER, TOPIC, SLEEP_TIME, ITERATION, args.invalid)
+    main(BOOTSTRAPPER, TOPIC, SLEEP_TIME, ITERATION, args.invalid, args.json)

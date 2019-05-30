@@ -92,16 +92,15 @@ public class EverestAnalyticsJob {
 
         DataStream<EverestCollectorData> everestCollectorDataStream = getDataFromKafka(env, bootstrapServers, cgTopic, everestDataTopic);
 
-//        DataStream<EverestCollectorData> sensorKeyedTimestampedStream = everestCollectorDataStream
-//                .assignTimestampsAndWatermarks(new CustomWatermarkExtractor())
-//                .keyBy("id");
-//
-//        // cleansing/filter out the data which has negative disk usage or greater than 100
-//        DataStream<KafkaEvent<String, Double, Double>> cleansedDataStream = sensorKeyedTimestampedStream
-//                // filter out the elements that have values < Low bound or > high bound
-//            .filter(new ValidValueFilter()).name("F_ValidValue_Filter");
-//
-//
+        DataStream<EverestCollectorData> everestCollectorDataStreamByKey = everestCollectorDataStream
+                .assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("F_TimeStampsWatermark")
+                .keyBy("cluster_id");
+
+        // cleansing/filter out the data which has negative disk usage or greater than 100
+        DataStream<EverestCollectorData> cleansedEverestCollectorDataStream = everestCollectorDataStreamByKey
+                // filter out the elements that have values < Low bound or > high bound
+                .filter(new ValidValueFilter()).name("F_ValidValue_Filter");
+
 //        DataStream<KafkaEvent<String, Double, Double>> maxValueStream = cleansedDataStream.
 //                assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("So_Kafka_In_From_" + ).
 //                keyBy("id").
@@ -146,7 +145,7 @@ public class EverestAnalyticsJob {
         // ID is used as the key
 
         FlinkKafkaConsumer010<EverestCollectorData> consumer = EverestCollectorConsumer.createEverestCollectorDataConsumer(inputTopic, kafkaAddress, kafkaGroup);
-        return env.addSource(consumer).name("So_Kafka"+inputTopic);
+        return env.addSource(consumer).name("So_Kafka_"+inputTopic);
 
     }
 }

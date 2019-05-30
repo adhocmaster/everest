@@ -1,4 +1,5 @@
 /*
+ * Copyright 2018-2019 The Everest Authors
  *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -21,7 +22,7 @@
 
 package com.futurewei.everest.connector;
 
-import com.futurewei.everest.datatypes.EverestCollectorDeserializationSchema;
+import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import com.futurewei.everest.datatypes.EverestCollectorData;
 
@@ -33,7 +34,7 @@ public class EverestCollectorConsumer {
         properties.setProperty("bootstrap.servers", kafkaAddress);
         properties.setProperty("group.id",kafkaGroup);
         FlinkKafkaConsumer010<EverestCollectorData> consumer = new FlinkKafkaConsumer010<EverestCollectorData>(
-                topic, new EverestCollectorDeserializationSchema(),properties);
+                topic, new EverestCollectorSerializationSchema(),properties);
 
         return consumer;
     }
