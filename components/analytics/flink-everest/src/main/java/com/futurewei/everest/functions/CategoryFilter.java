@@ -140,7 +140,6 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
      */
     @Override
     public boolean filter(EverestCollectorDataT<Double, Double> data) throws Exception {
-
         if(typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_CRITICAL) && data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_CRITICAL) {
             System.out.println("CPU CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
                     data.getPercentage() + "% V=" + data.getValue());
@@ -182,8 +181,10 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
             memLowNumbers++;
             return (true);
         } else {
-            System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction CategoryFilter Class");
-            throw (new Exception("unexpected type to filter in RichFilterFunction CategoryFilter Class"));
+//            System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getPercentage());
+//            System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction CategoryFilter Class");
+//            throw (new Exception("unexpected type to filter in RichFilterFunction CategoryFilter Class " + " received = " + data.getPercentage()));
+            return false;
         }
     }
 }

@@ -87,11 +87,12 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
     public boolean filter(EverestCollectorDataT<Double, Double> data) throws Exception {
         boolean isValid = true;
 
+
         if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_CPU)) {
             isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
-            if(validCpuCounter != null && isValid)
+            if(validCpuCounter != null && isValid) {
                 this.validCpuCounter.inc();
-            else {
+            } else {
                 if (invalidCpuCounter != null) {
                     this.invalidCpuCounter.inc();
                 }

@@ -123,6 +123,7 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 podNumbers++;
                 podSeen.add(lData.getPodName());
             }
+            lData.setCluster_id(data.getCluster_id());
             out.collect(lData);
         }
     }

@@ -31,6 +31,9 @@ public class MaxValueReducer implements ReduceFunction<EverestCollectorDataT<Dou
     @Override
     public EverestCollectorDataT<Double, Double> reduce(EverestCollectorDataT<Double, Double> event0,
                                                         EverestCollectorDataT<Double, Double> event1) throws Exception {
+//        System.out.println("REDUCE Data Cluster ID" + event0.getCluster_id());
+//        System.out.println("REDUCE Data TS" + event0.getTs());
+
         if(event0.getPercentage() > event1.getPercentage() || event0.getValue() > event1.getValue()) {
             return new EverestCollectorDataT<Double, Double>(event0.getCluster_id(), event0.getContainerName(),
                     event0.getPodName(), event0.getNamespace(), event0.getTs(), event0.getValue(), event0.getPercentage());

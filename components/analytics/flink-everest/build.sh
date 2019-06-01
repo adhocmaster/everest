@@ -20,7 +20,7 @@ then
     echo "***** Error ***** : no directory for the job jar files at $PIPELINE_JAR_DIR"
     echo "Suggestion : run 'mvn clean install' on everest flink analytics first to build"
 fi
-mvn clean install
+#mvn clean install
 cp $PIPELINE_JAR $PIPELINE_DIR
 
 docker build -t $IMAGE_NAME .

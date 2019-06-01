@@ -84,6 +84,6 @@ public interface EverestDefaultValues {
 
     //String BOOTSTRAP_SERVERS = "bootstrap.kafka.svc.cluster.local:9092";
     String BOOTSTRAP_SERVERS = "localhost:9092";
-    String WINDOW_SIZE = "60"; //60 sec
+    String WINDOW_SIZE = "20"; //20 sec
 
 }

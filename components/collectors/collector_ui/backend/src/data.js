@@ -21,7 +21,7 @@ var prom_urls = {}
 var log_dir = ""
 
 // now initialize our collecting function which is triggered every INTERVAL seconds
-const DEFAULT_POLL_INTERVAL = 10 * 1000 //10 seconds
+const DEFAULT_POLL_INTERVAL = 5 * 1000 //5 seconds
 const DEFAULT_FACTOR_POLL_TO_START = 60 //30 minute to grab the jaeger info
 var POLL_INTERVAL
 var jaegers = []

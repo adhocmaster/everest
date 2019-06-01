@@ -138,17 +138,18 @@ public class EverestAnalyticsJob {
                 // filter out the elements that have values < Low bound or > high bound
                 .filter(new ValidValueFilter(EverestDefaultValues.TYPE_TO_COLLECT_CPU)).name("F_ValidValue_Filter_CPU")
                 .keyBy("containerName")
-                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
-                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
+//                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
+//                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
+                ;
 
         DataStream<EverestCollectorDataT<Double, Double>> memDataStreamByKey = memDataStream
                 .assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("F_TimeStampsWatermark_MEM")
                 // filter out the elements that have values < Low bound or > high bound
                 .filter(new ValidValueFilter(EverestDefaultValues.TYPE_TO_COLLECT_MEM)).name("F_ValidValue_Filter_MEM")
                 .keyBy("containerName")
-                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
-                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
-
+        //                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
+        //                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
+                ;
 
         /**
          * Now it is time to analyze and categorize the data:
