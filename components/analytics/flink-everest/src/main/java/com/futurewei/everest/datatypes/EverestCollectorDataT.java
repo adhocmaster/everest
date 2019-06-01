@@ -21,19 +21,44 @@ package com.futurewei.everest.datatypes;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import java.util.Objects;
+
 @JsonSerialize
-public class EverestCollectorDataT<V> {
+public class EverestCollectorDataT<V, W> {
+    String cluster_id;
     String containerName;
     String podName;
     String namespace;
+    long ts;
     V value;
+    W percentage;
 
     public EverestCollectorDataT() {} // this is a requirement for Flink POJO
-    public EverestCollectorDataT(String containerName, String podName, String namespace, V v) {
+
+    public EverestCollectorDataT(String cluster_id, String containerName, String podName, String namespace, long ts, V value, W percentage) {
+        this.cluster_id = cluster_id;
         this.containerName = containerName;
         this.podName = podName;
         this.namespace = namespace;
-        this.value = v;
+        this.ts = ts;
+        this.value = value;
+        this.percentage = percentage;
+    }
+
+    public String getCluster_id() {
+        return cluster_id;
+    }
+
+    public void setCluster_id(String cluster_id) {
+        this.cluster_id = cluster_id;
+    }
+
+    public long getTs() {
+        return ts;
+    }
+
+    public void setTs(long ts) {
+        this.ts = ts;
     }
 
     public String getContainerName() {
@@ -66,5 +91,32 @@ public class EverestCollectorDataT<V> {
 
     public void setValue(V value) {
         this.value = value;
+    }
+
+    public W getPercentage() {
+        return percentage;
+    }
+
+    public void setPercentage(W percentage) {
+        this.percentage = percentage;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof EverestCollectorDataT)) return false;
+        EverestCollectorDataT<?, ?> that = (EverestCollectorDataT<?, ?>) o;
+        return ts == that.ts &&
+                cluster_id.equals(that.cluster_id) &&
+                containerName.equals(that.containerName) &&
+                podName.equals(that.podName) &&
+                namespace.equals(that.namespace) &&
+                value.equals(that.value) &&
+                percentage.equals(that.percentage);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cluster_id, containerName, podName, namespace, ts, value, percentage);
     }
 }

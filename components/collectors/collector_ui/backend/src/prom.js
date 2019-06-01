@@ -14,10 +14,11 @@
 
 const axios = require('axios')
 
+
 class Prom {
     // all class level constants
     static get PROM_HOST() {
-        return "35.224.142.142"
+        return "prometheus.istio-system"
     }
     static get PROM_PORT() {
         return 9090
@@ -25,39 +26,33 @@ class Prom {
     static get PROM_ID() {
         return "prometheus-default"
     }
-    static get PROMETHEUS_ISTIO_TARGETS() {
-        return ["envoy",
-        "galley",
-        "istio-mesh",
-        "istio-policy",
-        "istio-telemetry",
-        "kubernetes-apiservers",
-        "kubernetes-cadvisor",
-        "kubernetes-nodes",
-        "kubernetes-pods",
-        "kubernetes-service-endpoints",
-        "mixer",
-        "pilot"]
+    static get PROM_CPU() {
+        return ["container_cpu_usage_seconds_total", "container_cpu_load_average_10s", ]
     }
-    static get prom_services() {
-        return ["proxy_access_control", "clover_server1", "clover_server2", "clover_server3"]
+    static get PROM_MEM() {
+        return ["container_memory_working_set_bytes"]
     }
-    static get prom_prefixes() {
-        return ["envoy_", "mixer_", "pilot_"]
+    static get PROM_NET() {
+        return ["container_network_transmit_bytes_total", "container_network_receive_bytes_total"]
     }
-    static get prom_suffixes() {
-        return ["_default_svc_cluster_local_upstream_rq_2xx", "_default_svc_cluster_local_upstream_cx_active"]
+    static get PROM_CLUSTER() {
+        return [""]
     }
-
+    static get EXCLUDED_NS() {
+        return ["kube-system", "istio-system", "everest", "kafka"]
+    }
+    static get PROM_JSON_KEY() {
+        return 'collector-data'
+    }
+ 
     constructor(host=Prom.PROM_HOST, port=Prom.PROM_PORT, id=Prom.PROM_ID) {
       this._verbose = false
       this._id = id
       this._host = host
       this._port = port
-      this._url_all_metrics = 'http://' + this._host + ':' + this._port + '/api/v1/label/__name__/values'
-      this._url0 = 'http://' + this._host + ':' + this._port + '/api/v1/targets'
-      this._url1 = 'http://' + this._host + ':' + this._port + '/api/v1/query?query='
-      this._metrics = []
+      this._url_query = 'http://' + this._host + ':' + this._port + '/api/v1/query?query='
+      this._kafka = ''
+      this._metrics = {'cluster_id': 'mycluster_id', 'cpuData': [], 'memData': [], 'ts': 0}
     }
     get id() {
       return this._id
@@ -68,11 +63,8 @@ class Prom {
     get port() {
         return this._port
     }
-    get url0() {
-        return this._url0
-    }
-    get url1() {
-        return this._url1
+    get url_query() {
+        return this._url_query
     }
     get metrics() {
         return this._metrics
@@ -80,70 +72,148 @@ class Prom {
     set verbose(on_or_off) {
         this._verbose = on_or_off
     }
+    set set_kafka(kafka) {
+        this._kafka = kafka
+    }
 
-    async _collect0() {
-        let title = "Prom ID '" + this._id + "' _collect0"
-        let res = false
-		if(this._verbose)
-            console.log(title + " URL -> " + this._url_all_metrics)
-        try {
-            const response = await axios.get(this._url_all_metrics)
-            const data = response.data
-            // if(this._verbose)
-            //     console.log(data)
-            if(data.status == "success") {
-                let metric_names = data.data
-                let all_jobs = []
-                for(let metric_name of metric_names) {
-                    if(metric_name.indexOf(Prom.prom_prefixes[0]) != 0)
-                        continue
-                    //console.log("Metric Name: " + metric_name)
-                    //all_jobs.push(this._collect1(metric_name))
-                    await this._collect1(metric_name)
+    async _collect_mem() {
+        let title = "Prom ID '" + this._id + "' _collect_mem"
+        let json_data = {} 
+        let res = true
+
+        for(let element of Prom.PROM_MEM) {
+            const p_query = this._url_query + element
+            if(this._verbose)
+                console.log(title + " URL -> " + p_query)
+            const response = await axios.get(p_query)
+    
+            const status = response.status
+            if(status == 200) {
+                const results = response.data.data.result
+                let ts_milliseconds = (new Date).getTime()
+                this._metrics.cluster_id = 'mycluster_id_memX'
+                this._metrics.ts = ts_milliseconds
+                for(let result of results) {
+                    let metric = result.metric
+                    let values = result.value
+                    if(!Prom.EXCLUDED_NS.includes(metric.namespace) && 'namespace' in metric) {
+                        //if(this._verbose) {
+                            // console.log('\n')
+                            // console.log(JSON.stringify(response.data.data, null, 2))
+                            // console.log(`POD ---> ${metric.pod}`)
+                            // console.log(`POD NAME ---> ${metric.pod_name}`)
+                            // console.log(`NAMESPACE ---> ${metric.namespace}`)
+                            // console.log(`VALUE MEM ---> ${values}`)
+                            //console.log(`PERCENT ---> ${values[1]}`)
+                        //}
+                        let memData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
+                        'podName': metric.pod_name, 'namespace': metric.namespace}
+                        this._metrics.memData.push(memData)
+                    }
                 }
-                //await Promise.all(all_jobs)
-                res = true
             } else {
-                console.log(`WARNING: http request to ${this._url_all_metrics} status errors`)
+                console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
                 res = false
             }
-            return data
-        } catch (error) {
-            console.log(`ERROR: http request to ${this._url_all_metrics} return errors: ${error}`)
-            this._services = []
-            res = false
         }
         return res
     }
-    
-    async _collect1(metric_name) {
-        let res = false
-        let title = "Prom ID '" + this._id + "' __collect1"
-        let url = this._url1 + metric_name
-        if(this._verbose == true)
-            console.log(title + " URL -> " + url)
 
-        try {
-            const response = await axios.get(url)
-            const data = response.data
-            if(data.status == "success") {
-                // if(this._verbose)
-                //     console.log(JSON.stringify(data.data, null, 2))
- 
-                //console.log(`Metric=${data.data.result[0].metric.__name__} Job=${data.data.result[0].metric.job}
-                //Value=${data.data.result[0].value}`)
-                this._metrics.push(data)
-                res = true
+    async _collect_net() {
+        let title = "Prom ID '" + this._id + "' _collect_net"
+        let json_data = {} 
+        let res = true
+        for(let element of Prom.PROM_NET) {
+            const p_query = this._url_query + element
+            if(this._verbose)
+                console.log(title + " URL -> " + p_query)
+            const response = await axios.get(p_query)
+    
+            const status = response.status
+            if(status == 200) {
+                const results = response.data.data.result
+                let ts_milliseconds = (new Date).getTime()
+                this._metrics.cluster_id = 'mycluster_id_memX'
+                this._metrics.ts = ts_milliseconds
+                for(let result of results) {
+                    let metric = result.metric
+                    let values = result.value
+                    if(!Prom.EXCLUDED_NS.includes(metric.namespace) && 'namespace' in metric) {
+                        if(this._verbose) {
+                            // console.log('\n')
+                            // console.log(JSON.stringify(response.data.data, null, 2))
+                            console.log(`POD ---> ${metric.pod}`)
+                            // console.log(`POD NAME ---> ${metric.pod_name}`)
+                            // console.log(`NAMESPACE ---> ${metric.namespace}`)
+                            console.log(`VALUE NET ---> ${values}`)
+                            //console.log(`PERCENT ---> ${values[1]}`)
+                        }
+                        // let memData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
+                        // 'podName': metric.pod_name, 'namespace': metric.namespace}
+                        // this._metrics.memData.push(memData)
+                    }
+                }
             } else {
-                console.log(`WARNING: http request to ${url} return errors`)
-                this._traces = {}
+                console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                this._services = []
                 res = false
             }
+        }
+        return res
+ 
+    }
+
+    async _collect_cpu() {
+        let title = "Prom ID '" + this._id + "' _collect_cpu"
+        let json_data = {} 
+
+        for(let element of Prom.PROM_CPU) {
+            const p_query = this._url_query + element
+            if(this._verbose)
+                console.log(title + " URL -> " + p_query)
+            const response = await axios.get(p_query)
+    
+            const status = response.status
+            if(status == 200) {
+                const results = response.data.data.result
+                let ts_milliseconds = (new Date).getTime()
+                this._metrics.cluster_id = 'mycluster_id_X'
+                this._metrics.ts = ts_milliseconds
+                for(let result of results) {
+                    let metric = result.metric
+                    let values = result.value
+                    if(!Prom.EXCLUDED_NS.includes(metric.namespace) && 'namespace' in metric) {
+                        //if(this._verbose) {
+                            // console.log('\n')
+                            // console.log(JSON.stringify(response.data.data, null, 2))
+                            // console.log(`POD ---> ${metric.pod}`)
+                            // console.log(`POD NAME ---> ${metric.pod_name}`)
+                            // console.log(`NAMESPACE ---> ${metric.namespace}`)
+                            //console.log(`VALUE CPU ---> ${values}`)
+                            //console.log(`PERCENT ---> ${values[1]}`)
+                        //}
+                        let cpuData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
+                        'podName': metric.pod_name, 'namespace': metric.namespace}
+                        this._metrics.cpuData.push(cpuData)
+                    }
+                }
+            } else {
+                console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                this._services = []
+                res = false
+            }
+        }
+    }
+    async _collect0() {
+
+        let res = false
+        try {
+            await this._collect_cpu()
+            await this._collect_mem()
+            await this._collect_net()
         } catch (error) {
-            console.log(`ERROR: http request to ${url} return errors`)
-            console.log("msg: " + error)
-            this._traces = {}
+            console.log(`ERROR: http rest API request to ${this._url_query} return errors: ${error}`)
             res = false
         }
         return res

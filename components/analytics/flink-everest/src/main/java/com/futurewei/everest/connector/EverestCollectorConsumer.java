@@ -25,17 +25,29 @@ package com.futurewei.everest.connector;
 import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import com.futurewei.everest.datatypes.EverestCollectorData;
+import org.apache.flink.streaming.connectors.kafka.config.StartupMode;
 
 import java.util.Properties;
 
 public class EverestCollectorConsumer {
-    public static FlinkKafkaConsumer010<EverestCollectorData> createEverestCollectorDataConsumer(String topic, String kafkaAddress, String kafkaGroup ) {
-        Properties properties = new Properties();
-        properties.setProperty("bootstrap.servers", kafkaAddress);
-        properties.setProperty("group.id",kafkaGroup);
+    public static FlinkKafkaConsumer010<EverestCollectorData> createEverestCollectorDataConsumer(String topic, Properties properties, StartupMode startupMode) {
         FlinkKafkaConsumer010<EverestCollectorData> consumer = new FlinkKafkaConsumer010<EverestCollectorData>(
-                topic, new EverestCollectorSerializationSchema(),properties);
+                topic, new EverestCollectorSerializationSchema(), properties);
 
+        switch(startupMode) {
+            case EARLIEST:
+                consumer.setStartFromEarliest();
+                break;
+            case LATEST:
+                consumer.setStartFromLatest();
+                break;
+//            case SPECIFIC_OFFSETS:
+//                consumer.setStartFromSpecificOffsets(specificStartupOffsets);
+//                break;
+            case GROUP_OFFSETS:
+                consumer.setStartFromGroupOffsets();
+                break;
+        }
         return consumer;
     }
 }

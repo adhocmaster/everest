@@ -21,7 +21,7 @@ var prom_urls = {}
 var log_dir = ""
 
 // now initialize our collecting function which is triggered every INTERVAL seconds
-const DEFAULT_POLL_INTERVAL = 60 * 1000 //60 seconds
+const DEFAULT_POLL_INTERVAL = 10 * 1000 //10 seconds
 const DEFAULT_FACTOR_POLL_TO_START = 60 //30 minute to grab the jaeger info
 var POLL_INTERVAL
 var jaegers = []
@@ -331,9 +331,13 @@ async function _trace_prom() {
 		if(prom.length > 3) {
 			let promObj = prom[3]
 			await promObj.collect()
-			restDataProm[prom_id] = promObj.metrics
-			if(VERBOSE == true)
-				print_prom(restDataProm)
+			// restDataProm[prom_id] = promObj.metrics
+			// if(VERBOSE == true)
+			// 	print_prom(restDataProm)
+			if(KAFKA != null) {
+				ready_to_kafka()
+			}
+		
 		}
 
 	}
@@ -356,7 +360,44 @@ function ccollector() {
 	if(!WITHOUT_PROM)
 		_trace_prom()
 	
+	// if(KAFKA != null) {
+	// 	ready_to_kafka()
+	// }
+
     setTimeout(ccollector, POLL_INTERVAL)
+}
+
+const ready_to_kafka = () => {
+	let trace_data
+	let prom_data
+	let all_data = {}
+
+
+	if(!WITHOUT_TRACE) {
+		for(let jaeger of jaegers) {
+			if(jaeger.length > 3) {
+				let jaegerObj = jaeger[3]
+				let jaegerId = jaeger[0]
+				if(VERBOSE)
+					console.log(`${jaegerId}: ${jaegerObj.traces}`)
+				all_data.jaeger_data = {jaegerId: jaegerObj.traces}
+			}	
+		}	
+	}
+		
+	if(!WITHOUT_PROM) {
+		for(let prom of proms) {
+			if(prom.length > 3) {
+				let promObj = prom[3]
+				let promId = prom[0]
+				if(VERBOSE)
+					console.log(`${promId}: ${promObj.metrics}`)
+				all_data = promObj.metrics
+			}	
+		}
+	}
+
+	KAFKA.send(PROM.PROM_JSON_KEY, all_data)
 }
 
 const _change_poll_interval = (interval) => {
@@ -376,6 +417,17 @@ const _start_collector = (rest_aux='') => {
 	console.log("Start At               	: " + Date.now())
 	let clovisor = false
 	var_rest_aux = rest_aux
+	if(MONGO != null) {
+		console.log("MongoDB    : " + MONGO.route)
+	} else {
+		console.log("MongoDB    : NONE")
+	}
+	if(KAFKA != null) {
+		console.log(`Kafka    :  ${KAFKA.host}:${KAFKA.port} on topic '${KAFKA.topic}'`)
+	} else {
+		console.log("Kafka    :  NONE")
+	}
+
     for(let jaeger of jaegers) {
 		let t = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
 		clovisor = !clovisor
@@ -387,14 +439,12 @@ const _start_collector = (rest_aux='') => {
 		jaeger.push(t)
     }
     for(let prom of proms) {
-		let p = new PROM()
-		p.verbose = VERBOSE
+		let p = new PROM(prom[0], prom[1], prom[2])
+		//p.verbose = VERBOSE
+		p.verbose = true
 		console.log("Prometheus ID     	: " + prom[2])
-		console.log("Prometheus URL     	: " + p._url0)
+		console.log("Prometheus URL     	: " + p.url_query)
 		prom.push(p)
-	}
-	if(MONGO != null) {
-		console.log("MongoDB    : " + MONGO.route)
 	}
 
 
@@ -430,6 +480,10 @@ const _get_rt_proms = () => {
 var MONGO = null
 function _set_db(mongo) {
 	MONGO = mongo
+}
+var KAFKA = null
+function _with_kafka(kafka) {
+	KAFKA = kafka
 }
 
 module.exports = {
@@ -483,7 +537,9 @@ module.exports = {
 	without_prom(on_off) {
 		return(_without_prom(on_off))
 	},
-
+	with_kafka(kafka) {
+		return(_with_kafka(kafka))
+	}
 };
 
 //_add_prom(CLOVER_PROM_HOST, CLOVER_PROM_PORT, CLOVER_PROM_ID);

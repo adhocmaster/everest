@@ -24,7 +24,7 @@
 package com.futurewei.everest.functions;
 
 import com.futurewei.everest.EverestDefaultValues;
-import com.futurewei.everest.datatypes.EverestCollectorData;
+import com.futurewei.everest.datatypes.EverestCollectorDataT;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.configuration.Configuration;
@@ -36,111 +36,81 @@ import org.apache.flink.metrics.Meter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ValidValueFilter extends RichFilterFunction<EverestCollectorData> {
-    /**
-     * A {@link FilterFunction} that continuously filter bad values (lower than lower bound or higher than higher bound).
-     */
+/**
+ * A {@link FilterFunction} that continuously filter bad values (lower than lower bound or higher than higher bound).
+ */
+public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<Double, Double>> {
     private static final long serialVersionUID = 8273479696640156346L;
+    /**
+     * Metrics for Prometheus
+     */
     private transient Counter validCpuCounter;
     private transient Counter invalidCpuCounter;
     private transient Counter validMemCounter;
     private transient Counter invalidMemCounter;
-    private transient Meter dataThroughput;
-    private transient int clusterNumbers = 0;
-    private transient List<String> clusterSeen;
-    private transient int criticalCpuNumbers = 0;
-    private transient int criticalMemNumbers = 0;
+
+    // A type of collection to store everest data. This will be stored in memory
+    // of a task manager
+    String typeToCollect;
+
+    public ValidValueFilter(String typeToCollect) {
+        this.typeToCollect = typeToCollect;
+    }
 
     @Override
     public void open(Configuration config) {
         this.validCpuCounter = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .counter("valid_cpu_counter");
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .counter(EverestDefaultValues.VALID_CPU_COUNTER);
         this.invalidCpuCounter = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .counter("invalid_cpu_counter");
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .counter(EverestDefaultValues.INVALID_CPU_COUNTER);
         this.validMemCounter = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .counter("valid_mem_counter");
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .counter(EverestDefaultValues.VALID_MEM_COUNTER);
         this.invalidMemCounter = getRuntimeContext()
                 .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .counter("invalid_mem_counter");
-        getRuntimeContext()
-                .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .gauge("cluster_numbers", new Gauge<Integer>() {
-                    @Override
-                    public Integer getValue() {
-                        return clusterNumbers;
-                    }
-                });
-
-        getRuntimeContext()
-                .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .gauge("critical_mem_number", new Gauge<Integer>() {
-                    @Override
-                    public Integer getValue() {
-                        return criticalCpuNumbers;
-                    }
-                });
-        getRuntimeContext()
-                .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .gauge("critical_mem_number", new Gauge<Integer>() {
-                    @Override
-                    public Integer getValue() {
-                        return criticalMemNumbers;
-                    }
-                });
-
-        clusterSeen = new ArrayList<String>();
-        com.codahale.metrics.Meter dropwizardMeter = new com.codahale.metrics.Meter();
-        this.dataThroughput = getRuntimeContext()
-                .getMetricGroup()
-                .addGroup("EverestMetrics")
-                .meter("data_throughput", new DropwizardMeterWrapper(dropwizardMeter));
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .counter(EverestDefaultValues.INVALID_MEM_COUNTER);
     }
 
     /**
-     * BUG BUG BUG
-     * @param everestCollectorData
-     * @return
-     * @throws Exception
+     *
+     * @param data the incoming data
+     * @return true the data is in the range of values
+     * @throws Exception if exception happens
      */
     @Override
-    public boolean filter(EverestCollectorData everestCollectorData) throws Exception {
-        if(dataThroughput != null)
-            dataThroughput.markEvent();
-
+    public boolean filter(EverestCollectorDataT<Double, Double> data) throws Exception {
         boolean isValid = true;
-        List<EverestCollectorData.CpuData> cpuDatas = everestCollectorData.getCpuData();
-        for(EverestCollectorData.CpuData cpuData : cpuDatas) {
-//            System.out.println("\nValidValueFilter CPU ID -> " + cpuData.getId());
-//            System.out.println("\nValidValueFilter Data CPU VALUE -> " + cpuData.getValue());
-            isValid = isValid && cpuData.getValue() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && cpuData.getValue() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
-        }
 
-        if(validCpuCounter != null && isValid)
-            this.validCpuCounter.inc();
-        else {
-            if (invalidCpuCounter != null) {
-                this.invalidCpuCounter.inc();
+        if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_CPU)) {
+            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+            if(validCpuCounter != null && isValid)
+                this.validCpuCounter.inc();
+            else {
+                if (invalidCpuCounter != null) {
+                    this.invalidCpuCounter.inc();
+                }
             }
-        }
 
-
-        if(clusterSeen != null) {
-            String cid = everestCollectorData.getCluster_id();
-            if(!clusterSeen.contains(cid)) {
-                clusterSeen.add(cid);
-                clusterNumbers = clusterSeen.size();
+        } else if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_MEM)) {
+            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+            if(validMemCounter != null && isValid)
+                this.validMemCounter.inc();
+            else {
+                if (invalidMemCounter != null) {
+                    this.invalidMemCounter.inc();
+                }
             }
+        } else {
+            System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction ValidValueFilter Class");
+            throw (new Exception("unexpected type to filter in RichFilterFunction ValidValueFilter Class"));
         }
+
         return isValid;
     }
 }

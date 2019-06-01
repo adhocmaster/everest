@@ -62,8 +62,11 @@ class Kafka {
         throw err
     }
 
-    async send(key, json_data) {       
-        if(!isEmpty(json_data)) {
+    async send(key, json_data) {  
+        //if(VERBOSE)
+            console.log(JSON.stringify(json_data))
+        
+        if(!(Object.keys(json_data).length === 0 && json_data.constructor === Object)) {
             let KeyedMessage = kafka.KeyedMessage
             let dataKM = new KeyedMessage(key, JSON.stringify(json_data))
             let payloads = [
@@ -73,7 +76,7 @@ class Kafka {
                 }
             ]
             if(this._verbose)
-                console.log(`kafka.js: sending json with the key ${key} with data ${json_data}`)
+                console.log(`kafka.js: sending json to topic ${this._topic} with the key ${key} with data ${JSON.stringify(json_data, null, 2)}`)
             
             let push_status = this.producer.send(payloads, (err, data) => {
                 if (err) {

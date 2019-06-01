@@ -50,8 +50,9 @@ def main(bootstrapper, kafka_topic, sleep_time=SLEEP_TIME, iteration=ITERATION, 
     json_data = {'cluster_id' : 'mycluster_id', 'cpuData': [], 'memData': [],
                 'ts': int(round(time.time() * 1000))}
     for i in range(1,5):
-        json_data['cpuData'].append({'value': 1.0 + float(i), 'id': 'cont id ' + str(i)})
-        json_data['memData'].append({'value': 10.0 + float(i), 'containerName': 'cont name ' + str(i), 'podName': 'my podName',
+        json_data['cpuData'].append({'value': 44.0 + float(i), 'percentage': 40.0 + float(i), 'containerName': 'cont name ' + str(i), 'podName': 'my podName',
+        'namespace': 'myname space'})
+        json_data['memData'].append({'value': 10.0 + float(i), 'percentage': 4.0 + float(i), 'containerName': 'cont name ' + str(i), 'podName': 'my podName',
         'namespace': 'myname space'})
         # json_data['cluster'].append({'mem_tot': 15.0 + float(i), 'cpu_tot': 15.0 + float(i), 'net_tot': i * 1000})
     # Must send bytes

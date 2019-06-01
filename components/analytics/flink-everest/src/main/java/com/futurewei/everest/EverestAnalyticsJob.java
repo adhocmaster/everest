@@ -1,4 +1,6 @@
 /*
+ * Copyright 2018-2019 The Everest Authors
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -14,21 +16,37 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ *
  */
 
 package com.futurewei.everest;
 
 import com.futurewei.everest.connector.EverestCollectorConsumer;
 import com.futurewei.everest.datatypes.EverestCollectorData;
+import com.futurewei.everest.datatypes.EverestCollectorDataT;
+import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
+import com.futurewei.everest.datatypes.EverestCollectorTSerializationSchema;
 import com.futurewei.everest.functions.*;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
+import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.utils.ParameterTool;
+import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SplitStream;
+import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 
+import javax.xml.crypto.dom.DOMCryptoContext;
 import java.util.Properties;
+
+import static org.apache.flink.streaming.connectors.kafka.config.StartupMode.LATEST;
 
 /**
  *
@@ -69,11 +87,12 @@ public class EverestAnalyticsJob {
 		final ParameterTool params = ParameterTool.fromArgs(args);
 		final String everestDataTopic = params.get("everest-data-topic", EverestDefaultValues.KAFKA_EVEREST_DATA_TOPIC);
 		final String cgTopic = params.get("cg-topic", EverestDefaultValues.KAFKA_CG);
-		final String outputLTopic = params.get("out-l-topic", EverestDefaultValues.KAFKA_OUTPUT_LOW_TOPIC);
-		final String outputRTopic = params.get("out-r-topic", EverestDefaultValues.KAFKA_OUTPUT_REGULAR_TOPIC);
-        final String outputHTopic = params.get("out-h-topic", EverestDefaultValues.KAFKA_OUTPUT_HIGH_TOPIC);
-        final String outputCTopic = params.get("out-c-topic", EverestDefaultValues.KAFKA_OUTPUT_CRITICAL_TOPIC);
+		final String outputCpuCTopic = params.get("cpu-c-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_C_TOPIC);
+		final String outputCpuHTopic = params.get("cpu-h-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_H_TOPIC);
+        final String outputMemCTopic = params.get("mem-c-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
+        final String outputMemHTopic = params.get("mem-h-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_H_TOPIC);
         final String bootstrapServers = params.get("bootstrap.servers", EverestDefaultValues.BOOTSTRAP_SERVERS);
+        final int concurency = Integer.parseInt(params.get("concurency", EverestDefaultValues.CONCURENCY));
         final int windowSize = Integer.parseInt(params.get("window-size", EverestDefaultValues.WINDOW_SIZE)); //in secs
 
 		// set up the streaming execution environment
@@ -83,68 +102,126 @@ public class EverestAnalyticsJob {
         env.getConfig().setGlobalJobParameters(params); // make parameters available in the web interface
 		// prepare to process with event time
 		env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+		env.setParallelism(concurency);
+
+		// setup for Prometheus metrics
+
 
         // configure the Kafka
-//        Properties kafkaProps = new Properties();
-//        kafkaProps.setProperty("bootstrap.servers", bootstrapServers);
+        Properties kafkaProps = new Properties();
+        kafkaProps.setProperty("bootstrap.servers", bootstrapServers);
+        kafkaProps.setProperty("group.id", cgTopic);
 
-        // start capturing data from Kafka
+        DataStream<EverestCollectorData> everestCollectorDataStream = getDataFromKafka(env, everestDataTopic, kafkaProps);
 
-        DataStream<EverestCollectorData> everestCollectorDataStream = getDataFromKafka(env, bootstrapServers, cgTopic, everestDataTopic);
+        /**
+         * Transform by sorting between CPU and MEM data
+         */
+        DataStream<EverestCollectorDataT<Double, Double>> cpuDataStream = everestCollectorDataStream.flatMap(
+                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_CPU)
+        );
+        DataStream<EverestCollectorDataT<Double, Double>> memDataStream = everestCollectorDataStream.flatMap(
+                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_MEM)
+        );
 
-        DataStream<EverestCollectorData> everestCollectorDataStreamByKey = everestCollectorDataStream
-                .assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("F_TimeStampsWatermark")
-                .keyBy("cluster_id");
-
-        // cleansing/filter out the data which has negative disk usage or greater than 100
-        DataStream<EverestCollectorData> cleansedEverestCollectorDataStream = everestCollectorDataStreamByKey
+        /**
+         * Transform by
+         * - extracting the timestamp
+         * - validating the range of valid data
+         * - keying the data based on containerName
+         * - collecting the data in the duration of window time
+         * - choosing the maximum value during the window time
+         * - storing all the tranformed data into the variable to be processed
+         */
+        DataStream<EverestCollectorDataT<Double, Double>> cpuDataStreamByKey = cpuDataStream
+                .assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("F_TimeStampsWatermark_CPU")
                 // filter out the elements that have values < Low bound or > high bound
-                .filter(new ValidValueFilter()).name("F_ValidValue_Filter");
+                .filter(new ValidValueFilter(EverestDefaultValues.TYPE_TO_COLLECT_CPU)).name("F_ValidValue_Filter_CPU")
+                .keyBy("containerName")
+                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
+                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
 
-//        DataStream<KafkaEvent<String, Double, Double>> maxValueStream = cleansedDataStream.
-//                assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("So_Kafka_In_From_" + ).
-//                keyBy("id").
-//                window(TumblingEventTimeWindows.of(Time.seconds(windowSize))).
-//                reduce(new MaxDiffReducer()).name("F_MaxDiffReducer");
-//
-//        // split the stream into 'low', 'high', 'critical' stream
-//        SplitStream<KafkaEvent<String, Double, Double>> splittedSensorStream = maxValueStream.split(new ValueSplitter());
-//
-//        // select the streams and group the stream by its usage category
-//        DataStream<KafkaEvent<String, Double, Double>> lowValue = splittedSensorStream.select("low");
-//        DataStream<KafkaEvent<String, Double, Double>> highValue = splittedSensorStream.select("high");
-//        DataStream<KafkaEvent<String, Double, Double>> criticalValue = splittedSensorStream.select("critical");
-//
-//        // write the info into Kafka and InfluxDB for visualization
-//        criticalValue.addSink(
-//                new FlinkKafkaProducer010<KafkaEvent<String, Double, Double>>(
-//                        outputCTopic,
-//                        new KafkaEventSchema(),
-//                        kafkaProps)).name("Si_Kafka_Out_To_" + outputCTopic);
-//        // write the info into Kafka
-//        highValue.addSink(
-//                new FlinkKafkaProducer010<KafkaEvent<String, Double, Double>>(
-//                        outputHTopic,
-//                        new KafkaEventSchema(),
-//                        kafkaProps)).name("Si_Kafka_Out_To_" + outputHTopic);
-//
-//        // write the low disk usage into Kafka
-//        lowValue.
-//                addSink(
-//                new FlinkKafkaProducer010<KafkaEvent<String, Double, Double>>(
-//                        outputLTopic,
-//                        new KafkaEventSchema(),
-//                        kafkaProps)).name("Si_Kafka_Out_To_" + outputLTopic);
+        DataStream<EverestCollectorDataT<Double, Double>> memDataStreamByKey = memDataStream
+                .assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("F_TimeStampsWatermark_MEM")
+                // filter out the elements that have values < Low bound or > high bound
+                .filter(new ValidValueFilter(EverestDefaultValues.TYPE_TO_COLLECT_MEM)).name("F_ValidValue_Filter_MEM")
+                .keyBy("containerName")
+                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
+                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
+
+
+        /**
+         * Now it is time to analyze and categorize the data:
+         * - Categorize/Filter/Select/Split the data into 'low', 'regular', 'high', 'critical' stream
+         * - The logic/algorithm is inside the CategoryFilter Class
+         */
+        DataStream<EverestCollectorDataT<Double, Double>> cpuCriticalDataStream = cpuDataStreamByKey
+                // filter out the elements that have values critical
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_CRITICAL)).name("F_Category_Filter_Critical_CPU");
+        DataStream<EverestCollectorDataT<Double, Double>> cpuHighDataStream = cpuDataStreamByKey
+                // filter out the elements that have values high
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_HIGH)).name("F_Category_Filter_High_CPU");
+        DataStream<EverestCollectorDataT<Double, Double>> cpuRegularDataStream = cpuDataStreamByKey
+                // filter out the elements that have values regular
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR)).name("F_Category_Filter_Regular_CPU");
+        DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
+                // filter out the elements that have values loiw
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW)).name("F_Category_Filter_Low_CPU");
+        DataStream<EverestCollectorDataT<Double, Double>> memCriticalDataStream = memDataStreamByKey
+                // filter out the elements that have values critical
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL)).name("F_Category_Filter_Critical_MEM");
+        DataStream<EverestCollectorDataT<Double, Double>> memHighDataStream = memDataStreamByKey
+                // filter out the elements that have values high
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_HIGH)).name("F_Category_Filter_High_MEM");
+        DataStream<EverestCollectorDataT<Double, Double>> memRegularDataStream = memDataStreamByKey
+                // filter out the elements that have values regular
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_REGULAR)).name("F_Category_Filter_Regular_MEM");
+        DataStream<EverestCollectorDataT<Double, Double>> memLowDataStream = memDataStreamByKey
+                // filter out the elements that have values loiw
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_LOW)).name("F_Category_Filter_Low_MEM");
+
+
+        /**
+         * write the category data/info back into Kafka
+         * from there the command/control module will take actions
+         */
+
+        cpuCriticalDataStream.addSink(
+                new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                        outputCpuCTopic,
+                        new EverestCollectorTSerializationSchema(),
+                        kafkaProps)).name("Si_CPU_Cricital_Kafka_Out_To_" + outputCpuCTopic);
+        // write the info back into Kafka
+        cpuHighDataStream.addSink(
+                new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                        outputCpuHTopic,
+                        new EverestCollectorTSerializationSchema(),
+                        kafkaProps)).name("Si_CPU_High_Kafka_Out_To_" + outputCpuHTopic);
+
+        // write the cpu/mem usage into Kafka
+        memCriticalDataStream.
+                addSink(
+                        new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                                outputMemCTopic,
+                                new EverestCollectorTSerializationSchema(),
+                                kafkaProps)).name("Si_MEM_Critical_Kafka_Out_To_" + outputMemCTopic);
+        // write the low cpu/mem usage into Kafka
+        memHighDataStream.
+                addSink(
+                        new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                                outputMemHTopic,
+                                new EverestCollectorTSerializationSchema(),
+                                kafkaProps)).name("Si_MEM_High_Kafka_Out_To_" + outputMemHTopic);
 
 		// execute program
 		env.execute("Flink Everest Job");
 	}
 
-    private static DataStream<EverestCollectorData> getDataFromKafka(StreamExecutionEnvironment env, String kafkaAddress, String kafkaGroup, String inputTopic) {
+    private static DataStream<EverestCollectorData> getDataFromKafka(StreamExecutionEnvironment env, String inputTopic, Properties properties) {
         // input from a stream of string in the format of ID,SENSOR_VALUE,TIMESTAMP,DESCRIPTION
         // ID is used as the key
 
-        FlinkKafkaConsumer010<EverestCollectorData> consumer = EverestCollectorConsumer.createEverestCollectorDataConsumer(inputTopic, kafkaAddress, kafkaGroup);
+        FlinkKafkaConsumer010<EverestCollectorData> consumer = EverestCollectorConsumer.createEverestCollectorDataConsumer(inputTopic, properties, LATEST);
         return env.addSource(consumer).name("So_Kafka_"+inputTopic);
 
     }

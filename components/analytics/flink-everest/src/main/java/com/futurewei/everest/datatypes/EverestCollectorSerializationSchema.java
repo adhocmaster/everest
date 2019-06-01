@@ -63,19 +63,24 @@ public class EverestCollectorSerializationSchema implements DeserializationSchem
         EverestCollectorData data = objectMapper.readValue(message, EverestCollectorData.class);
 //        System.out.println("Deserialize Data Cluster ID" + data.getCluster_id());
 //        System.out.println("Deserialize Data TS" + data.getTs());
-//        List<EverestCollectorData.CpuData> cpuDatas = data.getCpuData();
+
+//        List<EverestCollectorDataT<Double, Double>> cpuDatas = data.getCpuData();
 //        System.out.println("Deserialize Data CPU LEN" + cpuDatas.size());
-//        for(EverestCollectorData.CpuData cpuData : cpuDatas) {
-//            System.out.println("\nDeserialize Data CPU ID -> " + cpuData.getId());
-//            System.out.println("\nDeserialize Data CPU VALUE -> " + cpuData.getValue());
+//        for(EverestCollectorDataT<Double, Double> cpuData : cpuDatas) {
+//            System.out.println("\nDeserialize Data MEM CNAME -> " + cpuData.getContainerName());
+//            System.out.println("\nDeserialize Data MEM PNAME -> " + cpuData.getPodName());
+//            System.out.println("\nDeserialize Data MEM NameSpace -> " + cpuData.getNamespace());
+//            System.out.println("\nDeserialize Data MEM VALUE -> " + cpuData.getValue());
+//            System.out.println("\nDeserialize Data MEM PERCENT -> " + cpuData.getPercentage());
 //        }
-//        List<EverestCollectorDataT<Double>> memDatas = data.getMemData();
+//        List<EverestCollectorDataT<Double, Double>> memDatas = data.getMemData();
 //        System.out.println("Deserialize Data MEM LEN" + memDatas.size());
-//        for(EverestCollectorDataT<Double> memData : memDatas) {
+//        for(EverestCollectorDataT<Double, Double> memData : memDatas) {
 //            System.out.println("\nDeserialize Data MEM CNAME -> " + memData.getContainerName());
 //            System.out.println("\nDeserialize Data MEM PNAME -> " + memData.getPodName());
 //            System.out.println("\nDeserialize Data MEM NameSpace -> " + memData.getNamespace());
 //            System.out.println("\nDeserialize Data MEM VALUE -> " + memData.getValue());
+//            System.out.println("\nDeserialize Data MEM PERCENT -> " + memData.getPercentage());
 //        }
 
         return data;

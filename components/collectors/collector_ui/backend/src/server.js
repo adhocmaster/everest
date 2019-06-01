@@ -19,11 +19,17 @@ const app = express();
 const router = express.Router()
 const cors = require('cors')
 const DS = require('./data')
+const kafka = require('./kafka')
+
 
 const DEFAULT_VERBOSE = false
 const DEFAULT_WITH_MONGO = false
 const DEFAULT_WITHOUT_TRACE = false
 const DEFAULT_WITHOUT_PROM = false
+const DEFAULT_KAFKA_HOST = ''
+const DEFAULT_KAFKA_PORT = -1
+const DEFAULT_KAFKA_DEBUG = false
+const DEFAULT_KAFKA_DATA_TOPIC = 'everest-data-topic'
 
 // (optional) only made for logging and
 // bodyParser, parses the request body to be a readable json format
@@ -55,6 +61,10 @@ WITH_MONGO = process.env.CCOLLECTOR_WITH_MONGO || DEFAULT_WITH_MONGO
 WITHOUT_TRACE = process.env.CCOLLECTOR_WITHOUT_TRACE || DEFAULT_WITHOUT_TRACE
 WITHOUT_PROM = process.env.CCOLLECTOR_WITHOUT_PROM || DEFAULT_WITHOUT_PROM
 REST_AUX = process.env.CCOLLECTOR_REST_AUX || DS.DEFAULT_REST_AUX;
+KAFKA_HOST = process.env.CCOLLECTOR_KAFKA_HOST || DEFAULT_KAFKA_HOST
+KAFKA_PORT = process.env.CCOLLECTOR_KAFKA_PORT || DEFAULT_KAFKA_PORT
+KAFKA_DEBUG = process.env.CCOLLECTOR_KAFKA_DEBUG || DEFAULT_KAFKA_DEBUG
+KAFKA_DATA_TOPIC = process.env.CCOLLECTOR_KAFKA_DATA_TOPIC || DEFAULT_KAFKA_DATA_TOPIC
 
 aux_jaeger_list = AUX_JAEGERS.split(",");
 aux_prom_list = AUX_PROMS.split(",");
@@ -72,6 +82,18 @@ if(aux_prom_list[0] != "") {
     });
 }
 
+var _kafka;
+if(KAFKA_HOST != '') {
+	_kafka = new kafka(KAFKA_HOST, KAFKA_PORT)
+	_kafka.verbose = KAFKA_DEBUG
+	_kafka.topic = KAFKA_DATA_TOPIC
+	// _kafka = new kafka()
+	// for(i=0; i < 40; i++) {
+	// 	_kafka.send()
+	// }
+	DS.with_kafka(_kafka)
+}
+
 DS.set_verbose(VERBOSE == 'true')
 DS.add_jaeger(CLOVER_JAEGER_HOST, CLOVER_JAEGER_PORT, CLOVER_JAEGER_ID)
 DS.add_jaeger(CLOVISOR_JAEGER_HOST, CLOVISOR_JAEGER_PORT, CLOVISOR_JAEGER_ID)
@@ -83,6 +105,7 @@ if(WITH_MONGO) {
 	mongo = new Mongo(MONGO_ROUTE)
 	DS.set_db(mongo)
 }
+
 DS.without_trace(WITHOUT_TRACE)
 DS.without_prom(WITHOUT_PROM)
 DS.start_collector(REST_AUX)

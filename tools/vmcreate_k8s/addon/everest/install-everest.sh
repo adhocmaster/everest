@@ -145,6 +145,7 @@ then
     IGRAFANA_SVC_NAME="istio-grafana-outside"
     IKIALI_SVC_NAME="istio-kiali-outside"
     ITRACING_SVC_NAME="istio-tracing-outside"
+    PROM_SVC_NAME="prometheus-outside"
     CLOUD_TYPE="vm"
     if [ "$CLOUD_TYPE" = "vm" ]
     then
@@ -152,6 +153,7 @@ then
         kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME    
         kubectl expose -n istio-system svc jaeger-query --type=$SVC_TYPE --name=$ITRACING_SVC_NAME    
         kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
+        kubectl expose -n istio-system svc prometheus --type=$SVC_TYPE --name=$PROM_SVC_NAME    
         # PORT_TCP=`kc describe svc istio-grafana-outside -n istio-system |grep $SVC_TYPE | grep -v Type`
         # IGRAFANA_PORT=`echo $PORT_TCP | awk {'print $3'} | cut -d '/' -f 1`
         IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IGRAFANA_SVC_NAME`
@@ -166,7 +168,8 @@ then
         # kubectl expose -n istio-system svc kiali --type=$SVC_TYPE --name=$IKIALI_SVC_NAME  
         # IKIALI_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].nodePort}" services $IKIALI_SVC_NAME`
         kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$ITRACING_SVC_NAME  
-        kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME    
+        kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME 
+        kubectl expose -n istio-system svc prometheus --type=$SVC_TYPE --name=$PROM_SVC_NAME   
         ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $IGRAFANA_SVC_NAME`
         IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $IGRAFANA_SVC_NAME`
         ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $ITRACING_SVC_NAME`

@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 //import java.time.LocalDateTime;
@@ -31,55 +30,17 @@ import java.util.Objects;
 
 @JsonSerialize
 public class EverestCollectorData {
-    // EverestCollectorDataT<Double> cpu;
-    // EverestCollectorDataT<Double> mem;
-    // EverestCollectorDataT<Integer> ts;
-
     String cluster_id;
     long ts;
-    List<CpuData> cpuData;
-    List<EverestCollectorDataT<Double>> memData;
-
-    /**
-     * Inner Class
-     */
-
-    @JsonSerialize
-    public static class CpuData {
-        private String id;
-        private double value;
-
-        public CpuData() {
-        }
-
-        public CpuData(String id, double value) {
-            this.id = id;
-            this.value = value;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public double getValue() {
-            return value;
-        }
-
-        public void setValue(double value) {
-            this.value = value;
-        }
-    }
+    List<EverestCollectorDataT<Double, Double>>  cpuData;
+    List<EverestCollectorDataT<Double, Double>> memData;
 
     /**
      * Constructors
      */
     public EverestCollectorData() {}
 
-    public EverestCollectorData(String cluster_id, long ts, List<CpuData> cpuData, List<EverestCollectorDataT<Double>> memData) {
+    public EverestCollectorData(String cluster_id, long ts, List<EverestCollectorDataT<Double, Double>> cpuData, List<EverestCollectorDataT<Double, Double>> memData) {
         this.cluster_id = cluster_id;
         this.ts = ts;
         this.cpuData = cpuData;
@@ -90,55 +51,79 @@ public class EverestCollectorData {
      * Getters and Setters
      *
      */
+
+    /**
+     *
+     * @return String
+     */
     public String getCluster_id() {
         return cluster_id;
     }
 
+    /**
+     *
+     * @param cluster_id the id of the cluster
+     */
     public void setCluster_id(String cluster_id) {
         this.cluster_id = cluster_id;
     }
 
+    /**
+     *
+     * @return long
+     */
     public long getTs() {
         return ts;
     }
+
+    /**
+     *
+     * @param ts the timestamp
+     */
     public void setTs(long ts) {
         this.ts = ts;
     }
 
-    public List<CpuData> getCpuData() {
+    /**
+     *
+     * @return List
+     */
+    public List<EverestCollectorDataT<Double, Double>> getCpuData() {
         return cpuData;
     }
 
-    public void setCpuData(List<CpuData> cpuData) {
+    /**
+     *
+     * @param cpuData the list of the cpu data
+     */
+    public void setCpuData(List<EverestCollectorDataT<Double, Double>> cpuData) {
         this.cpuData = cpuData;
     }
 
+    /**
+     *
+     * @return long
+     */
     public long localToTimeStamp() {
-//        ZoneId zoneId = ZoneId.systemDefault();
-//        return this.getTs().atZone(zoneId).toEpochSecond() * 1000;
         return ts;
     }
 
-    public List<EverestCollectorDataT<Double>> getMemData() {
+    /**
+     *
+     * @return List
+     */
+    public List<EverestCollectorDataT<Double, Double>> getMemData() {
         return memData;
     }
 
-    public void setMemData(List<EverestCollectorDataT<Double>> memData) {
+    /**
+     *
+     * @param memData the list of mem data
+     */
+    public void setMemData(List<EverestCollectorDataT<Double, Double>> memData) {
         this.memData = memData;
     }
 
-    /**
-     * jackson related fields
-     */
-
-//    @SuppressWarnings("unchecked")
-//    @JsonProperty("cpu")
-//    private void unpackCpu(Map<String,Object> cpu) {
-//        this.brandName = (String)brand.get("name");
-//        Map<String,String> owner = (Map<String,String>)brand.get("owner");
-//        this.ownerName = owner.get("name");
-//    }
-//
 
 
     @Override

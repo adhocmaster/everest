@@ -23,6 +23,7 @@
 package com.futurewei.everest.functions;
 
 import com.futurewei.everest.datatypes.EverestCollectorData;
+import com.futurewei.everest.datatypes.EverestCollectorDataT;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 import org.apache.flink.streaming.api.functions.timestamps.BoundedOutOfOrdernessTimestampExtractor;
@@ -37,19 +38,19 @@ import javax.annotation.Nullable;
  * <p>Flink also ships some built-in convenience assigners, such as the
  * {@link BoundedOutOfOrdernessTimestampExtractor} and {@link AscendingTimestampExtractor}
  */
-public class CustomWatermarkExtractor implements AssignerWithPunctuatedWatermarks<EverestCollectorData> {
+public class CustomWatermarkExtractor implements AssignerWithPunctuatedWatermarks<EverestCollectorDataT<Double, Double>> {
 
     private static final long serialVersionUID = 6677712640216480841L;
     private long currentTimestamp = Long.MIN_VALUE;
 
     @Override
-    public long extractTimestamp(EverestCollectorData data, long previousElementTimestamp) {
-        return data.localToTimeStamp();
+    public long extractTimestamp(EverestCollectorDataT<Double, Double> data, long previousElementTimestamp) {
+        return data.getTs();
     }
 
     @Nullable
     @Override
-    public Watermark checkAndGetNextWatermark(EverestCollectorData lastElement, long extractedTimestamp) {
+    public Watermark checkAndGetNextWatermark(EverestCollectorDataT<Double, Double> lastElement, long extractedTimestamp) {
         return new Watermark(extractedTimestamp - 1500);
     }
 }

@@ -1,4 +1,6 @@
 /*
+ * Copyright 2018-2019 The Everest Authors
+ *
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -14,6 +16,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
+ *
  */
 
 package com.futurewei.everest;
@@ -22,40 +26,64 @@ public interface EverestDefaultValues {
     String PRJ_ID = "everest";
     String KAFKA_EVEREST_DATA_TOPIC = "everest-data-topic";
     String KAFKA_CG = "cg-" + PRJ_ID;
-    String KAFKA_OUTPUT_LOW_TOPIC = "l-topic";
-    String KAFKA_OUTPUT_REGULAR_TOPIC = "r-topic";
-    String KAFKA_OUTPUT_HIGH_TOPIC = "h-topic";
-    String KAFKA_OUTPUT_CRITICAL_TOPIC = "c-topic";
+    String KAFKA_OUTPUT_CPU_C_TOPIC = "cpu-h-topic";
+    String KAFKA_OUTPUT_CPU_H_TOPIC = "cpu-h-topic";
+    String KAFKA_OUTPUT_MEM_C_TOPIC = "mem-c-topic";
+    String KAFKA_OUTPUT_MEM_H_TOPIC = "mem-h-topic";
     Double VALID_VALUE_LOW_BOUND = 0.0;
     Double VALID_VALUE_HIGH_BOUND = 100.0;
-    int THRESHOLD_HIGH = 20;
-    int THRESHOLD_CRITICAL = 10;
+    String CONCURENCY = "2";
+    int CPU_THRESHOLD_CRITICAL = 90;
+    int CPU_THRESHOLD_HIGH = 70;
+    int CPU_THRESHOLD_REGULAR = 50;
+    int MEM_THRESHOLD_CRITICAL = 90;
+    int MEM_THRESHOLD_HIGH = 70;
+    int MEM_THRESHOLD_REGULAR = 50;
+
+    /**
+     * Type to select filters
+     */
+    String TYPE_TO_COLLECT_CPU = "cpu";
+    String TYPE_TO_COLLECT_MEM = "mem";
+
+    /**
+     * Category filters
+     */
+    String CATEGORY_CPU_CRITICAL = "cpu_critical";
+    String CATEGORY_CPU_HIGH = "cpu_high";
+    String CATEGORY_CPU_REGULAR = "cpu_regular";
+    String CATEGORY_CPU_LOW = "cpu_low";
+    String CATEGORY_MEM_CRITICAL = "mem_critical";
+    String CATEGORY_MEM_HIGH = "mem_high";
+    String CATEGORY_MEM_REGULAR = "mem_regular";
+    String CATEGORY_MEM_LOW = "mem_low";
+
+    /**
+     * Prometheus related IDs
+     */
+    String VALID_CPU_COUNTER = "valid_cpu_counter";
+    String INVALID_CPU_COUNTER = "invalid_cpu_counter";
+    String VALID_MEM_COUNTER = "valid_mem_counter";
+    String INVALID_MEM_COUNTER = "invalid_mem_counter";
+
+
+    String EVEREST_METRICS_GROUP = "EverestMetrics";
+    String CPU_CRITICAL_NUMBERS = "cpu_critical_numbers";
+    String CPU_HIGH_NUMBERS = "cpu_high_numbers";
+    String CPU_REGULAR_NUMBERS = "cpu_regular_numbers";
+    String CPU_LOW_NUMBERS = "cpu_low_numbers";
+    String MEM_CRITICAL_NUMBERS = "mem_critical_numbers";
+    String MEM_HIGH_NUMBERS = "mem_high_numbers";
+    String MEM_REGULAR_NUMBERS = "mem_regular_numbers";
+    String MEM_LOW_NUMBERS = "mem_low_numbers";
+
+    String CLUSTER_NUMBERS = "cluster_numbers";
+    String POD_NUMBERS = "pod_numbers";
+    String CPU_THROUGHPUT = "cpu_throughput";
+    String MEM_THROUGHPUT = "mem_throughput";
+
     //String BOOTSTRAP_SERVERS = "bootstrap.kafka.svc.cluster.local:9092";
     String BOOTSTRAP_SERVERS = "localhost:9092";
-    String WINDOW_SIZE = "5"; //sec
+    String WINDOW_SIZE = "60"; //60 sec
 
-    /*
-        Influxdb constants
-     */
-//    String INFLUXDB_DATABASENAME = "eliot_db";
-//    String INFLUXDB_INFLUXDBURL = "http://influxdb-service." + K_NAMESPACE + ".svc.cluster.local:8086";
-//    //String INFLUXDB_INFLUXDBURL = "http://localhost:8086";
-//    String INFLUXDB_INFLUXDBUSER = "admin";
-//    String INFLUXDB_INFLUXDBPWD = "admin";
-//    String INFLUXDB_FIELDABSDIFF = "absdiff";
-//    String INFLUXDB_FIELDVALUE = "value";
-//    String INFLUXDB_FIELDVALUE0 = "value0";
-//    String INFLUXDB_FIELDTS = "orgTS";
-//    String INFLUXDB_SENSORID = "sensorid";
-//
-    /*
-        Cassandra Constants
-     */
-//    String CASSANDRA_USED="true";
-//    //String CASSANDRA_HOST="localhost";
-//    String CASSANDRA_HOST="cassandra-service." + K_NAMESPACE + ".svc.cluster.local";
-//    String CASSANDRA_PORT_NOTUSED="-1";
-//    String CASSANDRA_ELIOT_KEYSPACE="eliot_keyspace";
-//    String CASSANDRA_ELIOT_TABLE="sensors";
-//    String CASSANDRA_POLL_INTERVAL = "3"; // 3 minutes
 }
