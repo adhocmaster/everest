@@ -19,6 +19,7 @@ COPY --from=builder /install /usr/local
 
 RUN mkdir /app
 COPY pipeline /app/pipeline
+COPY tools/requirements.txt /app/pipeline
 
 # Install curl, git, python
 RUN apk add --no-cache curl influxdb python3 && \
