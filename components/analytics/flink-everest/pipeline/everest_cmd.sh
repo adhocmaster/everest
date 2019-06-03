@@ -1,8 +1,9 @@
 #!/bin/sh
 
-
+SINKS=""
+TOPIC=""
 usage() {
-	    echo "entrypoint.sh [-h] [-l]"
+	    echo "everest_cmd.sh [-h] [-l] [-s] [-t topic]"
 	    echo "script to start container for everest analytics"
 }
 echo "-$#-"
@@ -17,6 +18,15 @@ do
 	    usage
 	    exit 0
 	    ;;
+	-s)
+		SINKS="true"
+	    shift
+	    ;;
+	-t)
+	    shift
+	    TOPIC="$1"
+		shift
+	    ;;
 	*)
 	    echo "Parameter error -$1-"
 	    shift
@@ -26,7 +36,19 @@ do
     esac
 done
 
-echo "Start the container entry point"
-echo "Everest Tools is DONE and READY..."
+if [ "$SINKS" != "" ]
+then
+	echo "Start the container python entry point"
+	echo "(cd sinks; python kafka-demo-consumer.py -g mygroup --json -t $TOPIC)"
+	if [ "$TOPIC" == "" ]
+	then
+		usage
+		exit 1
+	fi
+	(cd sinks; python kafka-demo-consumer.py -g mygroup --json -t $TOPIC)
+else
+	echo "Start the container cmd entry point"
+	echo "Everest Tools is DONE and READY..."
+	tail -f /dev/null
+fi
 
-tail -f /dev/null
