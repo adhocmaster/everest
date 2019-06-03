@@ -45,7 +45,7 @@ then
 		usage
 		exit 1
 	fi
-	(cd sinks; python kafka-demo-consumer.py -g mygroup --json -t $TOPIC)
+	(cd /app/pipeline/sinks; python kafka-demo-consumer.py -g mygroup --json -t $TOPIC)
 else
 	echo "Start the container cmd entry point"
 	echo "Everest Tools is DONE and READY..."
