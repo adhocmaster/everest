@@ -49,6 +49,8 @@ public class EverestCollectorDataTest {
     private List<EverestCollectorDataT<Double, Double>> expectedCpuData;
     private List<EverestCollectorDataT<Double, Double>> memData;
     private List<EverestCollectorDataT<Double, Double>> expectedMemData;
+    private List<EverestCollectorDataT<Double, Double>> netData;
+    private List<EverestCollectorDataT<Double, Double>> expectedNetData;
     private String containerName = "My Cont Name";
     private String podName = "My Pod Name";
     private String namespace = "My NameSpace";
@@ -57,9 +59,11 @@ public class EverestCollectorDataTest {
     public void before() throws Exception {
         cpuData = new ArrayList<EverestCollectorDataT<Double, Double>>();
         memData = new ArrayList<EverestCollectorDataT<Double, Double>>();
+        netData = new ArrayList<EverestCollectorDataT<Double, Double>>();
         for(int i=0; i < 3; i++) {
             cpuData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 5000.1 + i, 50.1 + i));
             memData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1000.1 + i, 10.1 + i));
+            netData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1000.1 + i, 10.1 + i));
         }
     }
 
@@ -74,7 +78,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testGetCluster_id() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         assertEquals(cluster_id, everestCollectorData.getCluster_id());
     }
 
@@ -85,7 +89,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testSetCluster_id() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         assertEquals(cluster_id, everestCollectorData.getCluster_id());
         everestCollectorData.setCluster_id(cluster_id + cluster_id);
         assertEquals(cluster_id + cluster_id, everestCollectorData.getCluster_id());
@@ -98,7 +102,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testGetTs() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         assertEquals(ts, everestCollectorData.getTs());
     }
 
@@ -109,7 +113,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testSetTs() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         assertEquals(ts, everestCollectorData.getTs());
         everestCollectorData.setTs(ts + ts);
         assertEquals(ts + ts, everestCollectorData.getTs());
@@ -122,7 +126,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testGetCpuData() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         expectedCpuData = everestCollectorData.getCpuData();
         assertEquals(cpuData, expectedCpuData);
     }
@@ -134,7 +138,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testSetCpuData() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         expectedCpuData = everestCollectorData.getCpuData();
         assertEquals(cpuData, expectedCpuData);
         cpuData.remove(0);
@@ -150,7 +154,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testLocalToTimeStamp() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         long resTs = everestCollectorData.localToTimeStamp();
         assertEquals(resTs, ts);
     }
@@ -162,7 +166,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testGetMemData() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         expectedMemData = everestCollectorData.getMemData();
         assertEquals(memData, expectedMemData);
 
@@ -175,7 +179,7 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testSetMemData() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         expectedMemData = everestCollectorData.getMemData();
         assertEquals(memData, expectedMemData);
         memData.remove(0);
@@ -191,8 +195,8 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testEquals() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
-        EverestCollectorData expectedEverestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
+        EverestCollectorData expectedEverestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         assertTrue(everestCollectorData.equals(expectedEverestCollectorData));
     }
 
@@ -203,14 +207,8 @@ public class EverestCollectorDataTest {
      */
     @Test
     public void testHashCode() throws Exception {
-        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData);
+        everestCollectorData = new EverestCollectorData(cluster_id, ts, cpuData, memData, netData);
         assertTrue(everestCollectorData == everestCollectorData);
     }
-
-
-
-
-
-
 
 } 

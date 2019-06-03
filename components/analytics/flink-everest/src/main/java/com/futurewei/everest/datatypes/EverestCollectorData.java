@@ -19,7 +19,8 @@
 
 package com.futurewei.everest.datatypes;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+
+
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
@@ -34,20 +35,22 @@ public class EverestCollectorData {
     long ts;
     List<EverestCollectorDataT<Double, Double>>  cpuData;
     List<EverestCollectorDataT<Double, Double>> memData;
+    List<EverestCollectorDataT<Double, Double>> netData;
 
     /**
      * Constructors
      */
     public EverestCollectorData() {}
 
-    public EverestCollectorData(String cluster_id, long ts, List<EverestCollectorDataT<Double, Double>> cpuData, List<EverestCollectorDataT<Double, Double>> memData) {
+    public EverestCollectorData(String cluster_id, long ts, List<EverestCollectorDataT<Double, Double>> cpuData, List<EverestCollectorDataT<Double, Double>> memData, List<EverestCollectorDataT<Double, Double>> netData) {
         this.cluster_id = cluster_id;
         this.ts = ts;
         this.cpuData = cpuData;
         this.memData = memData;
+        this.netData = netData;
     }
 
-    /**
+/**
      * Getters and Setters
      *
      */
@@ -124,7 +127,21 @@ public class EverestCollectorData {
         this.memData = memData;
     }
 
+    /**
+     *
+     * @return List
+     */
+    public List<EverestCollectorDataT<Double, Double>> getNetData() {
+        return netData;
+    }
 
+    /**
+     *
+     * @param netData the list of net data
+     */
+    public void setNetData(List<EverestCollectorDataT<Double, Double>> netData) {
+        this.netData = netData;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -134,11 +151,12 @@ public class EverestCollectorData {
         return ts == that.ts &&
                 cluster_id.equals(that.cluster_id) &&
                 cpuData.equals(that.cpuData) &&
-                memData.equals(that.memData);
+                memData.equals(that.memData) &&
+                netData.equals(that.netData);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cluster_id, ts, cpuData, memData);
+        return Objects.hash(cluster_id, ts, cpuData, memData, netData);
     }
 }

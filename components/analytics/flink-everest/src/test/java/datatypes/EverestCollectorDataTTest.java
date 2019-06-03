@@ -42,6 +42,7 @@ public class EverestCollectorDataTTest {
     private long ts = 0L;
     private EverestCollectorDataT<Double, Double> cpuData;
     private EverestCollectorDataT<Double, Double> memData;
+    private EverestCollectorDataT<Double, Double> netData;
     private String containerName = "My Cont Name";
     private String podName = "My Pod Name";
     private String namespace = "My NameSpace";

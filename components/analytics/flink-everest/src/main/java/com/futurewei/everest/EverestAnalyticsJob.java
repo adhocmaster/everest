@@ -25,25 +25,16 @@ package com.futurewei.everest;
 import com.futurewei.everest.connector.EverestCollectorConsumer;
 import com.futurewei.everest.datatypes.EverestCollectorData;
 import com.futurewei.everest.datatypes.EverestCollectorDataT;
-import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
 import com.futurewei.everest.datatypes.EverestCollectorTSerializationSchema;
 import com.futurewei.everest.functions.*;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
-import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.utils.ParameterTool;
-import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.SplitStream;
-import org.apache.flink.streaming.api.datastream.WindowedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
-import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 
-import javax.xml.crypto.dom.DOMCryptoContext;
 import java.util.Properties;
 
 import static org.apache.flink.streaming.connectors.kafka.config.StartupMode.LATEST;
@@ -88,7 +79,8 @@ public class EverestAnalyticsJob {
 		final String everestDataTopic = params.get("everest-data-topic", EverestDefaultValues.KAFKA_EVEREST_DATA_TOPIC);
 		final String cgTopic = params.get("cg-topic", EverestDefaultValues.KAFKA_CG);
 		final String outputCpuCTopic = params.get("cpu-c-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_C_TOPIC);
-		final String outputCpuHTopic = params.get("cpu-h-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_H_TOPIC);
+        final String outputCpuHTopic = params.get("cpu-h-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_H_TOPIC);
+        final String outputCpuLTopic = params.get("cpu-l-topic", "cpu-l-topic");
         final String outputMemCTopic = params.get("mem-c-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
         final String outputMemHTopic = params.get("mem-h-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_H_TOPIC);
         final String bootstrapServers = params.get("bootstrap.servers", EverestDefaultValues.BOOTSTRAP_SERVERS);
@@ -198,6 +190,13 @@ public class EverestAnalyticsJob {
                         outputCpuHTopic,
                         new EverestCollectorTSerializationSchema(),
                         kafkaProps)).name("Si_CPU_High_Kafka_Out_To_" + outputCpuHTopic);
+
+        // JUST FOR DEBUGGING write the info back into Kafka
+        cpuLowDataStream.addSink(
+                new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                        outputCpuLTopic,
+                        new EverestCollectorTSerializationSchema(),
+                        kafkaProps)).name("Si_CPU_Low_Kafka_Out_To_" + outputCpuLTopic);
 
         // write the cpu/mem usage into Kafka
         memCriticalDataStream.

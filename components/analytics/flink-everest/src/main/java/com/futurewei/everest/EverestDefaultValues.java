@@ -30,6 +30,8 @@ public interface EverestDefaultValues {
     String KAFKA_OUTPUT_CPU_H_TOPIC = "cpu-h-topic";
     String KAFKA_OUTPUT_MEM_C_TOPIC = "mem-c-topic";
     String KAFKA_OUTPUT_MEM_H_TOPIC = "mem-h-topic";
+    String KAFKA_OUTPUT_NET_C_TOPIC = "net-c-topic";
+    String KAFKA_OUTPUT_NET_H_TOPIC = "net-h-topic";
     Double VALID_VALUE_LOW_BOUND = 0.0;
     Double VALID_VALUE_HIGH_BOUND = 100.0;
     String CONCURENCY = "2";
@@ -39,12 +41,16 @@ public interface EverestDefaultValues {
     int MEM_THRESHOLD_CRITICAL = 90;
     int MEM_THRESHOLD_HIGH = 70;
     int MEM_THRESHOLD_REGULAR = 50;
+    int NET_THRESHOLD_CRITICAL = 90;
+    int NET_THRESHOLD_HIGH = 70;
+    int NET_THRESHOLD_REGULAR = 50;
 
     /**
      * Type to select filters
      */
     String TYPE_TO_COLLECT_CPU = "cpu";
     String TYPE_TO_COLLECT_MEM = "mem";
+    String TYPE_TO_COLLECT_NET = "net";
 
     /**
      * Category filters
@@ -57,6 +63,10 @@ public interface EverestDefaultValues {
     String CATEGORY_MEM_HIGH = "mem_high";
     String CATEGORY_MEM_REGULAR = "mem_regular";
     String CATEGORY_MEM_LOW = "mem_low";
+    String CATEGORY_NET_CRITICAL = "net_critical";
+    String CATEGORY_NET_HIGH = "net_high";
+    String CATEGORY_NET_REGULAR = "net_regular";
+    String CATEGORY_NET_LOW = "net_low";
 
     /**
      * Prometheus related IDs
@@ -65,6 +75,8 @@ public interface EverestDefaultValues {
     String INVALID_CPU_COUNTER = "invalid_cpu_counter";
     String VALID_MEM_COUNTER = "valid_mem_counter";
     String INVALID_MEM_COUNTER = "invalid_mem_counter";
+    String VALID_NET_COUNTER = "valid_net_counter";
+    String INVALID_NET_COUNTER = "invalid_net_counter";
 
 
     String EVEREST_METRICS_GROUP = "EverestMetrics";
@@ -72,6 +84,10 @@ public interface EverestDefaultValues {
     String CPU_HIGH_NUMBERS = "cpu_high_numbers";
     String CPU_REGULAR_NUMBERS = "cpu_regular_numbers";
     String CPU_LOW_NUMBERS = "cpu_low_numbers";
+    String NET_CRITICAL_NUMBERS = "net_critical_numbers";
+    String NET_HIGH_NUMBERS = "net_high_numbers";
+    String NET_REGULAR_NUMBERS = "net_regular_numbers";
+    String NET_LOW_NUMBERS = "net_low_numbers";
     String MEM_CRITICAL_NUMBERS = "mem_critical_numbers";
     String MEM_HIGH_NUMBERS = "mem_high_numbers";
     String MEM_REGULAR_NUMBERS = "mem_regular_numbers";
@@ -81,6 +97,7 @@ public interface EverestDefaultValues {
     String POD_NUMBERS = "pod_numbers";
     String CPU_THROUGHPUT = "cpu_throughput";
     String MEM_THROUGHPUT = "mem_throughput";
+    String NET_THROUGHPUT = "net_throughput";
 
     //String BOOTSTRAP_SERVERS = "bootstrap.kafka.svc.cluster.local:9092";
     String BOOTSTRAP_SERVERS = "localhost:9092";

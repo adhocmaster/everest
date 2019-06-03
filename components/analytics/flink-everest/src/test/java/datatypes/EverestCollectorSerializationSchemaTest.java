@@ -54,6 +54,7 @@ public class EverestCollectorSerializationSchemaTest {
         byte[] serialized;
         List<EverestCollectorDataT<Double, Double>> cpuDatas = new ArrayList<EverestCollectorDataT<Double, Double>>();
         List<EverestCollectorDataT<Double, Double>> memDatas = new ArrayList<EverestCollectorDataT<Double, Double>>();
+        List<EverestCollectorDataT<Double, Double>> netDatas = new ArrayList<EverestCollectorDataT<Double, Double>>();
         String containerName = "My Cont Name";
         String podName = "My Pod Name";
         String namespace = "My NameSpace";
@@ -65,7 +66,7 @@ public class EverestCollectorSerializationSchemaTest {
             memDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 10.1 + i, 50.5 + i));
         }
 
-        EverestCollectorData testEverestCollectorData = new EverestCollectorData("cluster_id", 0L, cpuDatas, memDatas);
+        EverestCollectorData testEverestCollectorData = new EverestCollectorData("cluster_id", 0L, cpuDatas, memDatas, netDatas);
         EverestCollectorSerializationSchema everestCollectorSerializationSchema = new EverestCollectorSerializationSchema();
         serialized = everestCollectorSerializationSchema.serialize(testEverestCollectorData);
         EverestCollectorData resultedEverestCollectorData = everestCollectorSerializationSchema.deserialize(serialized);
@@ -92,6 +93,17 @@ public class EverestCollectorSerializationSchemaTest {
             assertEquals(memData.getPercentage(), rMemData.getPercentage(), 0.01);
             assertEquals(memData.getPodName(), rMemData.getPodName());
             assertEquals(memData.getNamespace(), rMemData.getNamespace());
+        }
+        List<EverestCollectorDataT<Double, Double>> testNetDatas = testEverestCollectorData.getNetData();
+        List<EverestCollectorDataT<Double, Double>> resultedNetDatas = resultedEverestCollectorData.getNetData();
+        for(int i=0; i < testNetDatas.size(); i++) {
+            EverestCollectorDataT<Double, Double> netData = testNetDatas.get(i);
+            EverestCollectorDataT<Double, Double> rNetData = resultedNetDatas.get(i);
+            assertEquals(netData.getContainerName(), rNetData.getContainerName());
+            assertEquals(netData.getValue(), rNetData.getValue(), 0.01);
+            assertEquals(netData.getPercentage(), rNetData.getPercentage(), 0.01);
+            assertEquals(netData.getPodName(), rNetData.getPodName());
+            assertEquals(netData.getNamespace(), rNetData.getNamespace());
         }
 
 

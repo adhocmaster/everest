@@ -46,6 +46,10 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     private transient int memHighNumbers = 0;
     private transient int memRegularNumbers = 0;
     private transient int memLowNumbers = 0;
+    private transient int netCriticalNumbers = 0;
+    private transient int netHighNumbers = 0;
+    private transient int netRegularNumbers = 0;
+    private transient int netLowNumbers = 0;
 
     // A type of collection to filter everest data. This will be stored in memory
     // of a task manager
@@ -130,6 +134,44 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                         return memLowNumbers;
                     }
                 });
+
+        getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .gauge(EverestDefaultValues.NET_CRITICAL_NUMBERS, new Gauge<Integer>() {
+                    @Override
+                    public Integer getValue() {
+                        return netCriticalNumbers;
+                    }
+                });
+        getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .gauge(EverestDefaultValues.NET_HIGH_NUMBERS, new Gauge<Integer>() {
+                    @Override
+                    public Integer getValue() {
+                        return netHighNumbers;
+                    }
+                });
+        getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .gauge(EverestDefaultValues.NET_REGULAR_NUMBERS, new Gauge<Integer>() {
+                    @Override
+                    public Integer getValue() {
+                        return netRegularNumbers;
+                    }
+                });
+        getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .gauge(EverestDefaultValues.NET_LOW_NUMBERS, new Gauge<Integer>() {
+                    @Override
+                    public Integer getValue() {
+                        return netLowNumbers;
+                    }
+                });
+
     }
 
     /**
@@ -179,6 +221,26 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
             System.out.println("MEM LOW: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
                     data.getPercentage() + "% V=" + data.getValue());
             memLowNumbers++;
+            return (true);
+        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+            System.out.println("NET CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+                    data.getPercentage() + "% V=" + data.getValue());
+            netCriticalNumbers++;
+            return(true);
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_CRITICAL)) {
+            System.out.println("NET HIGH: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+                    data.getPercentage() + "% V=" + data.getValue());
+            netHighNumbers++;
+            return(true);
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_HIGH)) {
+            System.out.println("NET REGULAR: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+                    data.getPercentage() + "% V=" + data.getValue());
+            netRegularNumbers++;
+            return(true);
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_REGULAR)) {
+            System.out.println("NET LOW: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+                    data.getPercentage() + "% V=" + data.getValue());
+            netLowNumbers++;
             return (true);
         } else {
 //            System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getPercentage());

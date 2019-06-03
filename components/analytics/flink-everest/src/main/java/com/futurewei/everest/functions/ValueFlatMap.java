@@ -44,6 +44,7 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
      */
     private transient Meter cpuThroughput;
     private transient Meter memThroughput;
+    private transient Meter netThroughput;
     private transient int clusterNumbers = 0;
     private transient List<String> clusterSeen;
     private transient int podNumbers = 0;
@@ -92,6 +93,11 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .meter(EverestDefaultValues.MEM_THROUGHPUT, new DropwizardMeterWrapper(memDropwizardMeter));
+        com.codahale.metrics.Meter netDropwizardMeter = new com.codahale.metrics.Meter();
+        this.netThroughput = getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .meter(EverestDefaultValues.NET_THROUGHPUT, new DropwizardMeterWrapper(memDropwizardMeter));
 
     }
 
@@ -114,6 +120,11 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 memThroughput.markEvent();
 
             listDatas = data.getMemData();
+        } else if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_NET)) {
+            if(netThroughput != null)
+                netThroughput.markEvent();
+
+            listDatas = data.getNetData();
         } else {
             System.out.println("***** ERROR *****: unexpected type to filter in RichFlatMapFunction ValueFlatMap Class");
             throw (new Exception("unexpected type to filter in RichFlatMapFunction ValueFlatMap Class"));

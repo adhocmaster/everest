@@ -22,7 +22,6 @@
 
 package com.futurewei.everest.functions;
 
-import com.futurewei.everest.datatypes.EverestCollectorData;
 import com.futurewei.everest.datatypes.EverestCollectorDataT;
 import org.apache.flink.streaming.api.functions.AssignerWithPunctuatedWatermarks;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;

@@ -48,6 +48,8 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
     private transient Counter invalidCpuCounter;
     private transient Counter validMemCounter;
     private transient Counter invalidMemCounter;
+    private transient Counter validNetCounter;
+    private transient Counter invalidNetCounter;
 
     // A type of collection to store everest data. This will be stored in memory
     // of a task manager
@@ -75,6 +77,14 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .counter(EverestDefaultValues.INVALID_MEM_COUNTER);
+        this.validNetCounter = getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .counter(EverestDefaultValues.VALID_NET_COUNTER);
+        this.invalidNetCounter = getRuntimeContext()
+                .getMetricGroup()
+                .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
+                .counter(EverestDefaultValues.INVALID_NET_COUNTER);
     }
 
     /**
@@ -105,6 +115,15 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
             else {
                 if (invalidMemCounter != null) {
                     this.invalidMemCounter.inc();
+                }
+            }
+        } else if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_NET)) {
+            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+            if(validNetCounter != null && isValid)
+                this.validNetCounter.inc();
+            else {
+                if (invalidNetCounter != null) {
+                    this.invalidNetCounter.inc();
                 }
             }
         } else {

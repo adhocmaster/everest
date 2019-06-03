@@ -65,6 +65,16 @@ public class ValueSplitter implements OutputSelector<EverestCollectorDataT<Doubl
             } else {
                 cat = "low";
             }
+        } else if(typeToCollect.equals("net")) {
+            if (percent >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+                cat = "critical";
+            } else if (percent >= EverestDefaultValues.NET_THRESHOLD_HIGH && percent < EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+                cat = "high";
+            } else if (percent >= EverestDefaultValues.NET_THRESHOLD_REGULAR && percent < EverestDefaultValues.NET_THRESHOLD_HIGH) {
+                cat = "regular";
+            } else {
+                cat = "low";
+            }
         } else {
             System.out.println("***** ERROR *****: unexpected type to filter in RichFlatMapFunction ValueFlatMap Class");
         }
