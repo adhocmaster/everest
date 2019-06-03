@@ -8,7 +8,7 @@ spec:
   #     image: busybox
   #     command: ['sh', '-c', 'until nslookup cassandra-service.default.svc.cluster.local; do echo waiting for cassandra; sleep 2; done; sleep 60']
   containers:
-  - name: everest-tools
+  - name: everest-analytics
     image: iharijono/everest-flink-analytics:latest
     imagePullPolicy: Always
     resources:
@@ -24,7 +24,7 @@ spec:
 #      - -f
 #      - /dev/null
     command:
-      - /app/pipeline/entrypoint.sh
+      - /app/pipeline/everest_cmd.sh
     #
     # TBD
     #
