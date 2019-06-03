@@ -16,6 +16,9 @@ spec:
       labels:
         app: kafka
       annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '5556'
+        prometheus.io/path: '/mymetrics'
     spec:
       terminationGracePeriodSeconds: 30
       initContainers:

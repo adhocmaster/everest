@@ -9,6 +9,9 @@ spec:
       labels:
         app: flink
         component: jobmanager
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '9250'
     spec:
       containers:
       - name: jobmanager
