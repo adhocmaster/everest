@@ -1,0 +1,226 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: everest-sink-ccpu
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: everest
+        tier: job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: everest-sink-ccpu
+          image: iharijono/everest-flink-analytics:latest
+          imagePullPolicy: Always
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          command:
+            - /app/pipeline/everest_cmd.sh
+            - -s
+            - -t
+            - "cpu-c-topic"
+            - -b
+            - "bootstrap.kafka.svc.cluster.local:9092"
+          env:
+            - name: KAFKA_BOOTSTRAPPER
+              value: bootstrap.kafka.svc.cluster.local:9092
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: everest-sink-hcpu
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: everest
+        tier: job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: everest-sink-hcpu
+          image: iharijono/everest-flink-analytics:latest
+          imagePullPolicy: Always
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          command:
+            - /app/pipeline/everest_cmd.sh
+            - -s
+            - -t
+            - "cpu-h-topic"
+          env:
+            - name: KAFKA_BOOTSTRAPPER
+              value: bootstrap.kafka.svc.cluster.local:9092
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: everest-sink-cmem
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: everest
+        tier: job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: everest-sink-cmem
+          image: iharijono/everest-flink-analytics:latest
+          imagePullPolicy: Always
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          command:
+            - /app/pipeline/everest_cmd.sh
+            - -s
+            - -t
+            - "mem-c-topic"
+            - -b
+            - "bootstrap.kafka.svc.cluster.local:9092"
+          env:
+            - name: KAFKA_BOOTSTRAPPER
+              value: bootstrap.kafka.svc.cluster.local:9092
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: everest-sink-hmem
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: everest
+        tier: job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: everest-sink-hmem
+          image: iharijono/everest-flink-analytics:latest
+          imagePullPolicy: Always
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          command:
+            - /app/pipeline/everest_cmd.sh
+            - -s
+            - -t
+            - "mem-h-topic"
+            - -b
+            - "bootstrap.kafka.svc.cluster.local:9092"
+          env:
+            - name: KAFKA_BOOTSTRAPPER
+              value: bootstrap.kafka.svc.cluster.local:9092
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: everest-sink-cnet
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: everest
+        tier: job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: everest-sink-cnet
+          image: iharijono/everest-flink-analytics:latest
+          imagePullPolicy: Always
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          command:
+            - /app/pipeline/everest_cmd.sh
+            - -s
+            - -t
+            - "net-c-topic"
+            - -b
+            - "bootstrap.kafka.svc.cluster.local:9092"
+          env:
+            - name: KAFKA_BOOTSTRAPPER
+              value: bootstrap.kafka.svc.cluster.local:9092
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: everest-sink-hnet
+spec:
+  completions: 1
+  parallelism: 1
+  backoffLimit: 2
+  template:
+    metadata:
+      labels:
+        app: everest
+        tier: job
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: everest-sink-hnet
+          image: iharijono/everest-flink-analytics:latest
+          imagePullPolicy: Always
+          resources:
+            # keep request = limit to keep this container in guaranteed class
+            limits:
+              cpu: 50m
+              memory: 50Mi
+            requests:
+              cpu: 50m
+              memory: 50Mi
+          command:
+            - /app/pipeline/everest_cmd.sh
+            - -s
+            - -t
+            - "net-h-topic"
+            - -b
+            - "bootstrap.kafka.svc.cluster.local:9092"
+          env:
+            - name: KAFKA_BOOTSTRAPPER
+              value: bootstrap.kafka.svc.cluster.local:9092
+---
