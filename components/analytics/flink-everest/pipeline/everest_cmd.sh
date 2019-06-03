@@ -2,8 +2,9 @@
 
 SINKS=""
 TOPIC=""
+BOOTSTRAPPER=""
 usage() {
-	    echo "everest_cmd.sh [-h] [-l] [-s] [-t topic]"
+	    echo "everest_cmd.sh [-h] [-l] [-s] [-t topic] [-b kafka_bootstrapper]"
 	    echo "script to start container for everest analytics"
 }
 echo "-$#-"
@@ -27,6 +28,11 @@ do
 	    TOPIC="$1"
 		shift
 	    ;;
+	-b)
+	    shift
+	    BOOTSTRAPPER="$1"
+		shift
+	    ;;
 	*)
 	    echo "Parameter error -$1-"
 	    shift
@@ -45,7 +51,7 @@ then
 		usage
 		exit 1
 	fi
-	(cd /app/pipeline/sinks; python kafka-demo-consumer.py -g mygroup --json -t $TOPIC)
+	(cd /app/pipeline/sinks; python kafka-demo-consumer.py -b $BOOTSTRAPPER -g mygroup --json -t $TOPIC)
 else
 	echo "Start the container cmd entry point"
 	echo "Everest Tools is DONE and READY..."
