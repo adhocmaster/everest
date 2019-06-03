@@ -45,7 +45,7 @@ done
 if [ "$SINKS" != "" ]
 then
 	echo "Start the container python entry point"
-	echo "(cd sinks; python kafka-demo-consumer.py -g mygroup --json -t $TOPIC)"
+	echo "(cd /app/pipeline/sinks; python kafka-demo-consumer.py -b $BOOTSTRAPPER -g mygroup --json -t $TOPIC)"
 	if [ "$TOPIC" == "" ]
 	then
 		usage
