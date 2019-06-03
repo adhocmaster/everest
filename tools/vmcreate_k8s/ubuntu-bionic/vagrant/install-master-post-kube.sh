@@ -56,7 +56,7 @@ echo "Installing Istio"
 EXPECTED_ISTIO_VER="istio-1.1.4"
 curl -L https://git.io/getLatestIstio | sh -
 ISTIO_VER=`ls -td -- */ | head -n 1 | cut -d'/' -f1`
-echo "Installed Istio Version: $ISTIO_VER"
+echo "Installed Istio Version: $ISTIO_VER" > $GENERATED_DIR/istio.txt
 IPATH=`pwd`/$ISTIO_VER/bin
 export PATH="$PATH:$IPATH"
 (cd $ISTIO_VER; for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done)
@@ -72,6 +72,57 @@ SVC_TYPE="NodePort"
 #     SVC_TYPE="LoadBalancer"
 #     # TODO TODO TODO
 # fi
+
+#
+# We need to alter istio prometheus config file to include metrics endpoints of everest related service e.g. flink everest analytics
+# adding:
+#
+# - job_name: 'everest-analytics'  # This is for everest target.
+#     file_sd_configs:
+#       - files:
+#         - /etc/prometheus/everest-analytics.json
+
+ISTIO_PROM_SCRAPE_SEARCH_KEYWORD="scrape_configs:"
+
+#
+# We need to add everest-analytics.json into the configmap so it is being used by prometheus pods
+# 
+# [{
+# "targets": [ "endpoint1:8080", "endpoint1:8081" ],
+# "labels": {
+#   "env": "stage",
+#   "job": "boot-api"
+# }}]
+#
+#
+#  - job_name: kafka
+#     static_configs:
+#     - targets:
+#       - kafka-0.broker.default.svc.cluster.local:5556
+#       - kafka-1.broker.default.svc.cluster.local:5556
+#       - kafka-2.broker.default.svc.cluster.local:5556
+#   - job_name: kafka_exporter
+#     static_configs:
+#     - targets:
+#       - kafka-exporter-service.default.svc.cluster.local:9308
+#   - job_name: job-manager
+#     static_configs:
+#     - targets:
+#       - flink-jobmanager.default.svc.cluster.local:9250
+#   - job_name: task-manager0
+#     static_configs:
+#     - targets:
+#       - flink-taskmanager-0.flink-dns.default.svc.cluster.local:9250
+#   - job_name: task-manager1
+#     static_configs:
+#     - targets:
+#       - flink-taskmanager-1.flink-dns.default.svc.cluster.local:9250
+#   - job_name: task-manager2
+#     static_configs:
+#     - targets:
+#       - flink-taskmanager-2.flink-dns.default.svc.cluster.local:9250
+
+ISTIO_PROM_SEARCH_KEYWORD="prometheus.yml: |-"
 
 (cd $ISTIO_VER; kubectl apply -f install/kubernetes/istio-demo.yaml)
 
