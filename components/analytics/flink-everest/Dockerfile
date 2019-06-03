@@ -19,7 +19,6 @@ COPY --from=builder /install /usr/local
 
 RUN mkdir /app
 COPY pipeline /app/pipeline
-COPY tools/requirements.txt /app/pipeline
 
 # Install curl, git, python
 RUN apk add --no-cache curl influxdb python3 && \
@@ -29,7 +28,8 @@ RUN apk add --no-cache curl influxdb python3 && \
     if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi && \
     if [[ ! -e /usr/bin/python ]]; then ln -sf /usr/bin/python3 /usr/bin/python; fi && \
     rm -r /root/.cache && \
+    pip install -r /app/pipeline/sinks/requirements.txt && \
     chmod +x /app/pipeline/*.sh
 
 WORKDIR /app
-CMD ["/bin/sh", "-c", "/app/pipeline/entrypoint.sh"]
+CMD ["/bin/sh", "-c", "/app/pipeline/everest_cmd.sh"]
