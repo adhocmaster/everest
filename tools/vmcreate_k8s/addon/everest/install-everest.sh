@@ -12,11 +12,27 @@
 # or implied. See the License for the specific language governing permissions and limitations under
 # the License.
 #
+# Assumptions:
+#     - Kubernetes is running
+#     - istio 1.x.x is installed
+#     - kubeconfig is correct
+#
+#
 # Requires: 
 #     - sudo
 #     - kubeconfig
 #     - kubectl
+#     - make sure that your kube config file point to the RIGHT k8s cluster
 #
+#
+
+#
+# CLOUD_TYPE=vm
+# adjust this if you are in different environment, alternatives are:
+# gke, aws
+#
+CLOUD_TYPE=vm
+
 OP=$1
 if [ "$OP" = "-d" ]
 then
@@ -36,7 +52,7 @@ cd /tmp
 # don't do this if you are INSIDE THE VM
 # do this if you are outside the VM
 #
-if [ "$KUBECONFIG" = "" ]
+if [ "$KUBECONFIG" = "" ] && [ "$CLOUD_TYPE" = "vm" ]
 then
     export KUBECONFIG=$HOME/kubeconfig.yml
 fi
@@ -53,7 +69,7 @@ git clone https://github.com/iharijono/everest.git
 #
 # Let's patch original istio-system first
 #
-if [ "$KUBE_CREATE" = "create" ]
+if [ "$KUBE_CREATE" = "create" ] && [ "$CLOUD_TYPE" = "vm" ]
 then
     echo "Patching istio-ingressgateway: patch svc istio-ingressgateway -n istio-system -p '{spec:{type: NodePort}}'"
     kubectl patch svc istio-ingressgateway -n istio-system -p '{"spec":{"type": "NodePort"}}'
@@ -70,7 +86,7 @@ KAFKA_NAMESPACE="kafka"
 KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
 KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
 
-if [ "$KAFKA_APP_NAMESPACE" != "default" ]
+if [ "$KAFKA_NAMESPACE" != "default" ]
 then
     kubectl $KUBE_CREATE namespace $KAFKA_NAMESPACE
 fi
@@ -146,7 +162,6 @@ then
     IKIALI_SVC_NAME="istio-kiali-outside"
     ITRACING_SVC_NAME="istio-tracing-outside"
     PROM_SVC_NAME="prometheus-outside"
-    CLOUD_TYPE="vm"
     if [ "$CLOUD_TYPE" = "vm" ]
     then
         SVC_TYPE="NodePort"
@@ -183,8 +198,10 @@ then
 
 
     echo "Installing Everest Analytics: Flink..."
-    EVEREST_FLINK_DIR="./everest/deployment/kubernetes/vm/analytics/flink"
-    kubectl $KUBE_APPLY -R -f $EVEREST_FLINK_DIR $EVEREST_NAMESPACE_N
+    FLINK_DIR="./everest/deployment/kubernetes/vm/analytics/flink/session-cluster"
+    kubectl $KUBE_APPLY -R -f $FLINK_DIR $EVEREST_NAMESPACE_N
+    FLINK_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/flink-everest"
+    kubectl $KUBE_APPLY -R -f $FLINK_EVEREST_DIR $EVEREST_NAMESPACE_N
 
 
     echo "DONE Installing All Everest Apps and Services ..."
