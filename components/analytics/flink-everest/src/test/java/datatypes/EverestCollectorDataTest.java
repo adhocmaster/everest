@@ -54,6 +54,7 @@ public class EverestCollectorDataTest {
     private String containerName = "My Cont Name";
     private String podName = "My Pod Name";
     private String namespace = "My NameSpace";
+    private String metric = "My Metric";
 
     @Before
     public void before() throws Exception {
@@ -61,9 +62,9 @@ public class EverestCollectorDataTest {
         memData = new ArrayList<EverestCollectorDataT<Double, Double>>();
         netData = new ArrayList<EverestCollectorDataT<Double, Double>>();
         for(int i=0; i < 3; i++) {
-            cpuData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 5000.1 + i, 50.1 + i));
-            memData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1000.1 + i, 10.1 + i));
-            netData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1000.1 + i, 10.1 + i));
+            cpuData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 5000.1 + i, 50.1 + i));
+            memData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 1000.1 + i, 10.1 + i));
+            netData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 1000.1 + i, 10.1 + i));
         }
     }
 

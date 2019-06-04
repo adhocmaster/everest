@@ -46,6 +46,7 @@ public class EverestCollectorDataTTest {
     private String containerName = "My Cont Name";
     private String podName = "My Pod Name";
     private String namespace = "My NameSpace";
+    private String metric ="My metric";
 
     @Before
     public void before() throws Exception {
@@ -62,7 +63,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetCluster_id() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(cluster_id, cpuData.getCluster_id());
     }
 
@@ -73,7 +74,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetCluster_id() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(cluster_id, cpuData.getCluster_id());
         cpuData.setCluster_id(cluster_id + cluster_id);
         assertEquals(cluster_id+cluster_id, cpuData.getCluster_id());
@@ -86,7 +87,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetTs() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(ts, cpuData.getTs());
 
     }
@@ -98,7 +99,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetTs() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(ts, cpuData.getTs());
         cpuData.setTs(ts + ts);
         assertEquals(ts+ts, cpuData.getTs());
@@ -111,7 +112,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetContainerName() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(containerName, cpuData.getContainerName());
 
     }
@@ -123,7 +124,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetContainerName() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(containerName, cpuData.getContainerName());
         cpuData.setContainerName(containerName+containerName);
         assertEquals(containerName+containerName, cpuData.getContainerName());
@@ -136,7 +137,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetPodName() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(podName, cpuData.getPodName());
     }
 
@@ -147,7 +148,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetPodName() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(podName, cpuData.getPodName());
         cpuData.setPodName(podName+podName);
         assertEquals(podName+podName, cpuData.getPodName());
@@ -160,7 +161,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetNamespace() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(namespace, cpuData.getNamespace());
 
     }
@@ -172,7 +173,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetNamespace() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(namespace, cpuData.getNamespace());
         cpuData.setNamespace(namespace+namespace);
         assertEquals(namespace+namespace, cpuData.getNamespace());
@@ -186,7 +187,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetValue() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(1.0, cpuData.getValue(), 0.01);
 
     }
@@ -198,7 +199,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetValue() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(1.0, cpuData.getValue(), 0.01);
         cpuData.setValue(10.0);
         assertEquals(10.0, cpuData.getValue(), 0.01);
@@ -211,7 +212,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testGetPercentage() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(2.0, cpuData.getPercentage(), 0.01);
 
     }
@@ -223,7 +224,7 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testSetPercentage() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(2.0, cpuData.getPercentage(), 0.01);
         cpuData.setPercentage(20.0);
         assertEquals(20.0, cpuData.getPercentage(), 0.01);
@@ -236,12 +237,12 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testEquals() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
-        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
+        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(cpuData, cpuData);
         assertEquals(memData, memData);
         assertEquals(cpuData, memData);
-        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 10.0, 2.0);
+        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 10.0, 2.0);
         assertNotEquals(cpuData, memData);
     }
 
@@ -252,12 +253,12 @@ public class EverestCollectorDataTTest {
     */
     @Test
     public void testHashCode() throws Exception {
-        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
-        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.0, 2.0);
+        cpuData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
+        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 2.0);
         assertEquals(cpuData.hashCode(), memData.hashCode());
         assertEquals(cpuData.hashCode(), cpuData.hashCode());
         assertEquals(memData.hashCode(), memData.hashCode());
-        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 10.0, 2.0);
+        memData = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 10.0, 2.0);
         assertNotEquals(cpuData.hashCode(), memData.hashCode());
 
     }

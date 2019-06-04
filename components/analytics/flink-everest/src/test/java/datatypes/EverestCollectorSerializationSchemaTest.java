@@ -59,11 +59,12 @@ public class EverestCollectorSerializationSchemaTest {
         String podName = "My Pod Name";
         String namespace = "My NameSpace";
         String cluster_id = "my_cluster_id";
+        String metric = "My metric";
         long ts = 10L;
 
         for(int i=0; i < 3; i++) {
-            cpuDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 1.1 + i, 5.05 + i));
-            memDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, ts, 10.1 + i, 50.5 + i));
+            cpuDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 1.1 + i, 5.05 + i));
+            memDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 10.1 + i, 50.5 + i));
         }
 
         EverestCollectorData testEverestCollectorData = new EverestCollectorData("cluster_id", 0L, cpuDatas, memDatas, netDatas);

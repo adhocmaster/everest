@@ -83,6 +83,8 @@ public class EverestAnalyticsJob {
         final String outputCpuLTopic = params.get("cpu-l-topic", "cpu-l-topic");
         final String outputMemCTopic = params.get("mem-c-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
         final String outputMemHTopic = params.get("mem-h-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_H_TOPIC);
+        final String outputNetCTopic = params.get("net-c-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_C_TOPIC);
+        final String outputNetHTopic = params.get("net-h-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_H_TOPIC);
         final String bootstrapServers = params.get("bootstrap.servers", EverestDefaultValues.BOOTSTRAP_SERVERS);
         final int concurency = Integer.parseInt(params.get("concurency", EverestDefaultValues.CONCURENCY));
         final int windowSize = Integer.parseInt(params.get("window-size", EverestDefaultValues.WINDOW_SIZE)); //in secs
@@ -115,6 +117,9 @@ public class EverestAnalyticsJob {
         DataStream<EverestCollectorDataT<Double, Double>> memDataStream = everestCollectorDataStream.flatMap(
                 new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_MEM)
         );
+        DataStream<EverestCollectorDataT<Double, Double>> netDataStream = everestCollectorDataStream.flatMap(
+                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_NET)
+        );
 
         /**
          * Transform by
@@ -139,8 +144,16 @@ public class EverestAnalyticsJob {
                 // filter out the elements that have values < Low bound or > high bound
                 .filter(new ValidValueFilter(EverestDefaultValues.TYPE_TO_COLLECT_MEM)).name("F_ValidValue_Filter_MEM")
                 .keyBy("containerName")
-        //                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
-        //                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
+                //                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
+                //                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
+                ;
+        DataStream<EverestCollectorDataT<Double, Double>> netDataStreamByKey = netDataStream
+                .assignTimestampsAndWatermarks(new CustomWatermarkExtractor()).name("F_TimeStampsWatermark_NET")
+                // filter out the elements that have values < Low bound or > high bound
+                .filter(new ValidValueFilter(EverestDefaultValues.TYPE_TO_COLLECT_NET)).name("F_ValidValue_Filter_NET")
+                .keyBy("containerName")
+                //                .window(TumblingEventTimeWindows.of(Time.seconds(windowSize)))
+                //                .reduce(new MaxValueReducer()).name("F_MaxValueReducer");
                 ;
 
         /**
@@ -172,6 +185,18 @@ public class EverestAnalyticsJob {
         DataStream<EverestCollectorDataT<Double, Double>> memLowDataStream = memDataStreamByKey
                 // filter out the elements that have values loiw
                 .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_LOW)).name("F_Category_Filter_Low_MEM");
+        DataStream<EverestCollectorDataT<Double, Double>> netCriticalDataStream = netDataStreamByKey
+                // filter out the elements that have values critical
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_CRITICAL)).name("F_Category_Filter_Critical_NET");
+        DataStream<EverestCollectorDataT<Double, Double>> netHighDataStream = netDataStreamByKey
+                // filter out the elements that have values high
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_HIGH)).name("F_Category_Filter_High_NET");
+        DataStream<EverestCollectorDataT<Double, Double>> netRegularDataStream = netDataStreamByKey
+                // filter out the elements that have values regular
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_REGULAR)).name("F_Category_Filter_Regular_NET");
+        DataStream<EverestCollectorDataT<Double, Double>> netLowDataStream = netDataStreamByKey
+                // filter out the elements that have values loiw
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_LOW)).name("F_Category_Filter_Low_NET");
 
 
         /**
@@ -213,7 +238,22 @@ public class EverestAnalyticsJob {
                                 new EverestCollectorTSerializationSchema(),
                                 kafkaProps)).name("Si_MEM_High_Kafka_Out_To_" + outputMemHTopic);
 
-		// execute program
+        // write the cpu/mem usage into Kafka
+        netCriticalDataStream.
+                addSink(
+                        new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                                outputNetCTopic,
+                                new EverestCollectorTSerializationSchema(),
+                                kafkaProps)).name("Si_NET_Critical_Kafka_Out_To_" + outputNetCTopic);
+        // write the low cpu/net usage into Kafka
+        netHighDataStream.
+                addSink(
+                        new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                                outputNetHTopic,
+                                new EverestCollectorTSerializationSchema(),
+                                kafkaProps)).name("Si_NET_High_Kafka_Out_To_" + outputNetHTopic);
+
+        // execute program
 		env.execute("Flink Everest Job");
 	}
 

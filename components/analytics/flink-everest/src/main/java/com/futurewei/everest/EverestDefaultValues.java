@@ -99,8 +99,8 @@ public interface EverestDefaultValues {
     String MEM_THROUGHPUT = "mem_throughput";
     String NET_THROUGHPUT = "net_throughput";
 
-    //String BOOTSTRAP_SERVERS = "bootstrap.kafka.svc.cluster.local:9092";
-    String BOOTSTRAP_SERVERS = "localhost:9092";
+    String BOOTSTRAP_SERVERS = "bootstrap.kafka:9092";
+    //String BOOTSTRAP_SERVERS = "localhost:9092";
     String WINDOW_SIZE = "20"; //20 sec
 
 }

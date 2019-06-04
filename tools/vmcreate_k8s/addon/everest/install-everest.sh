@@ -82,21 +82,21 @@ fi
 #  WARNING WARNING WARNING: adjust namespace in kafka-service/00rbac-namespace-default/10-node-reader.yml
 #
 
-KAFKA_NAMESPACE="kafka"
-KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
-KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
+# KAFKA_NAMESPACE="kafka"
+# KAFKA_NAMESPACE_N="-n $KAFKA_NAMESPACE"
+# KAFKA_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-service"
 
-if [ "$KAFKA_NAMESPACE" != "default" ]
-then
-    kubectl $KUBE_CREATE namespace $KAFKA_NAMESPACE
-fi
-if [ "$KUBE_CREATE" = "create" ]
-then
-    echo "Installing Kafka ..."
-    kubectl $KUBE_APPLY -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
-    echo "DONE Installing Kafka, wait ..."
-    sleep 120
-fi
+# if [ "$KAFKA_NAMESPACE" != "default" ]
+# then
+#     kubectl $KUBE_CREATE namespace $KAFKA_NAMESPACE
+# fi
+# if [ "$KUBE_CREATE" = "create" ]
+# then
+#     echo "Installing Kafka ..."
+#     kubectl $KUBE_APPLY -R -f $KAFKA_DIR $KAFKA_NAMESPACE_N
+#     echo "DONE Installing Kafka, wait ..."
+#     sleep 120
+# fi
 
 #
 #
@@ -135,21 +135,21 @@ fi
 if [ "$KUBE_CREATE" = "create" ]
 then
     echo "Install Everest ..."
-    #
-    # EVEREST services
-    #
-    EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
-    kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
-    #
-    # EVEREST Mongo
-    #
-    EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
-    kubectl $KUBE_APPLY -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
-    #
-    # EVEREST MONITORING
-    #
-    EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
-    (cd $EVEREST_MONITORING_DIR; kubectl $KUBE_APPLY -R -f grafana/ $EVEREST_NAMESPACE_N)
+    # #
+    # # EVEREST services
+    # #
+    # EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
+    # kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+    # #
+    # # EVEREST Mongo
+    # #
+    # EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
+    # kubectl $KUBE_APPLY -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+    # #
+    # # EVEREST MONITORING
+    # #
+    # EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
+    # (cd $EVEREST_MONITORING_DIR; kubectl $KUBE_APPLY -R -f grafana/ $EVEREST_NAMESPACE_N)
     #
     # EVEREST UI
     #
@@ -212,7 +212,7 @@ then
         echo "Setting ITRACING to $ITRACING_HOST:$ITRACING_PORT on $COLLECTOR_UI_TMPL"
         sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g;s/___IKIALI_HOST___:___IKIALI_PORT___/$IKIALI_HOST:$IKIALI_PORT/g;s/___ITRACING_HOST___:___ITRACING_PORT___/$ITRACING_HOST:$ITRACING_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
     fi
-    kubectl $KUBE_APPLY -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
+ #   kubectl $KUBE_APPLY -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
 
 
     # echo "Installing Everest Analytics: Flink..."
