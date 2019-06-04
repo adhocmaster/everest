@@ -59,7 +59,9 @@ class Prom {
         // All processes CPU usage (1m avg)
         // "sum (rate (container_cpu_usage_seconds_total{id!=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (id)"
         // 
-        return ["container_cpu_usage_seconds_total", "container_cpu_load_average_10s", ]
+        return ["container_cpu_usage_seconds_total", "container_cpu_load_average_10s", 
+                "container_cpu_user_seconds_total", "container_cpu_system_seconds_total",
+                ""]
     }
     static get PROM_MEM() {
         // Cluster memory usage
@@ -69,7 +71,8 @@ class Prom {
         // Total
         // "sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"})"
         // Pods memory usage
-        // "sum (container_memory_working_set_bytes{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}) by (pod_name)"
+        // Wrong "sum (container_memory_working_set_bytes{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}) by (pod_name)"
+        // "container_memory_usage_bytes"
         // System services memory usage
         // "sum (container_memory_working_set_bytes{systemd_service_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}) by (systemd_service_name)"
         // Containers memory usage
@@ -79,7 +82,9 @@ class Prom {
         // All processes memory usage
         // "sum (container_memory_working_set_bytes{id!=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) by (id)"
         // 
-        return ["container_memory_working_set_bytes"]
+        return ["container_memory_usage_bytes", "container_memory_working_set_bytes",
+                "container_memory_failures_total", "container_memory_max_usage_bytes",
+                "container_memory_failcnt"]
     }
     static get PROM_NET() {
         // Network I/O pressure
@@ -98,7 +103,12 @@ class Prom {
         // "- sum (rate (container_network_transmit_bytes_total{rkt_container_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, rkt_container_name)"
         // 
 
-        return ["container_network_transmit_bytes_total", "container_network_receive_bytes_total"]
+        return ["container_network_transmit_bytes_total", 
+                "container_network_transmit_errors_total", "container_network_transmit_packets_dropped_total",
+                "container_network_transmit_packets_total",
+                "container_network_receive_bytes_total",
+                "container_network_receive_errors_total", "container_network_receive_packets_dropped_total",
+                "container_network_receive_packets_total"]
     }
     static get PROM_CLUSTER() {
         return [""]
@@ -124,7 +134,7 @@ class Prom {
       this._host = host
       this._port = port
       this._url_query = 'http://' + this._host + ':' + this._port + '/api/v1/query?query='
-      this._url_query_range = 'http://' + this._host + ':' + this._port + '/api/v1/query_range?query='
+      //this._url_query_range = 'http://' + this._host + ':' + this._port + '/api/v1/query_range?query='
       this._kafka = ''
       this._metrics = {'cluster_id': 'mycluster_id', 'cpuData': [], 'memData': [], 'netData': [], 'ts': 0}
       this._nss = []
@@ -150,9 +160,9 @@ class Prom {
     get url_query() {
         return this._url_query
     }
-    get url_query_range() {
-        return this._url_query_range
-    }
+    // get url_query_range() {
+    //     return this._url_query_range
+    // }
     get metrics() {
         return this._metrics
     }
@@ -163,12 +173,6 @@ class Prom {
     /**
      * Should be called everytime before calling the method 'collect'
      */
-    start_capture(start_c) {
-        this._start_c = start_c
-    }
-    end_capture(end_c) {
-        this._end_c = end_c
-    }
     set step_capture(step_c) {
         this._step_c = step_c
     }
@@ -230,9 +234,10 @@ class Prom {
     async _collect_mem() {
         let title = "Prom ID '" + this._id + "' _collect_mem"
         let json_data = {} 
-  
+        this._metrics.memData = []
+
         for(let element of Prom.PROM_MEM) {
-            const p_query = this._url_query + element + this._p_labels + this._p_range
+            let p_query = this._url_query + element + this._p_labels
             if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
@@ -243,22 +248,44 @@ class Prom {
                 let ts_milliseconds = (new Date).getTime()
                 this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
+                let _memData = new Object()
+
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
-                    if(this._nss.length > 0 && this._nss.includes(metric.namespace) && 'namespace' in metric) {
-                        //if(this._verbose) {
-                            // console.log('\n')
-                            // console.log(JSON.stringify(response.data.data, null, 2))
-                            // console.log(`MEM POD ---> ${metric.pod}`)
-                            // console.log(`POD NAME ---> ${metric.pod_name}`)
-                            // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                            console.log(`MEM VALUE MEM ---> ${values}`)
-                            //console.log(`PERCENT ---> ${values[1]}`)
-                        //}
-                        let memData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
-                        'podName': metric.pod_name, 'namespace': metric.namespace}
-                        this._metrics.memData.push(memData)
+                    //if(this._verbose) {
+                        // console.log('\n')
+                        // console.log(JSON.stringify(response.data.data, null, 2))
+                        // console.log(`MEM POD ---> ${metric.pod}`)
+                        // console.log(`POD NAME ---> ${metric.pod_name}`)
+                        // console.log(`NAMESPACE ---> ${metric.namespace}`)
+                        // console.log(`MEM VALUE ---> ${values[1]}`)
+                        //console.log(`PERCENT ---> ${values[1]}`)
+                    //}
+                    _memData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1],
+                    'percentage': 0, 'podName': metric.pod_name, 'namespace': metric.namespace, 'metric': element}
+                    //this._metrics.memData.push(memData)
+                }
+                if(results.length > 0) {
+                    // now get the rate
+                    p_query = this._url_query + 'rate%20%28' + element + this._p_labels + this._p_range + '%29'
+                    if(this._verbose)
+                        console.log(title + " Rate URL -> " + p_query)
+                    const rresponse = await axios.get(p_query)
+                    if(status == 200) {
+                        const rresults = rresponse.data.data.result
+                        for(let rresult of rresults) {
+                            let rmetric = rresult.metric
+                            let rvalues = rresult.value
+                            //console.log(`MEM RATE VALUE ---> ${rvalues[1]}`)
+                            _memData[rmetric.pod_name]['percentage'] = rvalues[1]
+                        }
+                    } else {
+                        console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                    }
+                    for(let i in _memData) {
+                        //console.log("MEM DATA " + JSON.stringify(_memData[i], null, 0))
+                        this._metrics.memData.push(_memData[i])
                     }
                 }
             } else {
@@ -271,9 +298,10 @@ class Prom {
     async _collect_net() {
         let title = "Prom ID '" + this._id + "' _collect_net"
         let json_data = {} 
- 
+        this._metrics.netData = []
+
         for(let element of Prom.PROM_NET) {
-            const p_query = this._url_query + element + this._p_labels + this._p_range
+            let p_query = this._url_query + element + this._p_labels
             if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
@@ -284,22 +312,44 @@ class Prom {
                 let ts_milliseconds = (new Date).getTime()
                 this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
+                let _netData = new Object()
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
-                    if(this._nss.length > 0 && this._nss.includes(metric.namespace) && 'namespace' in metric) {
-                        if(this._verbose) {
-                            // console.log('\n')
-                            // console.log(JSON.stringify(response.data.data, null, 2))
-                            // console.log(`POD NET ---> ${metric.pod}`)
-                            // console.log(`POD NAME ---> ${metric.pod_name}`)
-                            // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                            console.log(`VALUE NET ---> ${values}`)
-                            //console.log(`PERCENT ---> ${values[1]}`)
+                    //if(this._verbose) {
+                        // console.log('\n')
+                        // console.log(JSON.stringify(response.data.data, null, 2))
+                        // console.log(`POD NET ---> ${metric.pod}`)
+                        // console.log(`POD NAME ---> ${metric.pod_name}`)
+                        // console.log(`NAMESPACE ---> ${metric.namespace}`)
+                        //console.log(`VALUE NET ---> ${values[1]}`)
+                    //}
+                    _netData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1],
+                    'percentage': 0,
+                    'podName': metric.pod_name, 'namespace': metric.namespace, 'metric': element}
+                    //this._metrics.netData.push(netData)                   
+                }
+                if(results.length > 0) {
+                    // now get the rate
+                    p_query = this._url_query + 'rate%20%28' + element + this._p_labels + this._p_range + '%29'
+                    if(this._verbose)
+                        console.log(title + " Rate URL -> " + p_query)
+                    const rresponse = await axios.get(p_query)
+                    if(status == 200) {
+                        const rresults = rresponse.data.data.result
+                        for(let rresult of rresults) {
+                            let rmetric = rresult.metric
+                            let rvalues = rresult.value
+                            // if(this._verbose) {
+                            //     console.log(`NET RVALUE ---> ${rvalues[1]}`)
+                            // }
+                            _netData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
-                        let netData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
-                        'podName': metric.pod_name, 'namespace': metric.namespace}
-                        this._metrics.netData.push(netData)
+                    } else {
+                        console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                    }
+                    for(let i in _netData) {
+                        this._metrics.netData.push(_netData[i])
                     }
                 }
             } else {
@@ -313,9 +363,10 @@ class Prom {
     async _collect_cpu() {
         let title = "Prom ID '" + this._id + "' _collect_cpu"
         let json_data = {} 
- 
+        this._metrics.cpuData = []
+
         for(let element of Prom.PROM_CPU) {
-            const p_query = this._url_query + element + this._p_labels + this._p_range
+            let p_query = this._url_query + element + this._p_labels
             if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
@@ -326,24 +377,46 @@ class Prom {
                 let ts_milliseconds = (new Date).getTime()
                 this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
+                let _cpuData = new Object()
                 // console.log("LEN=" + results.length)
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
-                    // console.log("Result=" + JSON.stringify(result, null, 2))
-                    if(this._nss.length > 0 && this._nss.includes(metric.namespace) && 'namespace' in metric) {
-                        //if(this._verbose) {
-                            // console.log('\n')
-                            // console.log(JSON.stringify(response.data.data, null, 2))
-                            // console.log(`POD ---> ${metric.pod}`)
-                            // console.log(`POD NAME ---> ${metric.pod_name}`)
-                            // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                            console.log(`VALUE CPU ---> ${values}`)
-                            //console.log(`PERCENT ---> ${values[1]}`)
-                        //}
-                        let cpuData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
-                        'podName': metric.pod_name, 'namespace': metric.namespace}
-                        this._metrics.cpuData.push(cpuData)
+                    //if(this._verbose) {
+                        // console.log('\n')
+                        // console.log(JSON.stringify(response.data.data, null, 2))
+                        // console.log(`POD ---> ${metric.pod}`)
+                        // console.log(`POD NAME ---> ${metric.pod_name}`)
+                        // console.log(`NAMESPACE ---> ${metric.namespace}`)
+                        // console.log(`VALUE CPU ---> ${values}`)
+                        //console.log(`PERCENT ---> ${values[1]}`)
+                    //}
+                    _cpuData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1], 
+                    'percentage': 0,
+                    'podName': metric.pod_name, 'namespace': metric.namespace, 'metric': element}
+                    //this._metrics.cpuData.push(cpuData)
+                }
+                if(results.length > 0) {
+                    // now get the rate
+                    p_query = this._url_query + 'rate%20%28' + element + this._p_labels + this._p_range + '%29'
+                    if(this._verbose)
+                        console.log(title + " Rate URL -> " + p_query)
+                    const rresponse = await axios.get(p_query)
+                    if(status == 200) {
+                        const rresults = rresponse.data.data.result
+                        for(let rresult of rresults) {
+                            let rmetric = rresult.metric
+                            let rvalues = rresult.value
+                            // if(this._verbose) {
+                            //     console.log(`CPU RVALUE ---> ${rvalues[1]}`)
+                            // }
+                            _cpuData[rmetric.pod_name]['value'] = rvalues[1]
+                        }
+                    } else {
+                        console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                    }
+                    for(let i in _cpuData) {
+                        this._metrics.cpuData.push(_cpuData[i])
                     }
                 }
             } else {
@@ -356,8 +429,8 @@ class Prom {
 
         let res = false
         try {
-            let _esc_start_c = this._start_c.toISOString().replace(/:/, '%3A')
-            let _esc_end_c = this._end_c.toISOString().replace(/:/, '%3A')
+            // let _esc_start_c = this._start_c.toISOString().replace(/:/, '%3A')
+            // let _esc_end_c = this._end_c.toISOString().replace(/:/, '%3A')
             //this._p_range=`%26start%3D${_esc_start_c}%26end%3D${_esc_end_c}%26step%3D${this._step_c}`
             this._p_range = `%5B${this._step_c}%5D`
             this._p_labels = this.make_plabel()

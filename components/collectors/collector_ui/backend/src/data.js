@@ -21,7 +21,7 @@ var prom_urls = {}
 var log_dir = ""
 
 // now initialize our collecting function which is triggered every INTERVAL seconds
-const DEFAULT_POLL_INTERVAL = 5 * 1000 //5 seconds
+const DEFAULT_POLL_INTERVAL = 6 * 1000 //5 seconds
 const DEFAULT_FACTOR_POLL_TO_START = 60 //30 minute to grab the jaeger info
 var POLL_INTERVAL
 var jaegers = []
@@ -330,10 +330,6 @@ async function _trace_prom() {
 		restDataProm[prom_id] = {}
 		if(prom.length > 3) {
 			//let promObj = prom[3]
-			let end_d = new Date()
-			let start_d = new Date(end_d.getTime() - POLL_INTERVAL)
-			prom[3].start_capture(start_d)
-			prom[3].end_capture(end_d)
 			await prom[3].collect()
 			// restDataProm[prom_id] = prom[3].metrics
 			// if(VERBOSE == true)
@@ -471,10 +467,10 @@ const _start_collector = (rest_aux='') => {
 		for(let app of apps) {
 			p.add_included_app(app)
 		}
-		//p.step_capture = PROM_CAPTURE_STEP // in sec
-		p.step_capture = `${POLL_INTERVAL / 1000}s`
+		p.step_capture = '5m' // 5 minutes rate
+		// p.step_capture = `${POLL_INTERVAL / 1000}s`
 		console.log("Prometheus ID     	: " + prom[2])
-		console.log("Prometheus URL     	: " + p.url_query_range)
+		console.log("Prometheus URL     	: " + p.url_query)
 		prom.push(p)
 	}
 	console.log("Prometheus INCLUDED NS : " + PROM_INCLUDED_NS)

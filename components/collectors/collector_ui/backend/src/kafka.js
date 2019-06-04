@@ -62,13 +62,13 @@ class Kafka {
         throw err
     }
 
-    async _send(key, json_data) {  
+    async send(key, json_data) {  
         // if(VERBOSE)
         //     console.log(JSON.stringify(json_data))
         
         if ( typeof json_data !== 'undefined' && json_data ) {
-            if(Object.keys(json_data).length > 0 && json_data.cpuData.length > 0 && json_data.netData.length > 0 
-                && json_data.memData.length > 0) {
+            if(Object.keys(json_data).length >= 0 && (json_data.cpuData.length > 0 || json_data.netData.length > 0 
+                || json_data.memData.length > 0)) {
                 let KeyedMessage = kafka.KeyedMessage
                 let dataKM = new KeyedMessage(key, JSON.stringify(json_data))
                 let payloads = [
@@ -95,12 +95,12 @@ class Kafka {
         }
     }
 
-    send(key, json_data) {
+    _send(key, json_data) {
         
         if ( typeof json_data !== 'undefined' && json_data ) {
             console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
-            if(Object.keys(json_data).length >= 0 && json_data.cpuData.length > 0 && json_data.netData.length > 0 
-                && json_data.memData.length > 0) {
+            if(Object.keys(json_data).length >= 0 && (json_data.cpuData.length > 0 || json_data.netData.length > 0 
+                || json_data.memData.length > 0)) {
                 console.log("OK")
             } else {
                 console.log('kafka.js: WARNING, trying to send emtpy data???')
