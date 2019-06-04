@@ -31,10 +31,10 @@ spec:
             - -t
             - "cpu-c-topic"
             - -b
-            - "bootstrap.kafka.svc.cluster.local:9092"
+            - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka.svc.cluster.local:9092
+              value: bootstrap.kafka:9092
 ---
 apiVersion: batch/v1
 kind: Job
@@ -70,7 +70,7 @@ spec:
             - "cpu-h-topic"
           env:
             - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka.svc.cluster.local:9092
+              value: bootstrap.kafka:9092
 ---
 apiVersion: batch/v1
 kind: Job
@@ -105,10 +105,10 @@ spec:
             - -t
             - "mem-c-topic"
             - -b
-            - "bootstrap.kafka.svc.cluster.local:9092"
+            - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka.svc.cluster.local:9092
+              value: bootstrap.kafka:9092
 ---
 apiVersion: batch/v1
 kind: Job
@@ -143,10 +143,10 @@ spec:
             - -t
             - "mem-h-topic"
             - -b
-            - "bootstrap.kafka.svc.cluster.local:9092"
+            - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka.svc.cluster.local:9092
+              value: bootstrap.kafka:9092
 ---
 apiVersion: batch/v1
 kind: Job
@@ -181,10 +181,10 @@ spec:
             - -t
             - "net-c-topic"
             - -b
-            - "bootstrap.kafka.svc.cluster.local:9092"
+            - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka.svc.cluster.local:9092
+              value: bootstrap.kafka:9092
 ---
 apiVersion: batch/v1
 kind: Job
@@ -219,8 +219,8 @@ spec:
             - -t
             - "net-h-topic"
             - -b
-            - "bootstrap.kafka.svc.cluster.local:9092"
+            - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka.svc.cluster.local:9092
+              value: bootstrap.kafka:9092
 ---
