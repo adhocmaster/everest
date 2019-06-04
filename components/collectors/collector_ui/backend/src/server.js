@@ -60,15 +60,14 @@ VERBOSE = process.env.CCOLLECTOR_VERBOSE || DEFAULT_VERBOSE
 WITH_MONGO = process.env.CCOLLECTOR_WITH_MONGO || DEFAULT_WITH_MONGO
 WITHOUT_TRACE = process.env.CCOLLECTOR_WITHOUT_TRACE || DEFAULT_WITHOUT_TRACE
 WITHOUT_PROM = process.env.CCOLLECTOR_WITHOUT_PROM || DEFAULT_WITHOUT_PROM
-REST_AUX = process.env.CCOLLECTOR_REST_AUX || DS.DEFAULT_REST_AUX;
+REST_AUX = process.env.CCOLLECTOR_REST_AUX || DS.DEFAULT_REST_AUX
 KAFKA_HOST = process.env.CCOLLECTOR_KAFKA_HOST || DEFAULT_KAFKA_HOST
 KAFKA_PORT = process.env.CCOLLECTOR_KAFKA_PORT || DEFAULT_KAFKA_PORT
 KAFKA_DEBUG = process.env.CCOLLECTOR_KAFKA_DEBUG || DEFAULT_KAFKA_DEBUG
 KAFKA_DATA_TOPIC = process.env.CCOLLECTOR_KAFKA_DATA_TOPIC || DEFAULT_KAFKA_DATA_TOPIC
 
-aux_jaeger_list = AUX_JAEGERS.split(",");
-aux_prom_list = AUX_PROMS.split(",");
-
+aux_jaeger_list = AUX_JAEGERS.split(",")
+aux_prom_list = AUX_PROMS.split(",")
 if(aux_jaeger_list[0] != "") {
     aux_jaeger_list.forEach(function(jaeger_entry) {
 	jaeger_entry_array = jaeger_entry.split(":");

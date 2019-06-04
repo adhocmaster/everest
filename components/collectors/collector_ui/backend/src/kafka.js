@@ -62,31 +62,51 @@ class Kafka {
         throw err
     }
 
-    async send(key, json_data) {  
-        //if(VERBOSE)
-            console.log(JSON.stringify(json_data))
+    async _send(key, json_data) {  
+        // if(VERBOSE)
+        //     console.log(JSON.stringify(json_data))
         
-        if(!(Object.keys(json_data).length === 0 && json_data.constructor === Object)) {
-            let KeyedMessage = kafka.KeyedMessage
-            let dataKM = new KeyedMessage(key, JSON.stringify(json_data))
-            let payloads = [
-                {
-                topic: this._topic,
-                messages: dataKM
-                }
-            ]
-            if(this._verbose)
-                console.log(`kafka.js: sending json to topic ${this._topic} with the key ${key} with data ${JSON.stringify(json_data, null, 2)}`)
-            
-            let push_status = this.producer.send(payloads, (err, data) => {
-                if (err) {
-                console.log('[kafka-producer -> '+this._topic+']: broker update failed');
-                } else {
-                console.log('[kafka-producer -> '+this._topic+']: broker update success');
-                }
-            })
+        if ( typeof json_data !== 'undefined' && json_data ) {
+            if(Object.keys(json_data).length > 0 && json_data.cpuData.length > 0 && json_data.netData.length > 0 
+                && json_data.memData.length > 0) {
+                let KeyedMessage = kafka.KeyedMessage
+                let dataKM = new KeyedMessage(key, JSON.stringify(json_data))
+                let payloads = [
+                    {
+                    topic: this._topic,
+                    messages: dataKM
+                    }
+                ]
+                if(this._verbose)
+                    console.log(`kafka.js: sending json to topic ${this._topic} with the key ${key} with data ${JSON.stringify(json_data, null, 2)}`)
+                
+                let push_status = this.producer.send(payloads, (err, data) => {
+                    if (err) {
+                    console.log('[kafka-producer -> '+this._topic+']: broker update failed');
+                    } else {
+                    console.log('[kafka-producer -> '+this._topic+']: broker update success');
+                    }
+                })
+            } else {
+                console.log('kafka.js: WARNING, trying to send emtpy data???')
+            }
         } else {
-            console.log('kafka.js: WARNING, trying to send emtpy data???')
+            console.log('kafka.js: WARNING, trying to send undefined data???')
+        }
+    }
+
+    send(key, json_data) {
+        
+        if ( typeof json_data !== 'undefined' && json_data ) {
+            console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
+            if(Object.keys(json_data).length >= 0 && json_data.cpuData.length > 0 && json_data.netData.length > 0 
+                && json_data.memData.length > 0) {
+                console.log("OK")
+            } else {
+                console.log('kafka.js: WARNING, trying to send emtpy data???')
+            }
+        } else {
+            console.log('kafka.js: WARNING, trying to send undefined data???')
         }
     }
 

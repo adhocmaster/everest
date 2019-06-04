@@ -329,9 +329,13 @@ async function _trace_prom() {
 		let prom_id = prom[2]
 		restDataProm[prom_id] = {}
 		if(prom.length > 3) {
-			let promObj = prom[3]
-			await promObj.collect()
-			// restDataProm[prom_id] = promObj.metrics
+			//let promObj = prom[3]
+			let end_d = new Date()
+			let start_d = new Date(end_d.getTime() - POLL_INTERVAL)
+			prom[3].start_capture(start_d)
+			prom[3].end_capture(end_d)
+			await prom[3].collect()
+			// restDataProm[prom_id] = prom[3].metrics
 			// if(VERBOSE == true)
 			// 	print_prom(restDataProm)
 			if(KAFKA != null) {
@@ -353,6 +357,7 @@ function _add_prom(h, p, id) {
 
 var WITHOUT_TRACE=false
 var WITHOUT_PROM=false
+// main routine for collector
 function ccollector() {
 	console.log("*************** Capture Tracing/Monitoring Data, Date: " + new Date() + ` without-tracing=${WITHOUT_TRACE} without-prom=${WITHOUT_PROM}`)
 	if(!WITHOUT_TRACE)
@@ -360,9 +365,6 @@ function ccollector() {
 	if(!WITHOUT_PROM)
 		_trace_prom()
 	
-	// if(KAFKA != null) {
-	// 	ready_to_kafka()
-	// }
 
     setTimeout(ccollector, POLL_INTERVAL)
 }
@@ -376,11 +378,12 @@ const ready_to_kafka = () => {
 	if(!WITHOUT_TRACE) {
 		for(let jaeger of jaegers) {
 			if(jaeger.length > 3) {
-				let jaegerObj = jaeger[3]
+				//let jaegerObj = jaeger[3]
 				let jaegerId = jaeger[0]
-				if(VERBOSE)
-					console.log(`${jaegerId}: ${jaegerObj.traces}`)
-				all_data.jaeger_data = {jaegerId: jaegerObj.traces}
+				//if(VERBOSE)
+					console.log(`Ready to kafka ${jaegerId}: ${jaeger[3].traces}`)
+				all_data = jaeger[3].traces
+				KAFKA.send(TRACER.TRACE_JSON_KEY, all_data)
 			}	
 		}	
 	}
@@ -388,16 +391,17 @@ const ready_to_kafka = () => {
 	if(!WITHOUT_PROM) {
 		for(let prom of proms) {
 			if(prom.length > 3) {
-				let promObj = prom[3]
+				//let promObj = prom[3]
 				let promId = prom[0]
 				if(VERBOSE)
-					console.log(`${promId}: ${promObj.metrics}`)
-				all_data = promObj.metrics
+					console.log(`Ready to kafka ${promId}: ${prom[3].metrics}`)
+				all_data = prom[3].metrics
+				KAFKA.send(PROM.PROM_JSON_KEY, all_data)
 			}	
 		}
 	}
 
-	KAFKA.send(PROM.PROM_JSON_KEY, all_data)
+	
 }
 
 const _change_poll_interval = (interval) => {
@@ -435,20 +439,50 @@ const _start_collector = (rest_aux='') => {
 		t.startCaptureInMsec = POLL_INTERVAL
 		console.log("Jaeger ID     	: " + t.id)
 		console.log("Jaeger URL     	: " + t.url0)
-		console.log("Jaeger Capture Interval (msec)    	: " + t.startCaptureInMsec)
+		// console.log("Jaeger Capture Interval (msec)    	: " + t.startCaptureInMsec)
 		jaeger.push(t)
-    }
-    for(let prom of proms) {
-		let p = new PROM(prom[0], prom[1], prom[2])
-		//p.verbose = VERBOSE
-		p.verbose = true
-		console.log("Prometheus ID     	: " + prom[2])
-		console.log("Prometheus URL     	: " + p.url_query)
-		prom.push(p)
 	}
 
+	let PROM_INCLUDED_NS = process.env.CCOLLECTOR_PROM_INCLUDED_NS || PROM.INCLUDED_NS
+	let prom_nss = PROM_INCLUDED_NS.split(",")
+	let nss = []
+	if(prom_nss[0] != "") {
+		for(let ns of prom_nss) {
+			nss.push(ns)
+		}
+	}
+	let PROM_INCLUDED_APP = process.env.CCOLLECTOR_PROM_INCLUDED_APP || PROM.INCLUDED_APP
+	let prom_apps = PROM_INCLUDED_APP.split(",")
+	let apps = []
+	if(prom_apps[0] != "") {
+		for(let app of prom_apps) {
+			apps.push(app)
+		}
+	}
 
-    console.log("Poll Interval               	: " + POLL_INTERVAL + " msec");    
+	let PROM_CAPTURE_STEP = process.env.CCOLLECTOR_PROM_CAPTURE_STEP || PROM.CAPTURE_STEP
+
+    for(let prom of proms) {
+		let p = new PROM(prom[0], prom[1], prom[2])
+		p.verbose = VERBOSE
+		for(let ns of nss) {
+			p.add_included_ns(ns)
+		}
+		for(let app of apps) {
+			p.add_included_app(app)
+		}
+		//p.step_capture = PROM_CAPTURE_STEP // in sec
+		p.step_capture = `${POLL_INTERVAL / 1000}s`
+		console.log("Prometheus ID     	: " + prom[2])
+		console.log("Prometheus URL     	: " + p.url_query_range)
+		prom.push(p)
+	}
+	console.log("Prometheus INCLUDED NS : " + PROM_INCLUDED_NS)
+	console.log("Prometheus INCLUDED APP : " + PROM_INCLUDED_APP)
+	console.log("Prometheus CAPTURE STEP : " + PROM_CAPTURE_STEP)
+
+
+    console.log("Capture Poll Interval               	: " + POLL_INTERVAL + " msec");    
     ccollector();
 };
 

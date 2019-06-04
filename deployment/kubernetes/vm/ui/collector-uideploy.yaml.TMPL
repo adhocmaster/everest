@@ -86,12 +86,16 @@ spec:
             value: "false"
           - name: CCOLLECTOR_MONGO_ROUTE
             value: "mongodb://mongo-service:27017/everest"
+          - name: CCOLLECTOR_WITHOUT_TRACE
+            value: "true"
+          - name: CCOLLECTOR_PROM_INCLUDED_NS
+            value: "everest-app"
+          #- name: CCOLLECTOR_PROM_INCLUDED_APP
+          #  value: "everest-app"
           - name: CCOLLECTOR_VERBOSE
             value: "true"
-          # - name: CCOLLECTOR_WITHOUT_TRACE
-          #   value: "true"
-          # - name: CCOLLECTOR_WITHOUT_PROM
-          #   value: "true"
+          - name: CCOLLECTOR_KAFKA_HOST
+            value: "bootstrap.kafka"
           
 
 

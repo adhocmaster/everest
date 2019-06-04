@@ -26,20 +26,93 @@ class Prom {
     static get PROM_ID() {
         return "prometheus-default"
     }
+    static get PROM_DURATION() {
+        return ""
+    }
+
+    static get PROM_FS() {
+        // Cluster filesystem usage
+        // "sum (container_fs_usage_bytes{device=~\"^/dev/[sv]d[a-z][1-9]$\",id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) / sum (container_fs_limit_bytes{device=~\"^/dev/[sv]d[a-z][1-9]$\",id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) * 100"
+
+    }
     static get PROM_CPU() {
+        // examples:
+        // container_cpu_usage_seconds_total{namespace="everest-app"}
+        // http_requests_total{namespace="everest-app"}[5m]
+        // sum(http_requests_total{method="GET"} offset 5m) 
+        // curl 'http://localhost:9090/api/v1/query_range?query=up&start=2015-07-01T20:10:30.781Z&end=2015-07-01T20:11:00.781Z&step=15s
+        //
+        // Cluster CPU usage (1m avg)
+        // "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) / sum (machine_cpu_cores{kubernetes_io_hostname=~\"^$Node$\"}) * 100"
+        // Container used CPU
+        // "sum (rate (container_cpu_usage_seconds_total{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m]))"
+        // CPU Cores total
+        // "sum (machine_cpu_cores{kubernetes_io_hostname=~\"^$Node$\"})"
+        // Pods CPU usage (1m avg)
+        // "sum (rate (container_cpu_usage_seconds_total{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (pod_name)"
+        // System services CPU usage (1m avg)
+        // "sum (rate (container_cpu_usage_seconds_total{systemd_service_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (systemd_service_name)"
+        // Containers CPU usage (1m avg)
+        // "sum (rate (container_cpu_usage_seconds_total{image!=\"\",name=~\"^k8s_.*\",container_name!=\"POD\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (container_name, pod_name)"
+        // "sum (rate (container_cpu_usage_seconds_total{image!=\"\",name!~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, name, image)"
+        // "sum (rate (container_cpu_usage_seconds_total{rkt_container_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, rkt_container_name)"
+        // All processes CPU usage (1m avg)
+        // "sum (rate (container_cpu_usage_seconds_total{id!=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (id)"
+        // 
         return ["container_cpu_usage_seconds_total", "container_cpu_load_average_10s", ]
     }
     static get PROM_MEM() {
+        // Cluster memory usage
+        // "sum (container_memory_working_set_bytes{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) / sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"}) * 100"
+        // Container used mem
+        // "sum (container_memory_working_set_bytes{id=\"/\",kubernetes_io_hostname=~\"^$Node$\"})"
+        // Total
+        // "sum (machine_memory_bytes{kubernetes_io_hostname=~\"^$Node$\"})"
+        // Pods memory usage
+        // "sum (container_memory_working_set_bytes{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}) by (pod_name)"
+        // System services memory usage
+        // "sum (container_memory_working_set_bytes{systemd_service_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}) by (systemd_service_name)"
+        // Containers memory usage
+        // "sum (container_memory_working_set_bytes{image!=\"\",name=~\"^k8s_.*\",container_name!=\"POD\",kubernetes_io_hostname=~\"^$Node$\"}) by (container_name, pod_name)"
+        // "sum (container_memory_working_set_bytes{image!=\"\",name!~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}) by (kubernetes_io_hostname, name, image)"
+        // "sum (container_memory_working_set_bytes{rkt_container_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}) by (kubernetes_io_hostname, rkt_container_name)"
+        // All processes memory usage
+        // "sum (container_memory_working_set_bytes{id!=\"/\",kubernetes_io_hostname=~\"^$Node$\"}) by (id)"
+        // 
         return ["container_memory_working_set_bytes"]
     }
     static get PROM_NET() {
+        // Network I/O pressure
+        // "sum (rate (container_network_receive_bytes_total{kubernetes_io_hostname=~\"^$Node$\"}[1m]))"
+        // "- sum (rate (container_network_transmit_bytes_total{kubernetes_io_hostname=~\"^$Node$\"}[1m]))"
+
+        // Pods network I/O (1m avg)
+        // "sum (rate (container_network_receive_bytes_total{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (pod_name)"
+        // "- sum (rate (container_network_transmit_bytes_total{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (pod_name)"
+        // Containers network I/O (1m avg)
+        // "sum (rate (container_network_receive_bytes_total{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (container_name, pod_name)"
+        // "- sum (rate (container_network_transmit_bytes_total{image!=\"\",name=~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (container_name, pod_name)"
+        // "sum (rate (container_network_receive_bytes_total{image!=\"\",name!~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, name, image)"
+        // "- sum (rate (container_network_transmit_bytes_total{image!=\"\",name!~\"^k8s_.*\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, name, image)"
+        // "sum (rate (container_network_transmit_bytes_total{rkt_container_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, rkt_container_name)"
+        // "- sum (rate (container_network_transmit_bytes_total{rkt_container_name!=\"\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (kubernetes_io_hostname, rkt_container_name)"
+        // 
+
         return ["container_network_transmit_bytes_total", "container_network_receive_bytes_total"]
     }
     static get PROM_CLUSTER() {
         return [""]
     }
-    static get EXCLUDED_NS() {
-        return ["kube-system", "istio-system", "everest", "kafka"]
+    static get INCLUDED_NS() {
+        //return ["kube-system", "istio-system", "everest", "kafka"]
+        return ""
+    }
+    static get INCLUDED_APP() {
+        //return ["kube-system", "istio-system", "everest", "kafka"]
+        return ""
+    }
+    static get CAPTURE_STEP() {
+        return "1s"
     }
     static get PROM_JSON_KEY() {
         return 'collector-data'
@@ -51,9 +124,20 @@ class Prom {
       this._host = host
       this._port = port
       this._url_query = 'http://' + this._host + ':' + this._port + '/api/v1/query?query='
+      this._url_query_range = 'http://' + this._host + ':' + this._port + '/api/v1/query_range?query='
       this._kafka = ''
-      this._metrics = {'cluster_id': 'mycluster_id', 'cpuData': [], 'memData': [], 'ts': 0}
+      this._metrics = {'cluster_id': 'mycluster_id', 'cpuData': [], 'memData': [], 'netData': [], 'ts': 0}
+      this._nss = []
+      this._apps = []
+      this._nslabel = ''
+      this._applabel = ''
+      this._start_c = Date.now()
+      this._end_c = Date.now()
+      this._p_range= ''
+      this._p_labels = ''
+
     }
+
     get id() {
       return this._id
     }
@@ -66,23 +150,89 @@ class Prom {
     get url_query() {
         return this._url_query
     }
+    get url_query_range() {
+        return this._url_query_range
+    }
     get metrics() {
         return this._metrics
     }
     set verbose(on_or_off) {
         this._verbose = on_or_off
     }
+
+    /**
+     * Should be called everytime before calling the method 'collect'
+     */
+    start_capture(start_c) {
+        this._start_c = start_c
+    }
+    end_capture(end_c) {
+        this._end_c = end_c
+    }
+    set step_capture(step_c) {
+        this._step_c = step_c
+    }
+
+
     set set_kafka(kafka) {
         this._kafka = kafka
     }
 
+    _init_labels(labels) {
+        let _plabels = ''
+        for(let _label of labels) {
+            if(_plabels === '') {
+                _plabels = _label
+            } else {
+                //_plabels += _plabels + `|${_label}`
+                _plabels += _plabels + `%7C${_label}`
+            }
+        }
+        return _plabels
+    }
+
+    add_included_ns(ns) {
+        this._nslabel = ''
+        this._nss.push(ns)
+        let labels = this._init_labels(this._nss)
+        if(labels !== '')
+            this._nslabel = `namespace%3D%22${labels}%22`
+    }
+
+    add_included_app(app) {
+        this._applabel = ''
+        this._apps.push(app)
+        let labels = this._init_labels(this._apps)
+        if(labels !== '')
+            this._applabel = `app%3D%22${labels}%22`
+    }
+
+    make_plabel() {
+        let plabels = ''
+        //console.log("--->> make_plabel: this._nslabel " + this._nslabel)
+        if(this._nslabel !== '') {
+            plabels = `%7B${this._nslabel}`
+        }
+        //console.log("--->> make_plabel: this._applabel " + this._applabel)
+        if(this._applabel !== '') {
+            if(plabels !== '') {
+                plabels = plabels + `,${this._applabel}%7D`
+            } else {
+                plabels = `%7B${this._applabel}%7D`
+            }
+        }
+        if(plabels !== '') {
+            plabels = plabels + '%7D'
+        }
+        //console.log("--->> make_plabel: plabels " + plabels)
+        return(plabels)
+    }
     async _collect_mem() {
         let title = "Prom ID '" + this._id + "' _collect_mem"
         let json_data = {} 
-        let res = true
-
+  
         for(let element of Prom.PROM_MEM) {
-            const p_query = this._url_query + element
+            const p_query = this._url_query + element + this._p_labels + this._p_range
             if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
@@ -91,19 +241,19 @@ class Prom {
             if(status == 200) {
                 const results = response.data.data.result
                 let ts_milliseconds = (new Date).getTime()
-                this._metrics.cluster_id = 'mycluster_id_memX'
+                this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
-                    if(!Prom.EXCLUDED_NS.includes(metric.namespace) && 'namespace' in metric) {
+                    if(this._nss.length > 0 && this._nss.includes(metric.namespace) && 'namespace' in metric) {
                         //if(this._verbose) {
                             // console.log('\n')
                             // console.log(JSON.stringify(response.data.data, null, 2))
-                            // console.log(`POD ---> ${metric.pod}`)
+                            // console.log(`MEM POD ---> ${metric.pod}`)
                             // console.log(`POD NAME ---> ${metric.pod_name}`)
                             // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                            // console.log(`VALUE MEM ---> ${values}`)
+                            console.log(`MEM VALUE MEM ---> ${values}`)
                             //console.log(`PERCENT ---> ${values[1]}`)
                         //}
                         let memData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
@@ -114,18 +264,16 @@ class Prom {
             } else {
                 console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
-                res = false
             }
         }
-        return res
     }
 
     async _collect_net() {
         let title = "Prom ID '" + this._id + "' _collect_net"
         let json_data = {} 
-        let res = true
+ 
         for(let element of Prom.PROM_NET) {
-            const p_query = this._url_query + element
+            const p_query = this._url_query + element + this._p_labels + this._p_range
             if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
@@ -134,42 +282,40 @@ class Prom {
             if(status == 200) {
                 const results = response.data.data.result
                 let ts_milliseconds = (new Date).getTime()
-                this._metrics.cluster_id = 'mycluster_id_memX'
+                this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
-                    if(!Prom.EXCLUDED_NS.includes(metric.namespace) && 'namespace' in metric) {
+                    if(this._nss.length > 0 && this._nss.includes(metric.namespace) && 'namespace' in metric) {
                         if(this._verbose) {
                             // console.log('\n')
                             // console.log(JSON.stringify(response.data.data, null, 2))
-                            console.log(`POD ---> ${metric.pod}`)
+                            // console.log(`POD NET ---> ${metric.pod}`)
                             // console.log(`POD NAME ---> ${metric.pod_name}`)
                             // console.log(`NAMESPACE ---> ${metric.namespace}`)
                             console.log(`VALUE NET ---> ${values}`)
                             //console.log(`PERCENT ---> ${values[1]}`)
                         }
-                        // let memData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
-                        // 'podName': metric.pod_name, 'namespace': metric.namespace}
-                        // this._metrics.memData.push(memData)
+                        let netData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
+                        'podName': metric.pod_name, 'namespace': metric.namespace}
+                        this._metrics.netData.push(netData)
                     }
                 }
             } else {
                 console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
-                res = false
             }
         }
-        return res
  
     }
 
     async _collect_cpu() {
         let title = "Prom ID '" + this._id + "' _collect_cpu"
         let json_data = {} 
-
+ 
         for(let element of Prom.PROM_CPU) {
-            const p_query = this._url_query + element
+            const p_query = this._url_query + element + this._p_labels + this._p_range
             if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
@@ -178,19 +324,21 @@ class Prom {
             if(status == 200) {
                 const results = response.data.data.result
                 let ts_milliseconds = (new Date).getTime()
-                this._metrics.cluster_id = 'mycluster_id_X'
+                this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
+                // console.log("LEN=" + results.length)
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
-                    if(!Prom.EXCLUDED_NS.includes(metric.namespace) && 'namespace' in metric) {
+                    // console.log("Result=" + JSON.stringify(result, null, 2))
+                    if(this._nss.length > 0 && this._nss.includes(metric.namespace) && 'namespace' in metric) {
                         //if(this._verbose) {
                             // console.log('\n')
                             // console.log(JSON.stringify(response.data.data, null, 2))
                             // console.log(`POD ---> ${metric.pod}`)
                             // console.log(`POD NAME ---> ${metric.pod_name}`)
                             // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                            //console.log(`VALUE CPU ---> ${values}`)
+                            console.log(`VALUE CPU ---> ${values}`)
                             //console.log(`PERCENT ---> ${values[1]}`)
                         //}
                         let cpuData = {'containerName': metric.pod, 'value': values[0], 'percentage': values[1],
@@ -201,7 +349,6 @@ class Prom {
             } else {
                 console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
-                res = false
             }
         }
     }
@@ -209,9 +356,16 @@ class Prom {
 
         let res = false
         try {
+            let _esc_start_c = this._start_c.toISOString().replace(/:/, '%3A')
+            let _esc_end_c = this._end_c.toISOString().replace(/:/, '%3A')
+            //this._p_range=`%26start%3D${_esc_start_c}%26end%3D${_esc_end_c}%26step%3D${this._step_c}`
+            this._p_range = `%5B${this._step_c}%5D`
+            this._p_labels = this.make_plabel()
+
             await this._collect_cpu()
             await this._collect_mem()
             await this._collect_net()
+            //console.log("COLLECT FINISHED")
         } catch (error) {
             console.log(`ERROR: http rest API request to ${this._url_query} return errors: ${error}`)
             res = false

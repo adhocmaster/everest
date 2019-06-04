@@ -237,7 +237,9 @@
           <plugin>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <skipGo>false</skipGo>
+              <properties>
+                <skipGo>false</skipGo>
+              </properties>
             </configuration>
           </plugin>
         </plugins>

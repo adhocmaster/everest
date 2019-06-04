@@ -28,7 +28,10 @@ class Tracer {
     static get TRACE_TYPE() {
         return "clover"
     }
-
+    static get TRACE_JSON_KEY() {
+        return 'collector-trace-data'
+    }
+ 
     constructor(host=Tracer.TRACE_HOST, port=Tracer.TRACE_PORT, id=Tracer.TRACE_ID, type=Tracer.TRACE_TYPE, rest_aux='') {
       this._verbose = false
       this._id = id
