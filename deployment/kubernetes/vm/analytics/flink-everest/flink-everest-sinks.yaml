@@ -68,7 +68,9 @@ spec:
             - -s
             - -t
             - "cpu-h-topic"
-          env:
+            - -b
+            - "bootstrap.kafka:9092"
+           env:
             - name: KAFKA_BOOTSTRAPPER
               value: bootstrap.kafka:9092
 ---
