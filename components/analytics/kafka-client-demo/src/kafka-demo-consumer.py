@@ -51,8 +51,9 @@ def main(bootstrapper, kafka_topic, group_id, _json=False):
                 if _json is True:
                     bdata = message.value.decode('utf8')
                     data = json.loads(bdata)
-                    for key, value in data.items() :
-                        print ('KEY: {} VALUE: {}'.format(key, value))
+                    print(json.dumps(data, sort_keys=True, indent=4))
+                    # for key, value in data.items() :
+                    #     print ('KEY: {} VALUE: {}'.format(key, value))
                 else:
                     print(message.value)
  
