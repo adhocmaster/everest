@@ -46,8 +46,10 @@ spec:
         resources:
           requests:
             memory: 512Mi
+            cpu: 256m
           limits:
             memory: 512Mi
+            cpu: 256m
       volumes:
       - name: flink-config
         configMap:

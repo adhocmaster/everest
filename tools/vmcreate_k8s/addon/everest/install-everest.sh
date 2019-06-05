@@ -140,18 +140,18 @@ then
     #
     EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
     kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
-    #
-    # EVEREST Mongo
-    #
-    EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
-    kubectl $KUBE_APPLY -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+#    #
+#    # EVEREST Mongo
+#    #
+#    EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
+#    kubectl $KUBE_APPLY -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
     #
     # EVEREST MONITORING
     #
     EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
     (cd $EVEREST_MONITORING_DIR; kubectl $KUBE_APPLY -R -f grafana/ $EVEREST_NAMESPACE_N)
     
-    EVEREST UI
+    # EVEREST UI
     
     echo "Installing Everest Collector and Web UI..."
 

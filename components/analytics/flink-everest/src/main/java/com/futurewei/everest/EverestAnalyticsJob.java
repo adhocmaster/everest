@@ -80,7 +80,7 @@ public class EverestAnalyticsJob {
 		final String cgTopic = params.get("cg-topic", EverestDefaultValues.KAFKA_CG);
 		final String outputCpuCTopic = params.get("cpu-c-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_C_TOPIC);
         final String outputCpuHTopic = params.get("cpu-h-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_H_TOPIC);
-        final String outputCpuLTopic = params.get("cpu-l-topic", "cpu-l-topic");
+        final String outputNetLTopic = params.get("net-l-topic", "net-l-topic");
         final String outputMemCTopic = params.get("mem-c-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
         final String outputMemHTopic = params.get("mem-h-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_H_TOPIC);
         final String outputNetCTopic = params.get("net-c-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_C_TOPIC);
@@ -170,9 +170,9 @@ public class EverestAnalyticsJob {
         DataStream<EverestCollectorDataT<Double, Double>> cpuRegularDataStream = cpuDataStreamByKey
                 // filter out the elements that have values regular
                 .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR)).name("F_Category_Filter_Regular_CPU");
-        DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
-                // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW)).name("F_Category_Filter_Low_CPU");
+//        DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
+//                // filter out the elements that have values loiw
+//                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW)).name("F_Category_Filter_Low_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> memCriticalDataStream = memDataStreamByKey
                 // filter out the elements that have values critical
                 .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL)).name("F_Category_Filter_Critical_MEM");
@@ -217,11 +217,11 @@ public class EverestAnalyticsJob {
                         kafkaProps)).name("Si_CPU_High_Kafka_Out_To_" + outputCpuHTopic);
 
         // JUST FOR DEBUGGING write the info back into Kafka
-        cpuLowDataStream.addSink(
+        netLowDataStream.addSink(
                 new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
-                        outputCpuLTopic,
+                        outputNetLTopic,
                         new EverestCollectorTSerializationSchema(),
-                        kafkaProps)).name("Si_CPU_Low_Kafka_Out_To_" + outputCpuLTopic);
+                        kafkaProps)).name("Si_CPU_Low_Kafka_Out_To_" + outputNetLTopic);
 
         // write the cpu/mem usage into Kafka
         memCriticalDataStream.

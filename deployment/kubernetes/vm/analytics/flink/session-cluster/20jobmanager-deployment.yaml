@@ -33,9 +33,11 @@ spec:
           name: prom
         resources:
           requests:
-            memory: 512Mi
+            memory: 256Mi
+            cpu: 256m
           limits:
-            memory: 512Mi
+            memory: 256Mi
+            cpu: 256m
         env:
         - name: JOB_MANAGER_RPC_ADDRESS
           value: flink-jobmanager

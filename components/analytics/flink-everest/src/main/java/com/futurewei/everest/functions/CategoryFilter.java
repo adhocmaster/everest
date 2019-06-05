@@ -186,6 +186,11 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
         /**
          * BUG BUG we need to use 'metric'
          */
+        //if(data.getPercentage() > 10 || data.getValue() > 10) {
+        //    System.out.println("catfilter=" + typeToFilter + " metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace()
+        //            + " P=" + data.getPercentage() + "% V=" + data.getValue());
+	//
+        //}
         if(typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_CRITICAL) && data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_CRITICAL) {
 //            System.out.println("CPU CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
@@ -227,8 +232,8 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
             memLowNumbers++;
             return (true);
         } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
-//            System.out.println("NET CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
-//                    data.getPercentage() + "% V=" + data.getValue());
+            System.out.println("NET CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+                    data.getPercentage() + "% V=" + data.getValue());
             netCriticalNumbers++;
             return(true);
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_CRITICAL)) {
