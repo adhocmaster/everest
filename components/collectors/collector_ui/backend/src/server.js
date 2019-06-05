@@ -27,7 +27,7 @@ const DEFAULT_WITH_MONGO = false
 const DEFAULT_WITHOUT_TRACE = false
 const DEFAULT_WITHOUT_PROM = false
 const DEFAULT_KAFKA_HOST = ''
-const DEFAULT_KAFKA_PORT = -1
+const DEFAULT_KAFKA_PORT = 9092
 const DEFAULT_KAFKA_DEBUG = false
 const DEFAULT_KAFKA_DATA_TOPIC = 'everest-data-topic'
 
