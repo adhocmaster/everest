@@ -259,7 +259,8 @@ class Prom {
                         // console.log(`MEM POD ---> ${metric.pod}`)
                         // console.log(`POD NAME ---> ${metric.pod_name}`)
                         // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                        // console.log(`MEM VALUE ---> ${values[1]}`)
+                        if(values[1] > 10)
+                            console.log(`MEM VALUE > 10 ---> ${values[1]}`)
                         //console.log(`PERCENT ---> ${values[1]}`)
                     //}
                     _memData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1],
@@ -278,6 +279,8 @@ class Prom {
                             let rmetric = rresult.metric
                             let rvalues = rresult.value
                             //console.log(`MEM RATE VALUE ---> ${rvalues[1]}`)
+                            //if(rvalues[1] > 10)
+                            //    console.log(`MEM RATE VALUE > 10 ---> ${rvalues[1]}`)
                             _memData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {
@@ -322,7 +325,9 @@ class Prom {
                         // console.log(`POD NET ---> ${metric.pod}`)
                         // console.log(`POD NAME ---> ${metric.pod_name}`)
                         // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                        //console.log(`VALUE NET ---> ${values[1]}`)
+                        if(values[1] > 10)
+                            console.log(`NET VALUE > 10 ---> ${values[1]}`)
+                        //console.log(`VALUE NET ---> ${values[1]})`
                     //}
                     _netData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1],
                     'percentage': 0,
@@ -341,7 +346,8 @@ class Prom {
                             let rmetric = rresult.metric
                             let rvalues = rresult.value
                             // if(this._verbose) {
-                            //     console.log(`NET RVALUE ---> ${rvalues[1]}`)
+                            //if(rvalues[1] > 10)    
+                            //    console.log(`NET RVALUE > 10 ---> ${rvalues[1]}`)
                             // }
                             _netData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
@@ -389,7 +395,8 @@ class Prom {
                         // console.log(`POD NAME ---> ${metric.pod_name}`)
                         // console.log(`NAMESPACE ---> ${metric.namespace}`)
                         // console.log(`VALUE CPU ---> ${values}`)
-                        //console.log(`PERCENT ---> ${values[1]}`)
+                        if(values[1] > 10)
+                            console.log(`CPU VALUE > 10 ---> ${values[1]}`)
                     //}
                     _cpuData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1], 
                     'percentage': 0,
@@ -408,9 +415,10 @@ class Prom {
                             let rmetric = rresult.metric
                             let rvalues = rresult.value
                             // if(this._verbose) {
-                            //     console.log(`CPU RVALUE ---> ${rvalues[1]}`)
+                            //if(rvalues[1] > 10)
+                            //        console.log(`CPU RVALUE > 10 ---> ${rvalues[1]}`)
                             // }
-                            _cpuData[rmetric.pod_name]['value'] = rvalues[1]
+                            _cpuData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {
                         console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
