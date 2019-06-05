@@ -34,10 +34,10 @@ spec:
         resources:
           requests:
             memory: 256Mi
-            cpu: 256m
+            cpu: 512m
           limits:
             memory: 256Mi
-            cpu: 256m
+            cpu: 512m
         env:
         - name: JOB_MANAGER_RPC_ADDRESS
           value: flink-jobmanager
