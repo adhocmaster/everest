@@ -33,10 +33,10 @@ spec:
           name: prom
         resources:
           requests:
-            memory: 256Mi
+            memory: 512Mi
             cpu: 512m
           limits:
-            memory: 256Mi
+            memory: 512Mi
             cpu: 512m
         env:
         - name: JOB_MANAGER_RPC_ADDRESS
