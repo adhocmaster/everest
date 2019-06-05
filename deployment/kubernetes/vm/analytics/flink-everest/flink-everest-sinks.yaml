@@ -39,7 +39,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: everest-sink-lcpu
+  name: everest-sink-lnet
 spec:
   completions: 1
   parallelism: 1
@@ -52,7 +52,7 @@ spec:
     spec:
       restartPolicy: OnFailure
       containers:
-        - name: everest-sink-lcpu
+        - name: everest-sink-lnet
           image: iharijono/everest-flink-analytics:latest
           imagePullPolicy: Always
           resources:
@@ -67,7 +67,7 @@ spec:
             - /app/pipeline/everest_cmd.sh
             - -s
             - -t
-            - "cpu-l-topic"
+            - "net-l-topic"
             - -b
             - "bootstrap.kafka:9092"
           env:

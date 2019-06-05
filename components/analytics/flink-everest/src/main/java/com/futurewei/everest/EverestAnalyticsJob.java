@@ -221,7 +221,7 @@ public class EverestAnalyticsJob {
                 new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
                         outputNetLTopic,
                         new EverestCollectorTSerializationSchema(),
-                        kafkaProps)).name("Si_CPU_Low_Kafka_Out_To_" + outputNetLTopic);
+                        kafkaProps)).name("Si_NET_Low_Kafka_Out_To_" + outputNetLTopic);
 
         // write the cpu/mem usage into Kafka
         memCriticalDataStream.
