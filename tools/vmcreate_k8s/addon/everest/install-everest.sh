@@ -219,7 +219,7 @@ then
     FLINK_DIR="./everest/deployment/kubernetes/vm/analytics/flink/session-cluster"
     kubectl $KUBE_APPLY -R -f $FLINK_DIR $EVEREST_NAMESPACE_N
     FLINK_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/flink-everest"
-    kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest.yaml $EVEREST_NAMESPACE_N
+    #kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest.yaml $EVEREST_NAMESPACE_N
     kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-sinks.yaml $EVEREST_NAMESPACE_N
 
 
