@@ -30,18 +30,20 @@ public class EverestCollectorDataT<V, W> {
     String podName;
     String namespace;
     String metric;
+    String type;
     long ts;
     V value;
     W percentage;
 
     public EverestCollectorDataT() {} // this is a requirement for Flink POJO
 
-    public EverestCollectorDataT(String cluster_id, String containerName, String podName, String namespace, String metric, long ts, V value, W percentage) {
+    public EverestCollectorDataT(String cluster_id, String containerName, String podName, String namespace, String metric, String type, long ts, V value, W percentage) {
         this.cluster_id = cluster_id;
         this.containerName = containerName;
         this.podName = podName;
         this.namespace = namespace;
         this.metric = metric;
+        this.type = type;
         this.ts = ts;
         this.value = value;
         this.percentage = percentage;
@@ -95,6 +97,14 @@ public class EverestCollectorDataT<V, W> {
         this.namespace = namespace;
     }
 
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
     public V getValue() {
         return value;
     }
@@ -122,12 +132,13 @@ public class EverestCollectorDataT<V, W> {
                 podName.equals(that.podName) &&
                 namespace.equals(that.namespace) &&
                 metric.equals(that.metric) &&
+                type.equals(that.type) &&
                 value.equals(that.value) &&
                 percentage.equals(that.percentage);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cluster_id, containerName, podName, namespace, metric, ts, value, percentage);
+        return Objects.hash(cluster_id, containerName, podName, namespace, metric, type, ts, value, percentage);
     }
 }

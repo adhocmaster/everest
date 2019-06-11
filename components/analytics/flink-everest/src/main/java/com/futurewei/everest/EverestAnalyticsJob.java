@@ -114,6 +114,7 @@ public class EverestAnalyticsJob {
         DataStream<EverestCollectorDataT<Double, Double>> cpuDataStream = everestCollectorDataStream.flatMap(
                 new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_CPU)
         );
+
         DataStream<EverestCollectorDataT<Double, Double>> memDataStream = everestCollectorDataStream.flatMap(
                 new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_MEM)
         );
@@ -170,9 +171,9 @@ public class EverestAnalyticsJob {
         DataStream<EverestCollectorDataT<Double, Double>> cpuRegularDataStream = cpuDataStreamByKey
                 // filter out the elements that have values regular
                 .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR)).name("F_Category_Filter_Regular_CPU");
-//        DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
-//                // filter out the elements that have values loiw
-//                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW)).name("F_Category_Filter_Low_CPU");
+        DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
+                // filter out the elements that have values loiw
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW)).name("F_Category_Filter_Low_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> memCriticalDataStream = memDataStreamByKey
                 // filter out the elements that have values critical
                 .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL)).name("F_Category_Filter_Critical_MEM");
@@ -217,11 +218,13 @@ public class EverestAnalyticsJob {
                         kafkaProps)).name("Si_CPU_High_Kafka_Out_To_" + outputCpuHTopic);
 
         // JUST FOR DEBUGGING write the info back into Kafka
+/*
         netLowDataStream.addSink(
                 new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
                         outputNetLTopic,
                         new EverestCollectorTSerializationSchema(),
                         kafkaProps)).name("Si_NET_Low_Kafka_Out_To_" + outputNetLTopic);
+*/
 
         // write the cpu/mem usage into Kafka
         memCriticalDataStream.

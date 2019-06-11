@@ -36,10 +36,10 @@ public class MaxValueReducer implements ReduceFunction<EverestCollectorDataT<Dou
 
         if(event0.getPercentage() > event1.getPercentage() || event0.getValue() > event1.getValue()) {
             return new EverestCollectorDataT<Double, Double>(event0.getCluster_id(), event0.getContainerName(),
-                    event0.getPodName(), event0.getNamespace(), event0.getMetric(), event0.getTs(), event0.getValue(), event0.getPercentage());
+                    event0.getPodName(), event0.getNamespace(), event0.getMetric(), event0.getType(), event0.getTs(), event0.getValue(), event0.getPercentage());
         } else {
             return new EverestCollectorDataT<Double, Double>(event1.getCluster_id(), event1.getContainerName(),
-                    event1.getPodName(), event1.getNamespace(), event1.getMetric(), event1.getTs(), event1.getValue(), event1.getPercentage());
+                    event1.getPodName(), event1.getNamespace(), event1.getMetric(), event1.getType(), event1.getTs(), event1.getValue(), event1.getPercentage());
         }
     }
 }

@@ -103,13 +103,13 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
 
     @Override
     public void flatMap(EverestCollectorData data, Collector<EverestCollectorDataT<Double, Double>> out) throws Exception {
-
         if(!clusterSeen.contains(data.getCluster_id())) {
             clusterNumbers++;
             clusterSeen.add(data.getCluster_id());
         }
 
         List<EverestCollectorDataT<Double, Double>> listDatas;
+        String type = EverestDefaultValues.TYPE_TO_COLLECT_CPU;
         if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_CPU)) {
             if(cpuThroughput != null)
                 cpuThroughput.markEvent();
@@ -120,11 +120,13 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 memThroughput.markEvent();
 
             listDatas = data.getMemData();
+            type = EverestDefaultValues.TYPE_TO_COLLECT_MEM;
         } else if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_NET)) {
             if(netThroughput != null)
                 netThroughput.markEvent();
 
             listDatas = data.getNetData();
+            type = EverestDefaultValues.TYPE_TO_COLLECT_NET;
         } else {
             System.out.println("***** ERROR *****: unexpected type to filter in RichFlatMapFunction ValueFlatMap Class");
             throw (new Exception("unexpected type to filter in RichFlatMapFunction ValueFlatMap Class"));
@@ -135,6 +137,7 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 podSeen.add(lData.getPodName());
             }
             lData.setCluster_id(data.getCluster_id());
+            lData.setType(type);
             out.collect(lData);
         }
     }

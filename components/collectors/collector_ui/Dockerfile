@@ -11,6 +11,7 @@ COPY backend/src ./backend
 COPY backend/package.json ./backend/package.json
 RUN mkdir -p ./ui/build
 COPY ui/build ./ui/build
+COPY ui/package.json ./ui/package.json
 WORKDIR /app/backend
 RUN npm install
 

@@ -186,18 +186,16 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
         /**
          * BUG BUG we need to use 'metric'
          */
-        //if(data.getPercentage() > 10 || data.getValue() > 10) {
-        //    System.out.println("catfilter=" + typeToFilter + " metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace()
-        //            + " P=" + data.getPercentage() + "% V=" + data.getValue());
-	//
-        //}
+//        if(data.getPercentage() > 100) {
+//            System.out.println("catfilter=" + typeToFilter + " metric=" + data.getMetric() + " P=" + data.getPercentage() + "%");
+//        }
         if(typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_CRITICAL) && data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_CRITICAL) {
-//            System.out.println("CPU CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+//            System.out.println("CPU CRITICAL: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
             cpuCriticalNumbers++;
             return(true);
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_HIGH) && (data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_CRITICAL)) {
-//            System.out.println("CPU HIGH: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+//            System.out.println("CPU HIGH: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
             cpuHighNumbers++;
             return(true);
@@ -212,12 +210,12 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
             cpuLowNumbers++;
             return (true);
         } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_CRITICAL) {
-//            System.out.println("MEM CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+//            System.out.println("MEM CRITICAL: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
             memCriticalNumbers++;
             return(true);
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_CRITICAL)) {
-//            System.out.println("MEM HIGH: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+//            System.out.println("MEM HIGH: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
             memHighNumbers++;
             return(true);
@@ -232,12 +230,12 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
             memLowNumbers++;
             return (true);
         } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
-            System.out.println("NET CRITICAL: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
-                    data.getPercentage() + "% V=" + data.getValue());
+//            System.out.println("NET CRITICAL: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+//                    data.getPercentage() + "% V=" + data.getValue());
             netCriticalNumbers++;
             return(true);
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_CRITICAL)) {
-//            System.out.println("NET HIGH: Cluster=" + data.getCluster_id() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+//            System.out.println("NET HIGH: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
             netHighNumbers++;
             return(true);

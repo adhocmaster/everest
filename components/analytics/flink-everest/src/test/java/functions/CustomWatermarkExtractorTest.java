@@ -22,6 +22,7 @@
 
 package functions;
 
+import com.futurewei.everest.EverestDefaultValues;
 import com.futurewei.everest.datatypes.EverestCollectorDataT;
 import com.futurewei.everest.functions.CustomWatermarkExtractor;
 import org.apache.flink.streaming.api.watermark.Watermark;
@@ -52,13 +53,15 @@ public class CustomWatermarkExtractorTest {
     private String podName = "My Pod Name";
     private String namespace = "My NameSpace";
     private String metric = "My Metric";
+    private String type= EverestDefaultValues.TYPE_TO_COLLECT_MEM;
+
     @Before
     public void before() throws Exception {
         cpuData = new ArrayList<EverestCollectorDataT<Double, Double>>();
         memData = new ArrayList<EverestCollectorDataT<Double, Double>>();
         for(int i=0; i < 3; i++) {
-            cpuData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 1.1 + i, 5.01 + i));
-            memData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 10.1 + i, 55.01 + i));
+            cpuData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, type, ts, 1.1 + i, 5.01 + i));
+            memData.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, type, ts, 10.1 + i, 55.01 + i));
         }
 
     }
@@ -74,7 +77,7 @@ public class CustomWatermarkExtractorTest {
     */
     @Test
     public void testExtractTimestamp() throws Exception {
-        testEverestCollectorDataT = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 10.0);
+        testEverestCollectorDataT = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, type, ts, 1.0, 10.0);
         CustomWatermarkExtractor customWatermarkExtractor = new CustomWatermarkExtractor();
 
         assertEquals(expectedRightNow, customWatermarkExtractor.extractTimestamp(testEverestCollectorDataT, ts));
@@ -88,7 +91,7 @@ public class CustomWatermarkExtractorTest {
     */
     @Test
     public void testGetCurrentWatermark() throws Exception {
-        testEverestCollectorDataT = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, ts, 1.0, 10.0);
+        testEverestCollectorDataT = new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric, type, ts, 1.0, 10.0);
         CustomWatermarkExtractor customWatermarkExtractor = new CustomWatermarkExtractor();
         long tstamp = customWatermarkExtractor.extractTimestamp(testEverestCollectorDataT, 0L);
 

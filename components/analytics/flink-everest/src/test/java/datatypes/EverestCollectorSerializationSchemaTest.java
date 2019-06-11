@@ -22,6 +22,7 @@
 
 package datatypes;
 
+import com.futurewei.everest.EverestDefaultValues;
 import com.futurewei.everest.datatypes.EverestCollectorData;
 import com.futurewei.everest.datatypes.EverestCollectorDataT;
 import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
@@ -60,11 +61,12 @@ public class EverestCollectorSerializationSchemaTest {
         String namespace = "My NameSpace";
         String cluster_id = "my_cluster_id";
         String metric = "My metric";
+        String type = EverestDefaultValues.TYPE_TO_COLLECT_MEM;
         long ts = 10L;
 
         for(int i=0; i < 3; i++) {
-            cpuDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 1.1 + i, 5.05 + i));
-            memDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, ts, 10.1 + i, 50.5 + i));
+            cpuDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, type, ts, 1.1 + i, 5.05 + i));
+            memDatas.add(new EverestCollectorDataT<Double, Double>(cluster_id, containerName, podName, namespace, metric + i, type, ts, 10.1 + i, 50.5 + i));
         }
 
         EverestCollectorData testEverestCollectorData = new EverestCollectorData("cluster_id", 0L, cpuDatas, memDatas, netDatas);
@@ -83,6 +85,7 @@ public class EverestCollectorSerializationSchemaTest {
             assertEquals(cpuData.getPercentage(), rCpuData.getPercentage(), 0.01);
             assertEquals(cpuData.getPodName(), rCpuData.getPodName());
             assertEquals(cpuData.getNamespace(), rCpuData.getNamespace());
+            assertEquals(cpuData.getType(), rCpuData.getType());
         }
         List<EverestCollectorDataT<Double, Double>> testMemDatas = testEverestCollectorData.getMemData();
         List<EverestCollectorDataT<Double, Double>> resultedMemDatas = resultedEverestCollectorData.getMemData();
@@ -94,6 +97,7 @@ public class EverestCollectorSerializationSchemaTest {
             assertEquals(memData.getPercentage(), rMemData.getPercentage(), 0.01);
             assertEquals(memData.getPodName(), rMemData.getPodName());
             assertEquals(memData.getNamespace(), rMemData.getNamespace());
+            assertEquals(memData.getType(), rMemData.getType());
         }
         List<EverestCollectorDataT<Double, Double>> testNetDatas = testEverestCollectorData.getNetData();
         List<EverestCollectorDataT<Double, Double>> resultedNetDatas = resultedEverestCollectorData.getNetData();
@@ -105,6 +109,7 @@ public class EverestCollectorSerializationSchemaTest {
             assertEquals(netData.getPercentage(), rNetData.getPercentage(), 0.01);
             assertEquals(netData.getPodName(), rNetData.getPodName());
             assertEquals(netData.getNamespace(), rNetData.getNamespace());
+            assertEquals(netData.getType(), rNetData.getType());
         }
 
 

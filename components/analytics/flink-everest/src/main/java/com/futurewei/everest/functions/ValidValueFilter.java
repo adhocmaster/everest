@@ -99,7 +99,7 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
 
 
         if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_CPU)) {
-            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND;
             if(validCpuCounter != null && isValid) {
                 this.validCpuCounter.inc();
             } else {
@@ -109,7 +109,7 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
             }
 
         } else if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_MEM)) {
-            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND;
             if(validMemCounter != null && isValid)
                 this.validMemCounter.inc();
             else {
@@ -118,7 +118,7 @@ public class ValidValueFilter extends RichFilterFunction<EverestCollectorDataT<D
                 }
             }
         } else if(typeToCollect.equals(EverestDefaultValues.TYPE_TO_COLLECT_NET)) {
-            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND && data.getPercentage() <= EverestDefaultValues.VALID_VALUE_HIGH_BOUND;
+            isValid = isValid && data.getPercentage() >= EverestDefaultValues.VALID_VALUE_LOW_BOUND;
             if(validNetCounter != null && isValid)
                 this.validNetCounter.inc();
             else {
