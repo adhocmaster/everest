@@ -41,11 +41,26 @@ from __future__ import print_function  # python 2/3 compatibility
 import os
 import sys # used to exit
 from everest_consumer import Consumer
+import atexit
+
+consumers = []
+def shutdown_hook():
+    """
+    a shutdown hook to be called before the shutdown
+    :param consumer: instance of a kafka consumer
+    :param session: instance of a cassandra session
+    :return: None
+    """
+    print('Closing All Consumers')
+    for consumer in consumers:
+        consumer.close()
+    print('All Consumer closed')
 
 def main(bootstrapper, kafka_topic=[], group_id='everest-c-group'):
     threads = []
     for topic in kafka_topic:
         c = Consumer(bootstrapper, topic, group_id)
+        consumers.append(c)
         threads.append(c)
         c.start()
     for t in threads:
@@ -89,5 +104,7 @@ if __name__ == "__main__":
     if args.group != '':
         GROUP_ID = args.group
     TOPIC = TOPICS.split(",")
+
+    atexit.register(shutdown_hook)
 
     main(BOOTSTRAPPER, TOPIC, GROUP_ID)
