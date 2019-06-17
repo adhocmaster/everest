@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: everest-acc
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: everest-cmd
+rules:
+- apiGroups: [""]
+  resources: ["pods", "deployments", "services"]
+  verbs: ["*"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: everest-cmd
+subjects:
+- kind: ServiceAccount
+  name: everest-acc
+  namespace: everest
+roleRef:
+  kind: ClusterRole
+  name: everest-cmd
+  apiGroup: rbac.authorization.k8s.io
