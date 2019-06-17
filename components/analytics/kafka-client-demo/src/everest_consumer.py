@@ -31,7 +31,7 @@ import threading
 import logging
 import time
 import json
-
+from kafka.errors import KafkaError
 
 from kafka import KafkaConsumer
 import json
@@ -44,6 +44,7 @@ class Consumer(threading.Thread):
         self.bootstrapper = bootstrapper
         self.topic = kafka_topic
         self.gid = group_id
+        self.consumer = None
  
     def run(self):
         try:
@@ -67,7 +68,8 @@ class Consumer(threading.Thread):
     
     def close(self):
         try:
-            self.consumer.close()
-            print('Kafka Consumer closed')
+            if self.consumer is not None:
+                self.consumer.close()
+                print('Kafka Consumer closed')
         except KafkaError as kafka_error:
             print('ERROR: Failed to close Kafka Consumer, caused by: %s', kafka_error.message)    
