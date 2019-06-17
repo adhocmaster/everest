@@ -27,15 +27,13 @@ spec:
               cpu: 50m
               memory: 50Mi
           command:
-            - /usr/local/bin/kubectl
-            - proxy
-            - "--port=8080"
-            # - /app/pipeline/everest_cmd.sh
-            # - -s
-            # - -t
-            # - "cpu-c-topic"
-            # - -b
-            # - "bootstrap.kafka:9092"
+            - /app/pipeline/everest_cmd.sh
+            - -k
+            - "8080"
+            - -t
+            - "net-c-topic,cpu-c-topic,mem-c-topic"
+            - -b
+            - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
               value: bootstrap.kafka:9092

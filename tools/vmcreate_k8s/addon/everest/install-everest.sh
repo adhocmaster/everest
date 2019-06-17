@@ -223,10 +223,6 @@ then
     #kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest.yaml $EVEREST_NAMESPACE_N
     kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-sinks.yaml $EVEREST_NAMESPACE_N
 
-    CMD_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-client-demo"
-    kubectl $KUBE_CREATE -f $CMD_EVEREST_DIR/afka-client-demo.yaml $EVEREST_NAMESPACE_N
-
-
     echo "DONE Installing All Everest Apps and Services ..."
 fi
 
