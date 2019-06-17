@@ -3,9 +3,19 @@
 SINKS=""
 TOPIC=""
 BOOTSTRAPPER=""
+KUBE_BG=""
+K8S_PORT=8080
+KUBECTL=kubectl
+
 usage() {
-	    echo "everest_cmd.sh [-h] [-l] [-s] [-t topic] [-b kafka_bootstrapper]"
+	    echo "everest_cmd.sh [-h] [-k proxy_port] [-s] [-t topic] [-b kafka_bootstrapper]"
 	    echo "script to start container for everest analytics"
+		echo "-h						: print this help"
+		echo "-s						: to start with the flink sink on kafka"
+		echo "-t topic					: connect to kafka 'topic' as the sink"
+		echo "-b kafka_bootstrapper		: connect to kafka at kafka_bootstrapper"
+		echo "-k proxy_port				: start with kubectl proxy as a sidecar/background process listening at proxy_port, default '$K8S_PORT'"
+		echo 
 }
 echo "-$#-"
 for arg in "$@"
@@ -22,6 +32,12 @@ do
 	-s)
 		SINKS="true"
 	    shift
+	    ;;	
+	-k)
+		KUBE_BG="true"
+	    shift
+		K8S_PORT="$1"
+		shift
 	    ;;
 	-t)
 	    shift
@@ -41,6 +57,13 @@ do
 	    ;;
     esac
 done
+
+if [ "$KUBE_BG" != "" ]
+then
+	echo "Start kubectl proxy on port $K8S_PORT"
+	echo "$KUBECTL proxy --port=$K8S_PORT &"
+	$KUBECTL proxy --port=$K8S_PORT &
+fi
 
 if [ "$SINKS" != "" ]
 then

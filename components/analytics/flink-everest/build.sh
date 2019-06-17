@@ -30,7 +30,7 @@ cp $PIPELINE_JAR $PIPELINE_DIR
 
 # Sinks everest artifacts (python3)
 cp $EVEREST_SINKS_PYTHONS/requirements.txt $PIPELINE_SINKS_DIR
-cp $EVEREST_SINKS_PYTHONS/src/*.py $PIPELINE_SINKS_DIR
+cp $EVEREST_SINKS_PYTHONS/src/* $PIPELINE_SINKS_DIR
 
 
 docker build --no-cache -t $IMAGE_NAME .

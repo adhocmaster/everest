@@ -13,6 +13,7 @@ spec:
         tier: job
     spec:
       restartPolicy: OnFailure
+      serviceAccountName: everest-acc
       containers:
         - name: everest-sink-ccpu
           image: iharijono/everest-flink-analytics:latest
@@ -26,54 +27,57 @@ spec:
               cpu: 50m
               memory: 50Mi
           command:
-            - /app/pipeline/everest_cmd.sh
-            - -s
-            - -t
-            - "cpu-c-topic"
-            - -b
-            - "bootstrap.kafka:9092"
+            - /usr/local/bin/kubectl
+            - proxy
+            - "--port=8080"
+            # - /app/pipeline/everest_cmd.sh
+            # - -s
+            # - -t
+            # - "cpu-c-topic"
+            # - -b
+            # - "bootstrap.kafka:9092"
           env:
             - name: KAFKA_BOOTSTRAPPER
               value: bootstrap.kafka:9092
 ---
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: everest-sink-lnet
-spec:
-  completions: 1
-  parallelism: 1
-  backoffLimit: 2
-  template:
-    metadata:
-      labels:
-        app: everest
-        tier: job
-    spec:
-      restartPolicy: OnFailure
-      containers:
-        - name: everest-sink-lnet
-          image: iharijono/everest-flink-analytics:latest
-          imagePullPolicy: Always
-          resources:
-            # keep request = limit to keep this container in guaranteed class
-            limits:
-              cpu: 50m
-              memory: 50Mi
-            requests:
-              cpu: 50m
-              memory: 50Mi
-          command:
-            - /app/pipeline/everest_cmd.sh
-            - -s
-            - -t
-            - "net-l-topic"
-            - -b
-            - "bootstrap.kafka:9092"
-          env:
-            - name: KAFKA_BOOTSTRAPPER
-              value: bootstrap.kafka:9092
----
+# apiVersion: batch/v1
+# kind: Job
+# metadata:
+#   name: everest-sink-lnet
+# spec:
+#   completions: 1
+#   parallelism: 1
+#   backoffLimit: 2
+#   template:
+#     metadata:
+#       labels:
+#         app: everest
+#         tier: job
+#     spec:
+#       restartPolicy: OnFailure
+#       containers:
+#         - name: everest-sink-lnet
+#           image: iharijono/everest-flink-analytics:latest
+#           imagePullPolicy: Always
+#           resources:
+#             # keep request = limit to keep this container in guaranteed class
+#             limits:
+#               cpu: 50m
+#               memory: 50Mi
+#             requests:
+#               cpu: 50m
+#               memory: 50Mi
+#           command:
+#             - /app/pipeline/everest_cmd.sh
+#             - -s
+#             - -t
+#             - "net-l-topic"
+#             - -b
+#             - "bootstrap.kafka:9092"
+#           env:
+#             - name: KAFKA_BOOTSTRAPPER
+#               value: bootstrap.kafka:9092
+# ---
 # Version: batch/v1
 # d: Job
 # adata:

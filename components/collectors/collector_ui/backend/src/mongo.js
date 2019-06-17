@@ -49,6 +49,9 @@ const TraceSchema = new Schema(
     {timestamps: true }
 )
 
+//
+// 
+
 var Trace = mongoose.model("Trace", TraceSchema, 'traces')
 
 class Mongo {

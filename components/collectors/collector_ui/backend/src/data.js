@@ -252,25 +252,33 @@ async function _trace_jaeger() {
 	let clovisor = false
 	for(let index = 0; index < jaegers.length; index += 2) {
 		let all_jobs = []
+		jaegers[index][3].set_end_time()
+		jaegers[index+1][3].set_end_time()
 		all_jobs.push(jaegers[index][3].collect())
 		all_jobs.push(jaegers[index+1][3].collect())
 		await Promise.all(all_jobs)
 		//combine_jaegers(jaegers[index][3].traces, jaegers[index+1][3].traces)
-		console.log("Ready to Insert Traces wait ... " + JSON.stringify(jaegers[index][3].traces, null, 2))
-		if(MONGO != null) {
-			let origin = {id: jaegers[index][2],
-				type: 'clover',
-				tracer_url: jaegers[index][0] + ':' + jaegers[index][1] 
-			}
-			//console.log("ORG " + origin)
-			MONGO.create(origin, jaegers[index][3].traces)
-			origin = {id: jaegers[index+1][2],
-				type: 'clovisor',
-				tracer_url: jaegers[index+1][0] + ':' + jaegers[index+1][1] 
-			}
-			//console.log("ORG " + origin)
-			MONGO.create(origin, jaegers[index+1][3].traces)
+		
+		if(KAFKA != null) {
+			ready_to_kafka()
 		}
+
+		// console.log("Ready to Insert Traces in Mongo wait ... " + JSON.stringify(jaegers[index][3].traces, null, 2))
+		// if(MONGO != null) {
+		// 	let origin = {id: jaegers[index][2],
+		// 		type: 'clover',
+		// 		tracer_url: jaegers[index][0] + ':' + jaegers[index][1] 
+		// 	}
+
+		// 	//console.log("ORG " + origin)
+		// 	MONGO.create(origin, jaegers[index][3].traces)
+		// 	origin = {id: jaegers[index+1][2],
+		// 		type: 'clovisor',
+		// 		tracer_url: jaegers[index+1][0] + ':' + jaegers[index+1][1] 
+		// 	}
+		// 	//console.log("ORG " + origin)
+		// 	MONGO.create(origin, jaegers[index+1][3].traces)
+		// }
 	}
 
 
@@ -368,18 +376,46 @@ function ccollector() {
 const ready_to_kafka = () => {
 	let trace_data
 	let prom_data
-	let all_data = {}
+	let json_data = {}
 
 
 	if(!WITHOUT_TRACE) {
 		for(let jaeger of jaegers) {
 			if(jaeger.length > 3) {
 				//let jaegerObj = jaeger[3]
-				let jaegerId = jaeger[0]
+				let jaegerId = jaeger[2]
 				//if(VERBOSE)
 					console.log(`Ready to kafka ${jaegerId}: ${jaeger[3].traces}`)
-				all_data = jaeger[3].traces
-				KAFKA.send(TRACER.TRACE_JSON_KEY, all_data)
+
+				// 'ts':
+				// 'url':
+				// 'type':
+				//    
+				// 'traces': {
+				//	'service': [
+				//	
+				//  ]
+				// }
+				//
+				json_data = jaeger[3].traces
+				if (typeof json_data !== 'undefined' && json_data ) {
+					console.log(`LEN Obj Data: -${Object.keys(json_data).length}-`)
+					
+					if(Object.keys(json_data).length > 0) {
+						//console.log(`Trace Data: -${JSON.stringify(json_data, null, 2)}-`)
+						let _json_data = {
+							'ts': jaeger[3].start_time, 
+							'url': jaeger[0] + ':' + jaeger[1] ,
+							'type': jaeger[2],
+							'traces': json_data
+							}
+						KAFKA.send(KAFKA.topic + '-tracing-topic', TRACER.TRACE_JSON_KEY, _json_data)
+					} else {
+						console.log('kafka.js: WARNING, trying to send emtpy data???')
+					}
+				} else {
+					console.log('kafka.js: WARNING, trying to send undefined data???')
+				}				
 			}	
 		}	
 	}
@@ -388,11 +424,21 @@ const ready_to_kafka = () => {
 		for(let prom of proms) {
 			if(prom.length > 3) {
 				//let promObj = prom[3]
-				let promId = prom[0]
+				let promId = prom[2]
 				if(VERBOSE)
 					console.log(`Ready to kafka ${promId}: ${prom[3].metrics}`)
-				all_data = prom[3].metrics
-				KAFKA.send(PROM.PROM_JSON_KEY, all_data)
+				json_data = prom[3].metrics
+				if ( typeof json_data !== 'undefined' && json_data ) {
+					console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
+					if(Object.keys(json_data).length >= 0 && (json_data.cpuData.length > 0 || json_data.netData.length > 0 
+						|| json_data.memData.length > 0)) {
+						KAFKA.send(KAFKA.topic + '-data-topic', PROM.PROM_JSON_KEY, json_data)
+					} else {
+						console.log('kafka.js: WARNING, trying to send emtpy data???')
+					}
+				} else {
+					console.log('kafka.js: WARNING, trying to send undefined data???')
+				}
 			}	
 		}
 	}
@@ -423,9 +469,18 @@ const _start_collector = (rest_aux='') => {
 		console.log("MongoDB    : NONE")
 	}
 	if(KAFKA != null) {
-		console.log(`Kafka    :  ${KAFKA.host}:${KAFKA.port} on topic '${KAFKA.topic}'`)
+		console.log(`KAFKA    		:  ${KAFKA.host}:${KAFKA.port} on prefix topic '${KAFKA.topic}'`)
 	} else {
-		console.log("Kafka    :  NONE")
+		console.log("KAFKA    		:  NONE")
+	}
+
+	let TRACER_INCLUDED_SERVICES = process.env.CCOLLECTOR_TRACER_INCLUDED_SERVICES || TRACER.INCLUDED_SERVICES
+	let tracer_svcs = TRACER_INCLUDED_SERVICES.split(",")
+	let t_svcs = []
+	if(tracer_svcs[0] != "") {
+		for(let svc of tracer_svcs) {
+			t_svcs.push(svc)
+		}
 	}
 
     for(let jaeger of jaegers) {
@@ -433,11 +488,17 @@ const _start_collector = (rest_aux='') => {
 		clovisor = !clovisor
 		t.verbose = VERBOSE
 		t.startCaptureInMsec = POLL_INTERVAL
+		for(let svc of t_svcs) {
+			t.add_included_svc(svc)
+		}
+
 		console.log("Jaeger ID     	: " + t.id)
 		console.log("Jaeger URL     	: " + t.url0)
 		// console.log("Jaeger Capture Interval (msec)    	: " + t.startCaptureInMsec)
 		jaeger.push(t)
 	}
+	console.log("Jaeger INCLUDED SERVICES : " + TRACER_INCLUDED_SERVICES)
+
 
 	let PROM_INCLUDED_NS = process.env.CCOLLECTOR_PROM_INCLUDED_NS || PROM.INCLUDED_NS
 	let prom_nss = PROM_INCLUDED_NS.split(",")

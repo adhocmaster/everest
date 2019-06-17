@@ -160,7 +160,8 @@ then
     COLLECTOR_UI_YML="/tmp/collector-uideploy.yaml"
     IGRAFANA_SVC_NAME="grafana"
     IKIALI_SVC_NAME="kiali"
-    ITRACING_SVC_NAME="tracing"
+    # ITRACING_SVC_NAME="tracing"
+    ITRACING_SVC_NAME="jaeger-query"
     PROM_SVC_NAME="prometheus"
     SUFFIX_SVC="outside"
     SVCS="$IKIALI_SVC_NAME $ITRACING_SVC_NAME $IGRAFANA_SVC_NAME $PROM_SVC_NAME"
@@ -221,6 +222,9 @@ then
     FLINK_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/flink-everest"
     #kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest.yaml $EVEREST_NAMESPACE_N
     kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-sinks.yaml $EVEREST_NAMESPACE_N
+
+    CMD_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/kafka-client-demo"
+    kubectl $KUBE_CREATE -f $CMD_EVEREST_DIR/afka-client-demo.yaml $EVEREST_NAMESPACE_N
 
 
     echo "DONE Installing All Everest Apps and Services ..."

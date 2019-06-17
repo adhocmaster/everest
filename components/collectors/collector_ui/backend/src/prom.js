@@ -139,8 +139,6 @@ class Prom {
       this._metrics = {'cluster_id': 'mycluster_id', 'cpuData': [], 'memData': [], 'netData': [], 'ts': 0}
       this._nss = []
       this._apps = []
-      this._nslabel = ''
-      this._applabel = ''
       this._start_c = Date.now()
       this._end_c = Date.now()
       this._p_range= ''
@@ -182,51 +180,50 @@ class Prom {
         this._kafka = kafka
     }
 
-    _init_labels(labels) {
-        let _plabels = ''
-        for(let _label of labels) {
-            if(_plabels === '') {
-                _plabels = _label
-            } else {
-                //_plabels += _plabels + `|${_label}`
-                _plabels += _plabels + `%7C${_label}`
-            }
-        }
-        return _plabels
-    }
+    // _init_labels(labels) {
+    //     let _plabels = ''
+    //     for(let _label of labels) {
+    //         if(_plabels === '') {
+    //             _plabels = _label
+    //         } else {
+    //             //_plabels += _plabels + `|${_label}`
+    //             _plabels += _plabels + `%7C${_label}`
+    //         }
+    //     }
+    //     return _plabels
+    // }
 
     add_included_ns(ns) {
-        this._nslabel = ''
+        //this._nslabel = ''
         this._nss.push(ns)
-        let labels = this._init_labels(this._nss)
-        if(labels !== '')
-            this._nslabel = `namespace%3D%22${labels}%22`
+        // let labels = this._init_labels(this._nss)
+        // if(labels !== '')
+        //     this._nslabel = `namespace%3D%22${labels}%22`
     }
 
     add_included_app(app) {
-        this._applabel = ''
+        //this._applabel = ''
         this._apps.push(app)
-        let labels = this._init_labels(this._apps)
-        if(labels !== '')
-            this._applabel = `app%3D%22${labels}%22`
+        // let labels = this._init_labels(this._apps)
+        // if(labels !== '')
+        //     this._applabel = `app%3D%22${labels}%22`
     }
 
+    // BUG BUG BUG
     make_plabel() {
         let plabels = ''
-        //console.log("--->> make_plabel: this._nslabel " + this._nslabel)
-        if(this._nslabel !== '') {
-            plabels = `%7B${this._nslabel}`
-        }
-        //console.log("--->> make_plabel: this._applabel " + this._applabel)
-        if(this._applabel !== '') {
-            if(plabels !== '') {
-                plabels = plabels + `,${this._applabel}%7D`
-            } else {
-                plabels = `%7B${this._applabel}%7D`
+        let moreThanOne = false
+        if(this._nss.length > 0) {
+            plabels = '%7Bnamespace%3D%22'
+            for(let ns of this._nss) {
+                if(!moreThanOne) {
+                    moreThanOne = true
+                    plabels += ns
+                } else {
+                    plabels += `%2C${ns}`
+                }
             }
-        }
-        if(plabels !== '') {
-            plabels = plabels + '%7D'
+            plabels += '%22%7D'
         }
         //console.log("--->> make_plabel: plabels " + plabels)
         return(plabels)
@@ -284,7 +281,7 @@ class Prom {
                             _memData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {
-                        console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                        console.log(`WARNING: _collect_mem: http rest API request to ${p_query} status NOT 200 but ${status}`)
                     }
                     for(let i in _memData) {
                         //console.log("MEM DATA " + JSON.stringify(_memData[i], null, 0))
@@ -292,7 +289,7 @@ class Prom {
                     }
                 }
             } else {
-                console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                console.log(`WARNING: _collect_mem: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
             }
         }
@@ -352,14 +349,14 @@ class Prom {
                             _netData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {
-                        console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                        console.log(`WARNING: _collect_net: http rest API request to ${p_query} status NOT 200 but ${status}`)
                     }
                     for(let i in _netData) {
                         this._metrics.netData.push(_netData[i])
                     }
                 }
             } else {
-                console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                console.log(`WARNING: _collect_net: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
             }
         }
@@ -373,7 +370,7 @@ class Prom {
 
         for(let element of Prom.PROM_CPU) {
             let p_query = this._url_query + element + this._p_labels
-            if(this._verbose)
+            //if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
     
@@ -384,7 +381,7 @@ class Prom {
                 this._metrics.cluster_id = 'mycluster_id'
                 this._metrics.ts = ts_milliseconds
                 let _cpuData = new Object()
-                // console.log("LEN=" + results.length)
+                //console.log("CPU DATA LEN=" + results.length)
                 for(let result of results) {
                     let metric = result.metric
                     let values = result.value
@@ -421,14 +418,14 @@ class Prom {
                             _cpuData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {
-                        console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                        console.log(`WARNING: _collect_cpu: http rest API request to ${p_query} status NOT 200 but ${status}`)
                     }
                     for(let i in _cpuData) {
                         this._metrics.cpuData.push(_cpuData[i])
                     }
                 }
             } else {
-                console.log(`WARNING: http rest API request to ${p_query} status NOT 200 but ${status}`)
+                console.log(`WARNING: _collect_cpu: http rest API request to ${p_query} status NOT 200 but ${status}`)
                 this._services = []
             }
         }
@@ -442,13 +439,14 @@ class Prom {
             //this._p_range=`%26start%3D${_esc_start_c}%26end%3D${_esc_end_c}%26step%3D${this._step_c}`
             this._p_range = `%5B${this._step_c}%5D`
             this._p_labels = this.make_plabel()
+            console.log("--->> make_plabel: plabels " + this._p_labels)
 
             await this._collect_cpu()
             await this._collect_mem()
             await this._collect_net()
             //console.log("COLLECT FINISHED")
         } catch (error) {
-            console.log(`ERROR: http rest API request to ${this._url_query} return errors: ${error}`)
+            console.log(`ERROR: _collect0: http rest API request to ${this._url_query} return errors: ${error}`)
             res = false
         }
         return res

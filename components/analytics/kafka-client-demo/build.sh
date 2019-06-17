@@ -19,7 +19,7 @@ then
     exit 1
 fi
 
-docker build -t $IMAGE_NAME .
+docker build --no-cache -t $IMAGE_NAME .
 docker tag $IMAGE_NAME $DOCKER_ID/$IMAGE_NAME:latest
 #
 # if you are failing here, make sure to login into docker hub

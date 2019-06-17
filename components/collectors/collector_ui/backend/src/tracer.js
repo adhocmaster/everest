@@ -31,7 +31,10 @@ class Tracer {
     static get TRACE_JSON_KEY() {
         return 'collector-trace-data'
     }
- 
+    static get INCLUDED_SERVICES() {
+        //return ["kube-system", "istio-system", "everest", "kafka"]
+        return ""
+    }
     constructor(host=Tracer.TRACE_HOST, port=Tracer.TRACE_PORT, id=Tracer.TRACE_ID, type=Tracer.TRACE_TYPE, rest_aux='') {
       this._verbose = false
       this._id = id
@@ -42,6 +45,9 @@ class Tracer {
       this._traces = {}
       this._url0 = 'http://' + this._host + ':' + this._port + `${rest_aux}/api/services`
       this._url1 = 'http://' + this._host + ':' + this._port + `${rest_aux}/api/traces?service=`
+      this._svc = []
+      this._start_time = 0
+      this._end_time = 0
     }
     get id() {
       return this._id
@@ -61,6 +67,16 @@ class Tracer {
     get traces() {
         return this._traces
     }
+    get start_time() {
+        return this._start_time
+    }
+
+    set_end_time() {
+        this._end_time = Date.now()
+        this._start_time = (this._end_time - this._capturedInMsec) * 1000
+        this._end_time *= 1000
+        //console.log(`set ${this._start_time} to ${this._end_time}`)
+    }
 
     get startCaptureInMsec() {
         return this._capturedInMsec
@@ -71,10 +87,14 @@ class Tracer {
     set startCaptureInMsec(msec) {
         this._capturedInMsec = msec
     }
+    add_included_svc(svc) {
+        this._svc.push(svc)
+    }
 
     async _collect0() {
         let title = "Trace ID '" + this._id + "' collect0"
         let res = false
+        this._traces = {}
         if(this._verbose)
             console.log(title + " URL -> " + this._url0)
         try {
@@ -85,11 +105,16 @@ class Tracer {
             if(data.errors === null) {
                 this._services = data.data
                 let all_jobs = []
+ 
+                console.log(`Capture Service Traces from ${this._start_time} to ${this._end_time}`)
+
                 for(let service of this._services) {
-                    //console.log(this._id + ": SERVICE: " + service)
-                    if(service === 'jaeger-query')
-                        continue
-                    all_jobs.push(this._collect1(service))
+                    //console.log(`${this._id} : SERVICE=${service} in ${this._svc}`)
+                    // if(service === 'jaeger-query')
+                    if(this._svc.includes(service)) {
+                        //console.log(`${this._id} : SERVICE=${service} in ${this._svc}`)
+                        all_jobs.push(this._collect1(service))
+                    }
                 }
                 await Promise.all(all_jobs)
                 res = true
@@ -111,9 +136,11 @@ class Tracer {
         let title = "Trace ID '" + this._id + "' collect1 for service " + service 
         let res = false
         let aux = "loopback=1h&maxDuration&minDuration&"    
-        let end = Date.now()
-        let start = end - this._capturedInMsec
-        let trace_url = this._url1 + service + "&" + aux + 'start=' + (start * 1000) + '&end=' + (end * 1000)    
+        // let end = Date.now()
+        // let start = end - this._capturedInMsec
+        // let trace_url = this._url1 + service + "&" + aux + 'start=' + (start * 1000) + '&end=' + (end * 1000)
+        let trace_url = this._url1 + service + "&" + aux + 'start=' + this._start_time + '&end=' + this._end_time
+
 
         if(this._verbose)
             console.log(title + " URL -> " + trace_url)
@@ -123,10 +150,10 @@ class Tracer {
             // if(this._verbose)
             //     console.log(data)
             if(data.errors === null) {
+                //console.log(JSON.stringify(data, null, 2))
                 if(data.data.length > 0) {                    
                     let c_data = data.data;	    
-                    if(c_data.length > 0) {
-                        
+                    if(c_data.length > 0) {                      
                         c_data.forEach((trace) => {
                             if(this.type === 'clovisor')
                                 trace["spans"].map(a => {return a["startTime"]/1000})
@@ -135,7 +162,7 @@ class Tracer {
                             })
                         })
                         this._traces[service] = c_data
-                        console.log(title + " URL -> " + trace_url + " get DATA DONE LEN = " + c_data.length)
+                        //console.log(title + " URL -> " + trace_url + " get DATA DONE LEN = " + c_data.length)
                     }
                 }
                 // console.log("Traces LEN " + this._traces.length)

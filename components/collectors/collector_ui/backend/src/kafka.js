@@ -28,7 +28,7 @@ class Kafka {
         return "producer"
     }
     static get KAFKA_TOPIC() {
-        return "mytopic"
+        return "everest"
     }
 
     constructor(host=Kafka.KAFKA_HOST, port=Kafka.KAFKA_PORT, type=Kafka.KAFKA_TYPE, topic=Kafka.KAFKA_TOPIC, verbose=false) {
@@ -58,61 +58,43 @@ class Kafka {
 
     kafka_err (err) {
         console.log(err)
-        console.log('[kafka-producer -> '+this._topic+']: connection errored')
+        console.log(`[kafka-producer -> to host '${this._host}:${this._port}']: connection errored`)
         throw err
     }
 
-    async send(key, json_data) {  
+    async send(topic, key, json_data) {  
         // if(VERBOSE)
         //     console.log(JSON.stringify(json_data))
-        
-        if ( typeof json_data !== 'undefined' && json_data ) {
-            if(Object.keys(json_data).length >= 0 && (json_data.cpuData.length > 0 || json_data.netData.length > 0 
-                || json_data.memData.length > 0)) {
-                let KeyedMessage = kafka.KeyedMessage
-                let dataKM = new KeyedMessage(key, JSON.stringify(json_data))
-                let payloads = [
-                    {
-                    topic: this._topic,
-                    messages: dataKM
-                    }
-                ]
-                if(this._verbose)
-                    console.log(`kafka.js: sending json to topic ${this._topic} with the key ${key} with data ${JSON.stringify(json_data, null, 2)}`)
-                
-                let push_status = this.producer.send(payloads, (err, data) => {
-                    if (err) {
-                    console.log('[kafka-producer -> '+this._topic+']: broker update failed');
-                    } else {
-                    console.log('[kafka-producer -> '+this._topic+']: broker update success');
-                    }
-                })
-            } else {
-                console.log('kafka.js: WARNING, trying to send emtpy data???')
-            }
-        } else {
-            console.log('kafka.js: WARNING, trying to send undefined data???')
+        if (typeof this.producer !== 'undefined' && this.producer ) {
+            let KeyedMessage = kafka.KeyedMessage
+            let dataKM = new KeyedMessage(key, JSON.stringify(json_data))
+            let payloads = [
+                {
+                topic: topic,
+                messages: dataKM
+                }
+            ]
+            if(this._verbose)
+                console.log(`kafka.js: sending json to topic ${topic} with the key ${key} with data ${JSON.stringify(json_data, null, 2)}`)
+            
+            let push_status = this.producer.send(payloads, (err, data) => {
+                if (err) {
+                    console.log('[kafka-producer -> '+topic+']: broker update failed');
+                } else {
+                    console.log('[kafka-producer -> '+topic+']: broker update success');
+                }
+            })
         }
+
     }
 
-    _send(key, json_data) {
-        
-        if ( typeof json_data !== 'undefined' && json_data ) {
-            console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
-            if(Object.keys(json_data).length >= 0 && (json_data.cpuData.length > 0 || json_data.netData.length > 0 
-                || json_data.memData.length > 0)) {
-                console.log("OK")
-            } else {
-                console.log('kafka.js: WARNING, trying to send emtpy data???')
-            }
-        } else {
-            console.log('kafka.js: WARNING, trying to send undefined data???')
-        }
+    async _send(topic, key, json_data) {
+        console.log("Kafka send: OK")
+        console.log(`Producer: ${this.producer}`)
     }
 
     connect() {
-        // if(this._verbose)
-            console.log(`Trying to connect to Kafka at ${this._host}:${this._port}, topic ${this._topic}`)
+        console.log(`Trying to connect to Kafka at ${this._host}:${this._port}, prefix topic ${this._topic}`)
         this.Producer = kafka.Producer
         this.client = new kafka.KafkaClient({kafkaHost: `${this._host}:${this._port}`})
         this.producer = new this.Producer(this.client)

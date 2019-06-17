@@ -29,7 +29,7 @@ const DEFAULT_WITHOUT_PROM = false
 const DEFAULT_KAFKA_HOST = ''
 const DEFAULT_KAFKA_PORT = 9092
 const DEFAULT_KAFKA_DEBUG = false
-const DEFAULT_KAFKA_DATA_TOPIC = 'everest-data-topic'
+const DEFAULT_KAFKA_DATA_TOPIC = 'everest'
 
 // (optional) only made for logging and
 // bodyParser, parses the request body to be a readable json format
