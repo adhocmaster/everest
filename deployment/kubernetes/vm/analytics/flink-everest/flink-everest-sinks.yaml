@@ -28,6 +28,7 @@ spec:
               memory: 50Mi
           command:
             - /app/pipeline/everest_cmd.sh
+            - -s
             - -k
             - "8080"
             - -t
