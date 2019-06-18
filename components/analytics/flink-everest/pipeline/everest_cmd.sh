@@ -68,12 +68,12 @@ fi
 if [ "$SINKS" != "" ]
 then
 	echo "Start the container python entry point"
-	echo "(cd /app/pipeline/sinks; python kafka-demo-consumer.py -b $BOOTSTRAPPER -g mygroup --json -t $TOPIC)"
-	if [ "$TOPIC" == "" ]
+	if [ "$TOPIC" = "" ]
 	then
 		usage
 		exit 1
 	fi
+	echo "(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER --json -t $TOPIC)"
 	(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER --json -t $TOPIC)
 else
 	echo "Start the container cmd entry point"
