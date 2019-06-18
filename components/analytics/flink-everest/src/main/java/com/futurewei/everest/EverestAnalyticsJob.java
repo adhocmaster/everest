@@ -26,6 +26,7 @@ import com.futurewei.everest.connector.EverestCollectorConsumer;
 import com.futurewei.everest.datatypes.EverestCollectorData;
 import com.futurewei.everest.datatypes.EverestCollectorDataT;
 import com.futurewei.everest.datatypes.EverestCollectorTSerializationSchema;
+import com.futurewei.everest.datatypes.EverestCollectorTrace;
 import com.futurewei.everest.functions.*;
 import org.apache.flink.api.common.restartstrategy.RestartStrategies;
 import org.apache.flink.api.java.utils.ParameterTool;
@@ -35,6 +36,8 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.flink.streaming.connectors.kafka.config.StartupMode.LATEST;
@@ -77,11 +80,12 @@ public class EverestAnalyticsJob {
         // parse the arguments
 		final ParameterTool params = ParameterTool.fromArgs(args);
 		final String everestDataTopic = params.get("everest-data-topic", EverestDefaultValues.KAFKA_EVEREST_DATA_TOPIC);
+		final String everestTraceTopic = params.get("everest-trace-topic", EverestDefaultValues.KAFKA_EVEREST_TRACE_TOPIC);
 		final String cgTopic = params.get("cg-topic", EverestDefaultValues.KAFKA_CG);
 		final String outputCpuCTopic = params.get("cpu-c-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_C_TOPIC);
         final String outputCpuHTopic = params.get("cpu-h-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_H_TOPIC);
         final String outputNetLTopic = params.get("net-l-topic", "net-l-topic");
-        final String outputMemCTopic = params.get("mem-c-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
+        final String outputMemCTopic = params.get("mem-c-topi c", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
         final String outputMemHTopic = params.get("mem-h-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_H_TOPIC);
         final String outputNetCTopic = params.get("net-c-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_C_TOPIC);
         final String outputNetHTopic = params.get("net-h-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_H_TOPIC);
@@ -106,6 +110,7 @@ public class EverestAnalyticsJob {
         kafkaProps.setProperty("bootstrap.servers", bootstrapServers);
         kafkaProps.setProperty("group.id", cgTopic);
 
+        DataStream<EverestCollectorTrace> everestCollectorTraceStream = getTraceFromKafka(env, everestTraceTopic, kafkaProps);
         DataStream<EverestCollectorData> everestCollectorDataStream = getDataFromKafka(env, everestDataTopic, kafkaProps);
 
         /**
@@ -260,13 +265,15 @@ public class EverestAnalyticsJob {
 		env.execute("Flink Everest Job");
 	}
 
-    private static DataStream<EverestCollectorData> getDataFromKafka(StreamExecutionEnvironment env, String inputTopic, Properties properties) {
-        // input from a stream of string in the format of ID,SENSOR_VALUE,TIMESTAMP,DESCRIPTION
-        // ID is used as the key
-
+	private static DataStream<EverestCollectorData> getDataFromKafka(StreamExecutionEnvironment env, String inputTopic, Properties properties) {
+	        // input from a stream prometheus info
         FlinkKafkaConsumer010<EverestCollectorData> consumer = EverestCollectorConsumer.createEverestCollectorDataConsumer(inputTopic, properties, LATEST);
-        return env.addSource(consumer).name("So_Kafka_"+inputTopic);
-
-    }
+        return env.addSource(consumer).name("So_Kafka_" + inputTopic);
+	}
+	private static DataStream<EverestCollectorTrace> getTraceFromKafka(StreamExecutionEnvironment env, String inputTopic, Properties properties) {
+        // input from a stream tracing info
+        FlinkKafkaConsumer010<EverestCollectorTrace> consumer = EverestCollectorConsumer.createEverestCollectorTraceConsumer(inputTopic, properties, LATEST);
+        return env.addSource(consumer).name("So_Kafka_" + inputTopic);
+	}
 }
 

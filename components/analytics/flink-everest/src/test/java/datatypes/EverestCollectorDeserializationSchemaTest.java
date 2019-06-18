@@ -25,7 +25,7 @@ package datatypes;
 import com.futurewei.everest.EverestDefaultValues;
 import com.futurewei.everest.datatypes.EverestCollectorData;
 import com.futurewei.everest.datatypes.EverestCollectorDataT;
-import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
+import com.futurewei.everest.datatypes.EverestCollectorDeserializationSchema;
 import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.junit.Test;
@@ -36,13 +36,13 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /** 
-* EverestCollectorSerializationSchema Tester. 
+* EverestCollectorDeserializationSchema Tester.
 * 
 * @author Indra G Harijono
 * @since <pre>May 27, 2019</pre> 
 * @version 1.0 
 */ 
-public class EverestCollectorSerializationSchemaTest {
+public class EverestCollectorDeserializationSchemaTest {
 
     /**
      * serialization(EverestCollectorData everestCollectorData)
@@ -70,9 +70,9 @@ public class EverestCollectorSerializationSchemaTest {
         }
 
         EverestCollectorData testEverestCollectorData = new EverestCollectorData("cluster_id", 0L, cpuDatas, memDatas, netDatas);
-        EverestCollectorSerializationSchema everestCollectorSerializationSchema = new EverestCollectorSerializationSchema();
-        serialized = everestCollectorSerializationSchema.serialize(testEverestCollectorData);
-        EverestCollectorData resultedEverestCollectorData = everestCollectorSerializationSchema.deserialize(serialized);
+        EverestCollectorDeserializationSchema everestCollectorDeserializationSchema = new EverestCollectorDeserializationSchema();
+        serialized = everestCollectorDeserializationSchema.serialize(testEverestCollectorData);
+        EverestCollectorData resultedEverestCollectorData = everestCollectorDeserializationSchema.deserialize(serialized);
         assertEquals(testEverestCollectorData.getCluster_id(), resultedEverestCollectorData.getCluster_id());
         assertEquals(testEverestCollectorData.getTs(), resultedEverestCollectorData.getTs());
         List<EverestCollectorDataT<Double, Double>> testCpuDatas = testEverestCollectorData.getCpuData();
@@ -128,9 +128,9 @@ public class EverestCollectorSerializationSchemaTest {
      */
     @Test
     public void testGetProducedType() throws Exception {
-        EverestCollectorSerializationSchema everestCollectorSerializationSchema = new EverestCollectorSerializationSchema();
+        EverestCollectorDeserializationSchema everestCollectorDeserializationSchema = new EverestCollectorDeserializationSchema();
         assertEquals(TypeInformation.of(new TypeHint<EverestCollectorData>() {
-        }), everestCollectorSerializationSchema.getProducedType());
+        }), everestCollectorDeserializationSchema.getProducedType());
     }
 
 }

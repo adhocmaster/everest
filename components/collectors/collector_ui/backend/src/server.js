@@ -60,6 +60,7 @@ VERBOSE = process.env.CCOLLECTOR_VERBOSE || DEFAULT_VERBOSE
 WITH_MONGO = process.env.CCOLLECTOR_WITH_MONGO || DEFAULT_WITH_MONGO
 WITHOUT_TRACE = process.env.CCOLLECTOR_WITHOUT_TRACE || DEFAULT_WITHOUT_TRACE
 WITHOUT_PROM = process.env.CCOLLECTOR_WITHOUT_PROM || DEFAULT_WITHOUT_PROM
+// for vm, add here 'jaeger'
 REST_AUX = process.env.CCOLLECTOR_REST_AUX || DS.DEFAULT_REST_AUX
 KAFKA_HOST = process.env.CCOLLECTOR_KAFKA_HOST || DEFAULT_KAFKA_HOST
 KAFKA_PORT = process.env.CCOLLECTOR_KAFKA_PORT || DEFAULT_KAFKA_PORT
@@ -98,7 +99,7 @@ DS.add_jaeger(CLOVER_JAEGER_HOST, CLOVER_JAEGER_PORT, CLOVER_JAEGER_ID)
 DS.add_jaeger(CLOVISOR_JAEGER_HOST, CLOVISOR_JAEGER_PORT, CLOVISOR_JAEGER_ID)
 DS.add_prom(CLOVER_PROM_HOST, CLOVER_PROM_PORT, CLOVER_PROM_ID)
 DS.change_poll_interval(POLL_INTERVAL)
-if(WITH_MONGO) {
+if(WITH_MONGO == 'true') {
 	const Mongo = require('./mongo')
 	MONGO_ROUTE = process.env.CCOLLECTOR_MONGO_ROUTE || 'mongodb://localhost:27017/everest'
 	mongo = new Mongo(MONGO_ROUTE)
@@ -107,7 +108,7 @@ if(WITH_MONGO) {
 
 DS.without_trace(WITHOUT_TRACE)
 DS.without_prom(WITHOUT_PROM)
-DS.start_collector(REST_AUX)
+DS.start_collector(REST_AUX  == '' ? '' : `/${REST_AUX}`)
 
 
 // append /api for our http requests

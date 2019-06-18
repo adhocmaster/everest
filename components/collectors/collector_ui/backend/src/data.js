@@ -399,22 +399,23 @@ const ready_to_kafka = () => {
 				//
 				json_data = jaeger[3].traces
 				if (typeof json_data !== 'undefined' && json_data ) {
-					console.log(`LEN Obj Data: -${Object.keys(json_data).length}-`)
+					//console.log(`LEN Obj Data: -${Object.keys(json_data).length}-`)
 					
 					if(Object.keys(json_data).length > 0) {
 						//console.log(`Trace Data: -${JSON.stringify(json_data, null, 2)}-`)
 						let _json_data = {
+							'cluster_id': 'my_cluster',
 							'ts': jaeger[3].start_time, 
 							'url': jaeger[0] + ':' + jaeger[1] ,
 							'type': jaeger[2],
 							'traces': json_data
 							}
-						KAFKA.send(KAFKA.topic + '-tracing-topic', TRACER.TRACE_JSON_KEY, _json_data)
+						KAFKA.send(KAFKA.topic + '-trace-topic', TRACER.TRACE_JSON_KEY, _json_data)
 					} else {
-						console.log('kafka.js: WARNING, trying to send emtpy data???')
+						console.log('kafka.js: WARNING, tracer trying to send emtpy data???')
 					}
 				} else {
-					console.log('kafka.js: WARNING, trying to send undefined data???')
+					console.log('kafka.js: WARNING, tracer trying to send undefined data???')
 				}				
 			}	
 		}	
@@ -425,19 +426,19 @@ const ready_to_kafka = () => {
 			if(prom.length > 3) {
 				//let promObj = prom[3]
 				let promId = prom[2]
-				if(VERBOSE)
-					console.log(`Ready to kafka ${promId}: ${prom[3].metrics}`)
+				//if(VERBOSE)
+					console.log(`PROM Ready to kafka ${promId}: ${prom[3].metrics}`)
 				json_data = prom[3].metrics
 				if ( typeof json_data !== 'undefined' && json_data ) {
-					console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
+					//console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
 					if(Object.keys(json_data).length >= 0 && (json_data.cpuData.length > 0 || json_data.netData.length > 0 
 						|| json_data.memData.length > 0)) {
 						KAFKA.send(KAFKA.topic + '-data-topic', PROM.PROM_JSON_KEY, json_data)
 					} else {
-						console.log('kafka.js: WARNING, trying to send emtpy data???')
+						console.log('kafka.js: WARNING, prom trying to send emtpy data???')
 					}
 				} else {
-					console.log('kafka.js: WARNING, trying to send undefined data???')
+					console.log('kafka.js: WARNING, prom trying to send undefined data???')
 				}
 			}	
 		}
@@ -474,70 +475,77 @@ const _start_collector = (rest_aux='') => {
 		console.log("KAFKA    		:  NONE")
 	}
 
-	let TRACER_INCLUDED_SERVICES = process.env.CCOLLECTOR_TRACER_INCLUDED_SERVICES || TRACER.INCLUDED_SERVICES
-	let tracer_svcs = TRACER_INCLUDED_SERVICES.split(",")
-	let t_svcs = []
-	if(tracer_svcs[0] != "") {
-		for(let svc of tracer_svcs) {
-			t_svcs.push(svc)
+	if(WITHOUT_TRACE == false) {
+		let TRACER_INCLUDED_SERVICES = process.env.CCOLLECTOR_TRACER_INCLUDED_SERVICES || TRACER.INCLUDED_SERVICES
+		let tracer_svcs = TRACER_INCLUDED_SERVICES.split(",")
+		let t_svcs = []
+		if(tracer_svcs[0] != "") {
+			for(let svc of tracer_svcs) {
+				t_svcs.push(svc)
+			}
 		}
+
+		for(let jaeger of jaegers) {
+			let t = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
+			clovisor = !clovisor
+			t.verbose = VERBOSE
+			t.startCaptureInMsec = POLL_INTERVAL
+			for(let svc of t_svcs) {
+				t.add_included_svc(svc)
+			}
+
+			console.log("Jaeger ID     	: " + t.id)
+			console.log("Jaeger URL     	: " + t.url0)
+			// console.log("Jaeger Capture Interval (msec)    	: " + t.startCaptureInMsec)
+			jaeger.push(t)
+		}
+		console.log("Jaeger INCLUDED SERVICES : " + TRACER_INCLUDED_SERVICES)
+	} else {
+		console.log("TRACING : OFF")
 	}
 
-    for(let jaeger of jaegers) {
-		let t = new TRACER(jaeger[0], jaeger[1], jaeger[2], clovisor ? 'clovisor' : 'clover', rest_aux)
-		clovisor = !clovisor
-		t.verbose = VERBOSE
-		t.startCaptureInMsec = POLL_INTERVAL
-		for(let svc of t_svcs) {
-			t.add_included_svc(svc)
+
+	if(WITHOUT_PROM == false) {
+		let PROM_INCLUDED_NS = process.env.CCOLLECTOR_PROM_INCLUDED_NS || PROM.INCLUDED_NS
+		let prom_nss = PROM_INCLUDED_NS.split(",")
+		let nss = []
+		if(prom_nss[0] != "") {
+			for(let ns of prom_nss) {
+				nss.push(ns)
+			}
+		}
+		let PROM_INCLUDED_APP = process.env.CCOLLECTOR_PROM_INCLUDED_APP || PROM.INCLUDED_APP
+		let prom_apps = PROM_INCLUDED_APP.split(",")
+		let apps = []
+		if(prom_apps[0] != "") {
+			for(let app of prom_apps) {
+				apps.push(app)
+			}
 		}
 
-		console.log("Jaeger ID     	: " + t.id)
-		console.log("Jaeger URL     	: " + t.url0)
-		// console.log("Jaeger Capture Interval (msec)    	: " + t.startCaptureInMsec)
-		jaeger.push(t)
+		let PROM_CAPTURE_STEP = process.env.CCOLLECTOR_PROM_CAPTURE_STEP || PROM.CAPTURE_STEP
+
+		for(let prom of proms) {
+			let p = new PROM(prom[0], prom[1], prom[2])
+			p.verbose = VERBOSE
+			for(let ns of nss) {
+				p.add_included_ns(ns)
+			}
+			for(let app of apps) {
+				p.add_included_app(app)
+			}
+			p.step_capture = '5m' // 5 minutes rate
+			// p.step_capture = `${POLL_INTERVAL / 1000}s`
+			console.log("Prometheus ID     	: " + prom[2])
+			console.log("Prometheus URL     	: " + p.url_query)
+			prom.push(p)
+		}
+		console.log("Prometheus INCLUDED NS : " + PROM_INCLUDED_NS)
+		console.log("Prometheus INCLUDED APP : " + PROM_INCLUDED_APP)
+		console.log("Prometheus CAPTURE STEP : " + PROM_CAPTURE_STEP)
+	} else {
+		console.log("Prometheus: OFF")
 	}
-	console.log("Jaeger INCLUDED SERVICES : " + TRACER_INCLUDED_SERVICES)
-
-
-	let PROM_INCLUDED_NS = process.env.CCOLLECTOR_PROM_INCLUDED_NS || PROM.INCLUDED_NS
-	let prom_nss = PROM_INCLUDED_NS.split(",")
-	let nss = []
-	if(prom_nss[0] != "") {
-		for(let ns of prom_nss) {
-			nss.push(ns)
-		}
-	}
-	let PROM_INCLUDED_APP = process.env.CCOLLECTOR_PROM_INCLUDED_APP || PROM.INCLUDED_APP
-	let prom_apps = PROM_INCLUDED_APP.split(",")
-	let apps = []
-	if(prom_apps[0] != "") {
-		for(let app of prom_apps) {
-			apps.push(app)
-		}
-	}
-
-	let PROM_CAPTURE_STEP = process.env.CCOLLECTOR_PROM_CAPTURE_STEP || PROM.CAPTURE_STEP
-
-    for(let prom of proms) {
-		let p = new PROM(prom[0], prom[1], prom[2])
-		p.verbose = VERBOSE
-		for(let ns of nss) {
-			p.add_included_ns(ns)
-		}
-		for(let app of apps) {
-			p.add_included_app(app)
-		}
-		p.step_capture = '5m' // 5 minutes rate
-		// p.step_capture = `${POLL_INTERVAL / 1000}s`
-		console.log("Prometheus ID     	: " + prom[2])
-		console.log("Prometheus URL     	: " + p.url_query)
-		prom.push(p)
-	}
-	console.log("Prometheus INCLUDED NS : " + PROM_INCLUDED_NS)
-	console.log("Prometheus INCLUDED APP : " + PROM_INCLUDED_APP)
-	console.log("Prometheus CAPTURE STEP : " + PROM_CAPTURE_STEP)
-
 
     console.log("Capture Poll Interval               	: " + POLL_INTERVAL + " msec");    
     ccollector();

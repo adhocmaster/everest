@@ -50,44 +50,34 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
 
 
-public class EverestCollectorSerializationSchema implements DeserializationSchema<EverestCollectorData> , SerializationSchema<EverestCollectorData> {
-    private static final long serialVersionUID = 6154188370181669759L;
+public class EverestCollectorTraceDeserializationSchema implements DeserializationSchema<EverestCollectorTrace> , SerializationSchema<EverestCollectorTrace> {
+    private static final long serialVersionUID = 6154298370181669759L;
     static ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-    transient Logger logger = LoggerFactory.getLogger(EverestCollectorSerializationSchema.class);
+    transient Logger logger = LoggerFactory.getLogger(EverestCollectorTraceDeserializationSchema.class);
 
     @Override
-    public EverestCollectorData deserialize(byte[] message) throws IOException {
-        EverestCollectorData data = objectMapper.readValue(message, EverestCollectorData.class);
-//        System.out.println("Deserialize Data Cluster ID" + data.getCluster_id());
-//        System.out.println("Deserialize Data TS" + data.getTs());
+    public EverestCollectorTrace deserialize(byte[] message) throws IOException {
+        EverestCollectorTrace data = objectMapper.readValue(message, EverestCollectorTrace.class);
+        System.out.println("Deserialize Trace Cluster ID" + data.getCluster_id());
+        System.out.println("Deserialize Trace TS" + data.getTs());
+        System.out.println("Deserialize Trace type" + data.getType());
+        System.out.println("Deserialize Trace URL" + data.getUrl());
 
-//        List<EverestCollectorDataT<Double, Double>> cpuDatas = data.getCpuData();
-//        System.out.println("Deserialize Data CPU LEN" + cpuDatas.size());
-//        for(EverestCollectorDataT<Double, Double> cpuData : cpuDatas) {
-//            System.out.println("\nDeserialize Data MEM CNAME -> " + cpuData.getContainerName());
-//            System.out.println("\nDeserialize Data MEM PNAME -> " + cpuData.getPodName());
-//            System.out.println("\nDeserialize Data MEM NameSpace -> " + cpuData.getNamespace());
-//            System.out.println("\nDeserialize Data MEM VALUE -> " + cpuData.getValue());
-//            System.out.println("\nDeserialize Data MEM PERCENT -> " + cpuData.getPercentage());
-//        }
-//        List<EverestCollectorDataT<Double, Double>> memDatas = data.getMemData();
-//        System.out.println("Deserialize Data MEM LEN" + memDatas.size());
-//        for(EverestCollectorDataT<Double, Double> memData : memDatas) {
-//            System.out.println("\nDeserialize Data MEM CNAME -> " + memData.getContainerName());
-//            System.out.println("\nDeserialize Data MEM PNAME -> " + memData.getPodName());
-//            System.out.println("\nDeserialize Data MEM NameSpace -> " + memData.getNamespace());
-//            System.out.println("\nDeserialize Data MEM VALUE -> " + memData.getValue());
-//            System.out.println("\nDeserialize Data MEM PERCENT -> " + memData.getPercentage());
-//        }
+        Map<String, EverestCollectorTraceService> traces = data.getTraces();
+
+        for (Map.Entry<String,EverestCollectorTraceService> entry : traces.entrySet())
+            System.out.println("Deserialize TraceService Key = " + entry.getKey() +
+                    ", Value = " + entry.getValue());
 
         return data;
     }
     @Override
-    public byte[] serialize(EverestCollectorData everestCollectorData) {
+    public byte[] serialize(EverestCollectorTrace everestCollectorTrace) {
         try {
-            return objectMapper.writeValueAsString(everestCollectorData).getBytes();
+            return objectMapper.writeValueAsString(everestCollectorTrace).getBytes();
         } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
             logger.error("Failed to parse JSON", e);
         }
@@ -95,13 +85,13 @@ public class EverestCollectorSerializationSchema implements DeserializationSchem
     }
 
     @Override
-    public boolean isEndOfStream(EverestCollectorData nextElement) {
+    public boolean isEndOfStream(EverestCollectorTrace nextElement) {
         return false;
     }
 
     @Override
-    public TypeInformation<EverestCollectorData> getProducedType() {
-        return TypeInformation.of(new TypeHint<EverestCollectorData>() {
+    public TypeInformation<EverestCollectorTrace> getProducedType() {
+        return TypeInformation.of(new TypeHint<EverestCollectorTrace>() {
         });
     }
 }

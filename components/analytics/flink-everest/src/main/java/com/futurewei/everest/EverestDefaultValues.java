@@ -25,6 +25,7 @@ package com.futurewei.everest;
 public interface EverestDefaultValues {
     String PRJ_ID = "everest";
     String KAFKA_EVEREST_DATA_TOPIC = "everest-data-topic";
+    String KAFKA_EVEREST_TRACE_TOPIC = "everest-trace-topic";
     String KAFKA_CG = "cg-" + PRJ_ID;
     String KAFKA_OUTPUT_CPU_C_TOPIC = "cpu-h-topic";
     String KAFKA_OUTPUT_CPU_H_TOPIC = "cpu-h-topic";

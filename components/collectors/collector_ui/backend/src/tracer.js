@@ -32,8 +32,8 @@ class Tracer {
         return 'collector-trace-data'
     }
     static get INCLUDED_SERVICES() {
-        //return ["kube-system", "istio-system", "everest", "kafka"]
-        return ""
+        return "istio-ingressgateway,fs.everest-app,istio-mixer,fibo.everest-app,guide.everest-app"
+        //return ""
     }
     constructor(host=Tracer.TRACE_HOST, port=Tracer.TRACE_PORT, id=Tracer.TRACE_ID, type=Tracer.TRACE_TYPE, rest_aux='') {
       this._verbose = false
@@ -106,7 +106,7 @@ class Tracer {
                 this._services = data.data
                 let all_jobs = []
  
-                console.log(`Capture Service Traces from ${this._start_time} to ${this._end_time}`)
+                //console.log(`Capture Service Traces from ${this._start_time} to ${this._end_time}`)
 
                 for(let service of this._services) {
                     //console.log(`${this._id} : SERVICE=${service} in ${this._svc}`)

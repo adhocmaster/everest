@@ -86,8 +86,16 @@ spec:
             value: "false"
           - name: CCOLLECTOR_MONGO_ROUTE
             value: "mongodb://mongo-service:27017/everest"
+          # TRACING
           - name: CCOLLECTOR_WITHOUT_TRACE
             value: "true"
+          - CCOLLECTOR_TRACER_INCLUDED_SERVICES
+            value: "istio-ingressgateway,fs.everest-app,istio-mixer,fibo.everest-app,guide.everest-app"
+          # - name: CCOLLECTOR_REST_AUX
+          #  value: "jaeger"
+          # PROM
+          # - name: CCOLLECTOR_WITHOUT_PROM
+          #  value: "true"
           - name: CCOLLECTOR_PROM_INCLUDED_NS
             value: "everest-app"
           #- name: CCOLLECTOR_PROM_INCLUDED_APP

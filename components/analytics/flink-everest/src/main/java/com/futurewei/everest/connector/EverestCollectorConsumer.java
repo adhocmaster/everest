@@ -22,7 +22,9 @@
 
 package com.futurewei.everest.connector;
 
-import com.futurewei.everest.datatypes.EverestCollectorSerializationSchema;
+import com.futurewei.everest.datatypes.EverestCollectorDeserializationSchema;
+import com.futurewei.everest.datatypes.EverestCollectorTrace;
+import com.futurewei.everest.datatypes.EverestCollectorTraceDeserializationSchema;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import com.futurewei.everest.datatypes.EverestCollectorData;
 import org.apache.flink.streaming.connectors.kafka.config.StartupMode;
@@ -30,9 +32,10 @@ import org.apache.flink.streaming.connectors.kafka.config.StartupMode;
 import java.util.Properties;
 
 public class EverestCollectorConsumer {
+
     public static FlinkKafkaConsumer010<EverestCollectorData> createEverestCollectorDataConsumer(String topic, Properties properties, StartupMode startupMode) {
         FlinkKafkaConsumer010<EverestCollectorData> consumer = new FlinkKafkaConsumer010<EverestCollectorData>(
-                topic, new EverestCollectorSerializationSchema(), properties);
+                topic, new EverestCollectorDeserializationSchema(), properties);
 
         switch(startupMode) {
             case EARLIEST:
@@ -50,5 +53,27 @@ public class EverestCollectorConsumer {
         }
         return consumer;
     }
+
+    public static FlinkKafkaConsumer010<EverestCollectorTrace> createEverestCollectorTraceConsumer(String topic, Properties properties, StartupMode startupMode) {
+        FlinkKafkaConsumer010<EverestCollectorTrace> consumer = new FlinkKafkaConsumer010<EverestCollectorTrace>(
+                topic, new EverestCollectorTraceDeserializationSchema(), properties);
+
+        switch(startupMode) {
+            case EARLIEST:
+                consumer.setStartFromEarliest();
+                break;
+            case LATEST:
+                consumer.setStartFromLatest();
+                break;
+//            case SPECIFIC_OFFSETS:
+//                consumer.setStartFromSpecificOffsets(specificStartupOffsets);
+//                break;
+            case GROUP_OFFSETS:
+                consumer.setStartFromGroupOffsets();
+                break;
+        }
+        return consumer;
+    }
+
 }
 
