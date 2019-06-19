@@ -1,0 +1,6 @@
+.vagrant/
+tools/vmcreate_k8s/admin.conf
+tools/vmcreate_k8s/generated/dashboard_token
+tools/vmcreate_k8s/generated/istio.txt
+tools/vmcreate_k8s/generated/vagrantvm_uname.txt
+tools/vmcreate_k8s/ubuntu-bionic-18.04-cloudimg-console.log
