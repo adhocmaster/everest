@@ -23,7 +23,7 @@
 
 export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
 export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-export INGRESS_HOST="master"
+export INGRESS_HOST="master" # FIXME TODO, master host was not set up in Mac automatically. So, it won't work
 
 export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 
