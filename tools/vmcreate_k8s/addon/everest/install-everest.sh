@@ -63,7 +63,8 @@ then
 fi
 
 echo "Retrieve Everest software by git"
-sudo apt-get install git
+sudo apt-get install git # FIXME
+# TODO added installation command for Mac
 git clone https://github.com/iharijono/everest.git
 
 #
