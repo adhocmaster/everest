@@ -59,8 +59,22 @@ spec:
     route:
     - destination:
         host: fs
+        subset: v1
         port:
           number: 9000
+      weight: 70
+    - destination:
+        host: fs
+        subset: v1-busy
+        port:
+          number: 9000
+      weight: 5
+    - destination:
+        host: fs
+        subset: standalone-v1
+        port:
+          number: 9000
+      weight: 25      
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
