@@ -13,9 +13,9 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 - add some ip and host mapping into your machine. In linux, it is /etc/hosts. the hostname 'master' is mandatory, the rest is optional.
   ```
 # Kubernetes vagrant VMs
-192.168.26.10 master
-192.168.26.11 node-0
-192.168.26.12 node-1
+192.168.26.10 master    
+192.168.26.11 node-0      
+192.168.26.12 node-1       
   ```
 
 ## How to start/create
