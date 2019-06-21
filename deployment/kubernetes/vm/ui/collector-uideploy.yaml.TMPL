@@ -89,7 +89,7 @@ spec:
           # TRACING
           - name: CCOLLECTOR_WITHOUT_TRACE
             value: "true"
-          - CCOLLECTOR_TRACER_INCLUDED_SERVICES
+          - name: CCOLLECTOR_TRACER_INCLUDED_SERVICES
             value: "istio-ingressgateway,fs.everest-app,istio-mixer,fibo.everest-app,guide.everest-app"
           # - name: CCOLLECTOR_REST_AUX
           #  value: "jaeger"
