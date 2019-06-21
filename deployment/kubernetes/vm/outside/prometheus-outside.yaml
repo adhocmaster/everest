@@ -13,29 +13,36 @@
 #
 #
 #
-# WARNING WARNING WARNING!!!!!
+# WARNING WARNING WARNING!!!!! Valid only if you access Prometheus in public cloud (other cloud) !!!
+#
+#
 # you need to check the 'addresses' below if they are correct on your environment
 #
 # outside-prometheus must point to istio prometheus
 #
-kind: Service
-apiVersion: v1
-metadata:
-  name: prometheus.istio-system
-spec:
-  ports:
-  - port: 9090
-    targetPort: 9090
----
-kind: Endpoints
-apiVersion: v1
-metadata:
-  name: prometheus.istio-system
-subsets:
-  - addresses:
-      #VM prometheus Istio, BUG BUG BUG
-      #- ip: prometheus.istio-system
-      #GKE prometheus Istio
-      - ip: 35.224.142.142
-    ports:
-      - port: 9090
+
+#
+# THIS IS OBSOLETE OBSOLETE
+#
+
+# kind: Service
+# apiVersion: v1
+# metadata:
+#   name: prometheus.istio-system
+# spec:
+#   ports:
+#   - port: 9090
+#     targetPort: 9090
+# ---
+# kind: Endpoints
+# apiVersion: v1
+# metadata:
+#   name: prometheus.istio-system
+# subsets:
+#   - addresses:
+#       #VM prometheus Istio, BUG BUG BUG
+#       #- ip: prometheus.istio-system
+#       #GKE prometheus Istio
+#       - ip: 35.224.142.142
+#     ports:
+#       - port: 9090

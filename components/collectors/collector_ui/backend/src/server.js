@@ -101,7 +101,8 @@ DS.add_prom(CLOVER_PROM_HOST, CLOVER_PROM_PORT, CLOVER_PROM_ID)
 DS.change_poll_interval(POLL_INTERVAL)
 if(WITH_MONGO == 'true') {
 	const Mongo = require('./mongo')
-	MONGO_ROUTE = process.env.CCOLLECTOR_MONGO_ROUTE || 'mongodb://localhost:27017/everest'
+	// MONGO_ROUTE = process.env.CCOLLECTOR_MONGO_ROUTE || 'mongodb://localhost:27017/everest'
+	MONGO_ROUTE = process.env.CCOLLECTOR_MONGO_ROUTE || 'mongodb://mongo-service:27017/everest'
 	mongo = new Mongo(MONGO_ROUTE)
 	DS.set_db(mongo)
 }
