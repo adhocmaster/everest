@@ -12,18 +12,21 @@
 # the License.
 #
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: file-server-outside
-  labels:
-    app: fs
-    service: fs
-spec:
-  ports:
-  - port: 9000
-    name: http
-    nodePort: 30009
-  type: NodePort 
-  selector:
-    app: fs
+#
+# THIS IS OBSOLETE OBSOLETE
+#
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: file-server-outside
+#   labels:
+#     app: fs
+#     service: fs
+# spec:
+#   ports:
+#   - port: 9000
+#     name: http
+#     nodePort: 30009
+#   type: NodePort 
+#   selector:
+#     app: fs

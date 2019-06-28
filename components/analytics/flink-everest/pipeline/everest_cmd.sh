@@ -73,8 +73,8 @@ then
 		usage
 		exit 1
 	fi
-	echo "(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER --json -t $TOPIC)"
-	(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER --json -t $TOPIC)
+	echo "(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER -t $TOPIC)"
+	(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER -t $TOPIC)
 else
 	echo "Start the container cmd entry point"
 	echo "Everest Tools is DONE and READY..."

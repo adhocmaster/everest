@@ -1,4 +1,4 @@
-# How to create kubernetes cluster on Virtualbox VMs
+# How to create kubernetes cluster (optionally with everest related project) on Virtualbox VMs
 This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 
 ## Contents
@@ -11,12 +11,11 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 - Virtualbox
 - Vagrant
 - add some ip and host mapping into your machine. In linux, it is /etc/hosts. the hostname 'master' is mandatory, the rest is optional.
-  ```
-# Kubernetes vagrant VMs
-192.168.26.10 master
-192.168.26.11 node-0
-192.168.26.12 node-1
-  ```
+```
+192.168.26.10 master    
+192.168.26.11 node-0      
+192.168.26.12 node-1       
+```
 
 ## How to start/create
 1. Clone the project everest (URL is temp!!!) to your local machine which has vagrant and virtualbox installed.     
@@ -51,30 +50,13 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
     ```% ./kube.sh -k ```  
    it will install kubernetes cluster + istio only      
 
-
-
-
 4. After ./kube.sh is finished:     
-   - Check everything is up:
+   - Connect your terminal to use the newly created kubernetes cluster by:
     ```% source ~/kubeconfig.sh```
-    ```% kubectl get pods -n everest-app
-            NAME                                READY   STATUS    RESTARTS   AGE
-            fibo-v1-7fb5c5cd4c-7h9gp            2/2     Running   1          28h
-            fibo-v1-7fb5c5cd4c-cc8nh            2/2     Running   1          28h
-            fs-standalone-v1-74d7477459-4s9vd   2/2     Running   1          28h
-            fs-v1-6bd5ccf774-8h9zz              2/2     Running   2          28h
-            fs-v1-6bd5ccf774-wmrx9              2/2     Running   2          28h
-            guide-v1-f689f77b7-nbbw5            2/2     Running   2          28h
-            guide-v1-f689f77b7-npwjt            2/2     Running   1          28h   
-    ```          
-    ```% kubectl get pods -n everest
-            NAME                                      READY   STATUS    RESTARTS   AGE
-            collector-ui-deployment-bbb56cfc7-9zcq2   1/1     Running   0          28h
-            grafana-deployment-766b89f9d-rn9qh        1/1     Running   1          28h
-            mongo-controller-76hkk                    1/1     Running   6          28h
-    ```         
-    ```% kubectl get pods -n istio-system
-            NAME                                      READY   STATUS             RESTARTS   AGE
+
+5. Check everything is up:
+    -  % kubectl get pods -n istio-system      
+   ```      NAME                                      READY   STATUS             RESTARTS   AGE
             grafana-67c69bb567-46zhj                  1/1     Running            0          38h
             istio-citadel-67697b6697-wmg2s            1/1     Running            0          38h
             istio-cleanup-secrets-1.1.6-f27rf         0/1     Completed          0          38h
@@ -90,8 +72,27 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
             istio-tracing-5d8f57c8ff-8tpcm            1/1     Running            0          38h
             kiali-d4d886dd7-5gvrm                     1/1     Running            0          38h
             prometheus-d8d46c5b5-trdnp                1/1     Running            0          38h    
-    ```         
-    ```% kubectl get pods -n kafka
+    ```       
+    -   % kubectl get pods -n everest-app     
+    ```
+            NAME                                READY   STATUS    RESTARTS   AGE
+            fibo-v1-7fb5c5cd4c-7h9gp            2/2     Running   1          28h
+            fibo-v1-7fb5c5cd4c-cc8nh            2/2     Running   1          28h
+            fs-standalone-v1-74d7477459-4s9vd   2/2     Running   1          28h
+            fs-v1-6bd5ccf774-8h9zz              2/2     Running   2          28h
+            fs-v1-6bd5ccf774-wmrx9              2/2     Running   2          28h
+            guide-v1-f689f77b7-nbbw5            2/2     Running   2          28h
+            guide-v1-f689f77b7-npwjt            2/2     Running   1          28h   
+    ```      
+    -   % kubectl get pods -n everest    
+    ```
+            NAME                                      READY   STATUS    RESTARTS   AGE
+            collector-ui-deployment-bbb56cfc7-9zcq2   1/1     Running   0          28h
+            grafana-deployment-766b89f9d-rn9qh        1/1     Running   1          28h
+            mongo-controller-76hkk                    1/1     Running   6          28h
+    ```   
+    -   % kubectl get pods -n kafka      
+    ```
             NAME      READY   STATUS    RESTARTS   AGE
             kafka-0   1/1     Running   2          26h
             kafka-1   1/1     Running   2          26h
@@ -101,9 +102,9 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
             zoo-2     1/1     Running   0          26h      
     ```           
     everything must show 'Running'
-5. If you change your terminal, you need to resource kubeconfig:
+6. If you change your terminal, you need to resource kubeconfig:
     - ```% source ~/kubeconfig.sh```         
-6. To test if all is running correctly, use smoke.sh under everest/components/clients:
+7. To test if all is running correctly, use smoke.sh under everest/components/clients:
     - ```% cd everest/components/clients```            
     - ```% ./smoke.sh```           
     everything must return 'SUCCESS', example:     
