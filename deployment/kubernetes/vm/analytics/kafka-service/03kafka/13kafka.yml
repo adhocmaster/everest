@@ -7,7 +7,7 @@ spec:
     matchLabels:
       app: kafka
   serviceName: "broker"
-  replicas: 3
+  replicas: 2
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
@@ -74,11 +74,16 @@ spec:
             # before you run production workloads
             # memory: 1Gi
             cpu: 512m
-            memory: 500Mi
-        readinessProbe:
-            tcpSocket:
-              port: 9092
-            timeoutSeconds: 1
+            memory: 1Gi
+        # readinessProbe:
+        #     # tcpSocket:
+        #     #   host: localhost
+        #     #   port: 9092
+        #     exec:
+        #       command:
+        #         - /bin/bash /opt/kafka/bin/kafka-topics.sh --zookeeper zookeeper:2181 --list
+        #     initialDelaySeconds: 1
+        #     timeoutSeconds: 1
         volumeMounts:
         - name: config
           mountPath: /etc/kafka
