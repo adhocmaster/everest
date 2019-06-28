@@ -43,6 +43,13 @@ else
     KUBE_APPLY="apply"
 fi
 
+if [ "$CLOUD_TYPE" = "vm" ]
+then
+    SVC_TYPE="NodePort"
+else
+    SVC_TYPE="LoadBalancer"
+fi
+
 ORG_DIR=`pwd`
 # pushd /tmp
 cd /tmp
@@ -137,23 +144,36 @@ if [ "$KUBE_CREATE" = "create" ]
 then
     echo "Install Everest ..."
     #
-    # EVEREST services
+    # EVEREST services & outside service
     #
     EVEREST_SERVICES_DIR="./everest/deployment/kubernetes/vm/services"
     kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
-#    #
-#    # EVEREST Mongo
-#    #
-#    EVEREST_MONGO_DIR="./everest/deployment/kubernetes/vm/mongo"
-#    kubectl $KUBE_APPLY -R -f $EVEREST_MONGO_DIR $EVEREST_NAMESPACE_N
+
+    #
+    # WARNING: be careful with SVC_TYPE above
+    #
+    EVEREST_OSERVICES_DIR="./everest/deployment/kubernetes/vm/outside"
+    if [ "$CLOUD_TYPE" = "vm" ]
+    then
+        kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+    else
+        echo "WARNING WARNING WARNING !!!!, implement here to deploy service in NON VM environment"
+        # TODO here if you run above in public Cloud
+    fi
+
+
     #
     # EVEREST MONITORING
     #
     EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
     (cd $EVEREST_MONITORING_DIR; kubectl $KUBE_APPLY -R -f grafana/ $EVEREST_NAMESPACE_N)
     
+    # Everest MongoDB
+    echo "Installing Everest MongoDB..."
+    EVEREST_MONGODB_DIR="./everest/deployment/kubernetes/vm/mongo"
+    kubectl $KUBE_CREATE -f $EVEREST_MONGODB_DIR/mongo-replicator.yaml $EVEREST_NAMESPACE_N
+
     # EVEREST UI
-    
     echo "Installing Everest Collector and Web UI..."
 
     EVEREST_UI_DIR="./everest/deployment/kubernetes/vm/ui"
@@ -203,8 +223,10 @@ then
             IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $IGRAFANA_SVC_NAME`
             ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $ITRACING_SVC_NAME`
             ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $ITRACING_SVC_NAME`
+            echo "WARNING WARNING WARNING !!!!, implement here to deploy service in NON VM environment"
         else
             echo "TODO TODO TODO"
+            echo "WARNING WARNING WARNING !!!!, implement here to deploy service in NON VM environment"
         fi
     fi
     if [ "$OP" != "-d" ]

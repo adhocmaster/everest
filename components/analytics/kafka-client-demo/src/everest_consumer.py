@@ -45,7 +45,11 @@ class Consumer(threading.Thread):
         self.topic = kafka_topic
         self.gid = group_id
         self.consumer = None
+        self.everest_k8s = None
  
+    def register_k8s(k8s):
+        self.everest_k8s = k8s
+
     def run(self):
         try:
             self.consumer = KafkaConsumer(self.topic, bootstrap_servers=self.bootstrapper,

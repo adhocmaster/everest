@@ -25,6 +25,11 @@ spec:
   - name: v1
     labels:
       version: v1
+      status: normal
+  - name: v1-busy
+    labels:
+      version: v1
+      status: busy
   # - name: v2
   #   labels:
   #     version: v2
@@ -34,6 +39,7 @@ spec:
   - name: standalone-v1
     labels:
       version: standalone-v1
+      status: busy
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule
