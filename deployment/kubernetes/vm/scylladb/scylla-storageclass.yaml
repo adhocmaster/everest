@@ -1,0 +1,39 @@
+# kind: StorageClass
+# apiVersion: storage.k8s.io/v1beta1
+# metadata:
+#   name: scylla-ssd
+# provisioner: kubernetes.io/gce-pd
+# parameters:
+#   type: pd-ssd
+#   zone: us-central1-b
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: scylla-ssd
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /Users/muktadir/Documents/scylladata
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - master
+          - node-1
