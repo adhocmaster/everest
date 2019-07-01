@@ -9,7 +9,7 @@ NUM_CPU = ENV["NUM_CPU"] || "2"
 NUM_MEM = ENV["NUM_MEM"] || "1"
 
 
-MASTER_MEM = NUM_MEM.to_i * 2048
+MASTER_MEM = NUM_MEM.to_i * 4096
 SLAVE_MEM = NUM_MEM.to_i * 4096
 
 #puts "SETTING MASTER MEM -> #{MASTER_MEM}"
@@ -75,7 +75,7 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.synced_folder "/Users/muktadir/Documents/Shared/scylladb", "/usr/local/scylladb"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -102,7 +102,7 @@ Vagrant.configure("2") do |config|
     node.vm.hostname = "master"
     node.vm.network :private_network, ip: MASTER_IP
     node.vm.provider "virtualbox" do |vb|
-      vb.memory = "3072"
+      vb.memory = "4096"
       # vb.cpus = 2
       # vb.memory = MASTER_MEM.to_s
       vb.cpus = NUM_CPU

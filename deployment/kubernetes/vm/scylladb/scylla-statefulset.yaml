@@ -72,11 +72,9 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: scylla-data
-        annotations:
-          volume.beta.kubernetes.io/storage-class: scylla-ssd
       spec:
         accessModes: ["ReadWriteOnce"]
         storageClassName: local-storage
         resources:
           requests:
-            storage: 2Gi
+            storage: 1Gi

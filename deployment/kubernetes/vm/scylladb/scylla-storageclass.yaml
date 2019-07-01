@@ -1,11 +1,3 @@
-# kind: StorageClass
-# apiVersion: storage.k8s.io/v1beta1
-# metadata:
-#   name: scylla-ssd
-# provisioner: kubernetes.io/gce-pd
-# parameters:
-#   type: pd-ssd
-#   zone: us-central1-b
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -18,7 +10,7 @@ volumeBindingMode: WaitForFirstConsumer
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: scylla-ssd
+  name: scylla-local
 spec:
   capacity:
     storage: 5Gi
@@ -27,7 +19,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /Users/muktadir/Documents/scylladata
+    path: /usr/local/scylladb
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -37,3 +29,13 @@ spec:
           values:
           - master
           - node-1
+
+
+# kubectl delete -f scylla-statefulset.yaml
+# kc delete pvc scylla-data-scylla-0
+# kubectl delete -f scylla-storageclass.yaml 
+# kc delete pv scylla-local
+
+# kubectl create -f scylla-storageclass.yaml 
+# kubectl create -f scylla-statefulset.yaml
+# kubectl describe pods scylla-0
