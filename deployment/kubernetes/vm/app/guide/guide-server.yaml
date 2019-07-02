@@ -51,7 +51,7 @@ spec:
         image: iharijono/guide:latest
         # command: [ "/bin/sh", "-c", "--" ]
         # args: [ "while true; do sleep 30; done;" ]
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9999
         env:
