@@ -60,8 +60,7 @@ class Prom {
         // "sum (rate (container_cpu_usage_seconds_total{id!=\"/\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (id)"
         // 
         return ["container_cpu_usage_seconds_total", "container_cpu_load_average_10s", 
-                "container_cpu_user_seconds_total", "container_cpu_system_seconds_total",
-                ""]
+                "container_cpu_user_seconds_total", "container_cpu_system_seconds_total",]
     }
     static get PROM_MEM() {
         // Cluster memory usage
@@ -122,7 +121,7 @@ class Prom {
         return ""
     }
     static get CAPTURE_STEP() {
-        return "1s"
+        return "5m" // rate of 5 minutes
     }
     static get PROM_JSON_KEY() {
         return 'collector-data'
@@ -179,19 +178,6 @@ class Prom {
     set set_kafka(kafka) {
         this._kafka = kafka
     }
-
-    // _init_labels(labels) {
-    //     let _plabels = ''
-    //     for(let _label of labels) {
-    //         if(_plabels === '') {
-    //             _plabels = _label
-    //         } else {
-    //             //_plabels += _plabels + `|${_label}`
-    //             _plabels += _plabels + `%7C${_label}`
-    //         }
-    //     }
-    //     return _plabels
-    // }
 
     add_included_ns(ns) {
         //this._nslabel = ''
@@ -370,7 +356,7 @@ class Prom {
 
         for(let element of Prom.PROM_CPU) {
             let p_query = this._url_query + element + this._p_labels
-            //if(this._verbose)
+            if(this._verbose)
                 console.log(title + " URL -> " + p_query)
             const response = await axios.get(p_query)
     
@@ -439,7 +425,7 @@ class Prom {
             //this._p_range=`%26start%3D${_esc_start_c}%26end%3D${_esc_end_c}%26step%3D${this._step_c}`
             this._p_range = `%5B${this._step_c}%5D`
             this._p_labels = this.make_plabel()
-            console.log("--->> make_plabel: plabels " + this._p_labels)
+            //console.log("--->> make_plabel: plabels " + this._p_labels)
 
             await this._collect_cpu()
             await this._collect_mem()

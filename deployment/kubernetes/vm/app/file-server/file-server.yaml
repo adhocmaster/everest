@@ -39,7 +39,7 @@ metadata:
     app: fibo
     version: v1
 spec:
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
@@ -51,7 +51,7 @@ spec:
         image: iharijono/file-server:latest
         # command: [ "/bin/sh", "-c", "--" ]
         # args: [ "while true; do sleep 30; done;" ]
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9001
         env:
@@ -128,7 +128,7 @@ metadata:
     app: fs
     version: v1
 spec:
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
@@ -138,7 +138,7 @@ spec:
       containers:
       - name: fs
         image: iharijono/file-server:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 9000
         env:
