@@ -63,12 +63,12 @@ spec:
           number: 9000
         subset: v1
       weight: 100
-    - destination:
-        host: fs
-        port:
-          number: 9000
-        subset: v1-idle
-      weight: 0
+    # - destination:
+    #     host: fs
+    #     port:
+    #       number: 9000
+    #     subset: v1-idle
+    #   weight: 0
     - destination:
         host: fs
         port:
@@ -94,12 +94,12 @@ spec:
           number: 9001
         subset: v1
       weight: 100
-    - destination:
-        host: fibo
-        port:
-          number: 9001
-        subset: v1-idle
-      weight: 0
+    # - destination:
+    #     host: fibo
+    #     port:
+    #       number: 9001
+    #     subset: v1-idle
+    #   weight: 0
     - destination:
         host: fibo
         port:

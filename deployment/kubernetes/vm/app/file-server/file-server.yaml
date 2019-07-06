@@ -45,6 +45,7 @@ spec:
       labels:
         app: fibo
         version: v1
+        status: normal
     spec:
       containers:
       - name: fibo
@@ -134,6 +135,7 @@ spec:
       labels:
         app: fs
         version: v1
+        status: normal
     spec:
       containers:
       - name: fs
@@ -239,6 +241,7 @@ spec:
       labels:
         app: fs
         version: standalone-v1
+        status: normal
     spec:
       containers:
       - name: fs

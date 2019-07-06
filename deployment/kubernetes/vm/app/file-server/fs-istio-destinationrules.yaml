@@ -25,15 +25,15 @@ spec:
   - name: v1
     labels:
       version: v1
-      #status: normal
+      status: normal
   - name: v1-busy
     labels:
       version: v1
       status: busy
-  - name: v1-idle
-    labels:
-      version: v1
-      status: idle
+  # - name: v1-idle
+  #   labels:
+  #     version: v1
+  #     status: idle
   # - name: v2
   #   labels:
   #     version: v2
@@ -54,15 +54,11 @@ spec:
   - name: v1
     labels:
       version: v1
-      # status: normal
+      status: normal
   - name: v1-busy
     labels:
       version: v1
       status: busy
-  - name: v1-idle
-    labels:
-      version: v1
-      status: idle
   # - name: v2
   #   labels:
   #     version: v2
