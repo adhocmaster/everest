@@ -29,6 +29,7 @@ const path = require('path')
 const app = express()
 const mime = require('mime')
 const axios = require('axios')
+const os = require('os')
 
 const cpu_task = require('./cpu-task')
 const guide = require('./guide')
@@ -37,6 +38,7 @@ const DEFAULT_VERBOSE = true
 const FS_PORT_DEFAULT = 9000
 const FS_NO_VIDEO_DEFAULT = false
 const FS_NO_FILE_DEFAULT = false
+var hostname = os.hostname()
 
 app.use(express.static(path.join(__dirname, 'public')))
 
@@ -54,7 +56,8 @@ app.get('/fibo', function(req, res) {
 
     return res.json(
       {
-        "data": cpu_task.fibo(n)
+        "data": cpu_task.fibo(n),
+        "hostname" : hostname
       }
     )
 })
@@ -81,7 +84,9 @@ app.get('/fibo_remote', async (req, res) => {
         }
         return res.json(
             {
-            "data": response.data
+            "data": response.data,
+            "hostname" : hostname
+            // "hostname" : response.hostname
             }
         )
     })
@@ -100,7 +105,8 @@ app.get('/guide', function(req, res) {
 
     return res.json(
       {
-        "data": guide.goal(goal)
+        "data": guide.goal(goal),
+        "hostname" : hostname
       }
     )
 })
