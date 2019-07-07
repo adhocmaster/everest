@@ -52,7 +52,7 @@ spec:
         image: iharijono/file-server:latest
         # command: [ "/bin/sh", "-c", "--" ]
         # args: [ "while true; do sleep 30; done;" ]
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 9001
         env:
@@ -140,7 +140,7 @@ spec:
       containers:
       - name: fs
         image: iharijono/file-server:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         ports:
         - containerPort: 9000
         env:
