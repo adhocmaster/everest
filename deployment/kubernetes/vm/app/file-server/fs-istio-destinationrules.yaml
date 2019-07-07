@@ -24,11 +24,11 @@ spec:
   subsets:
   - name: v1
     labels:
-      version: v1
+      # version: v1
       status: normal
   - name: v1-busy
     labels:
-      version: v1
+      # version: v1
       status: busy
   # - name: v1-idle
   #   labels:
@@ -40,9 +40,9 @@ spec:
   # - name: v3
   #   labels:
   #     version: v3
-  - name: standalone-v1
-    labels:
-      version: standalone-v1
+  # - name: standalone-v1
+  #   labels:
+  #     version: standalone-v1
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: DestinationRule

@@ -25,23 +25,38 @@ source ./common.sh
 PROG=$0
 ITER_NUM=1
 
+LARGE_F_URL="http://releases.ubuntu.com/18.04/ubuntu-18.04.2-live-server-amd64.iso"
+
+# curl -v -F myFile=@/usr/bin/ssh http://localhost:9000/uploadfile
+# cat mem_intensive.sh | curl -v -F myFile=@- http://localhost:9000/uploadfile
+# curl -vs $LARGE_F_URL 2>&1 | curl -v -F myFile=@- http://localhost:9000/uploadfile
 run_network() {
     URLS="http://${GATEWAY_URL}/file?name=everest.ppt \
         http://${GATEWAY_URL}/video?name=combat.mov \
         http://${GATEWAY_URL}/video?name=music-box.mp4 \
         http://${GATEWAY_URL}/video?name=small.mp4"
 
+    l_files=`ls`
+
     echo
     echo "Testing Scenario: Network Usages"
 
     for i in `seq 1 11`
     do
-        echo "Download files and video Nr. $i"
-        for URL in $URLS
+        # echo "Download files and video Nr. $i"
+        # for URL in $URLS
+        # do
+        #     res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`
+        #     check $URL $res
+        # done
+        # echo "Uploading files"
+        # # curl -vs $LARGE_F_URL 2>&1 | curl -v -F myFile=@- http://localhost:9000/uploadfile
+        for file in $l_files
         do
-            res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`
-            check $URL $res
+            #echo "Uploading file $file"
+            curl --silent -F myFile=@$file http://${GATEWAY_URL}/uploadfile -o /dev/null
         done
+
     done
     echo
 }
@@ -54,7 +69,7 @@ do
     fi
     case "$1" in
 	-h)
-        usage $PROG "run cpu network task"
+        usage $PROG "run network task"
 	    exit
 	    ;;
 	-n)

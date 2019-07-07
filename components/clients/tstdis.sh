@@ -25,21 +25,29 @@ check() {
 }
 
 URLS="http://${GATEWAY_URL}/fibo?n=3 \
-    http://${GATEWAY_URL}/fibo_remote?n=3 \
-    http://${GATEWAY_URL}/file?name=everest.ppt \
-    http://${GATEWAY_URL}/video?name=small.mp4"
+    http://${GATEWAY_URL}/fibo_remote?n=3"
 
 
+#
+# http://${GATEWAY_URL}/file?name=everest.ppt
+# http://${GATEWAY_URL}/video?name=small.mp4
+#
+
+COUNTER=0
 for (( i = 0; i < $TOTAL; i++ )) 
 do
   for URL in $URLS
   do
-    RET=$(curl -sL -w "%{http_code}\\n" $URL -o /dev/null)
+    _RET=$(curl -sL $URL)
+    # echo "$_RET"
+    RET=`echo $_RET | python -c 'import json,sys;obj=json.load(sys.stdin);print(obj["hostname"])'`
     if [ -z "$RET" -o "$RET" == "\n" -o "$RET" == "no healthy upstream" ]
     then
         RET="failure"
     fi
     NUMMAP[${RET}]=$((NUMMAP[${RET}]+1))
+    COUNTER=`expr $COUNTER + 1`
+    #echo "RET = ${RET}"
   done
 done
 
@@ -47,6 +55,7 @@ KEYS=(${!NUMMAP[@]})
 for (( I=0; $I < ${#NUMMAP[@]}; I+=1 )); do
   KEY=${KEYS[$I]}
   V=${NUMMAP[$KEY]}
-  PERCENT=$(bc <<< "scale=3;$V*400/$TOTAL")
+#   PERCENT=$(bc <<< "scale=3;$V*400/$TOTAL")
+  PERCENT=$(bc <<< "scale=3;$V*100/$COUNTER")
   echo "$KEY : ${NUMMAP[$KEY]}(${PERCENT}%)"
 done
