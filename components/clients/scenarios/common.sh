@@ -47,3 +47,26 @@ check() {
     fi
 }
 
+DEFAULT_COUNT=1024
+#MegaByte
+#DEFAULT_UNIT=1048576
+#KiloByte
+DEFAULT_UNIT=1024
+DEFAULT_FILE=/tmp/file.txt
+
+gen_file() {
+    count=$1
+    unit=$2
+
+    if [ "$count" = "" ]
+    then
+        count=DEFAULT_COUNT
+    fi
+    if [ "$unit" = "" ]
+    then
+        unit=DEFAULT_UNIT
+    fi
+
+    dd if=/dev/urandom of=$DEFAULT_FILE bs=$unit count=$count
+
+}

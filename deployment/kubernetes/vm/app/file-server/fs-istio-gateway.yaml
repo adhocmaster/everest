@@ -56,6 +56,8 @@ spec:
         prefix: /file
     - uri:
         prefix: /video
+    - uri:
+        prefix: /uploadfile
     route:
     - destination:
         host: fs

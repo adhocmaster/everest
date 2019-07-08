@@ -25,7 +25,9 @@ source ./common.sh
 PROG=$0
 ITER_NUM=1
 
-LARGE_F_URL="http://releases.ubuntu.com/18.04/ubuntu-18.04.2-live-server-amd64.iso"
+# generate 100 MB file under /tmp/file.txt
+gen_file 100 1048576
+LARGE_F_URL=$DEFAULT_FILE
 
 # curl -v -F myFile=@/usr/bin/ssh http://localhost:9000/uploadfile
 # cat mem_intensive.sh | curl -v -F myFile=@- http://localhost:9000/uploadfile
@@ -38,23 +40,26 @@ run_network() {
 
     l_files=`ls`
 
-    echo
-    echo "Testing Scenario: Network Usages"
+    # echo
+    # echo "Testing Scenario: Network Usages"
 
     for i in `seq 1 11`
     do
-        # echo "Download files and video Nr. $i"
-        # for URL in $URLS
-        # do
-        #     res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`
-        #     check $URL $res
-        # done
-        # echo "Uploading files"
-        # # curl -vs $LARGE_F_URL 2>&1 | curl -v -F myFile=@- http://localhost:9000/uploadfile
+        echo "Download files and video Nr. $i"
+        for URL in $URLS
+        do
+            res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`
+            check $URL $res
+        done
+        echo "Uploading large file Nr. $i"
+        URL="http://${GATEWAY_URL}/uploadfile"
+        res=`curl --silent -w "%{http_code}\\n" -F myFile=@$LARGE_F_URL $URL -o /dev/null`
+        check "$URL@$LARGE_F_URL" $res
         for file in $l_files
         do
             #echo "Uploading file $file"
-            curl --silent -F myFile=@$file http://${GATEWAY_URL}/uploadfile -o /dev/null
+            res=`curl --silent -w "%{http_code}\\n" -F myFile=@$file $URL -o /dev/null`
+            check "$URL@$file" $res
         done
 
     done
