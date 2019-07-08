@@ -156,6 +156,8 @@ spec:
           value: "fibo"
         - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
+        - name: EVEREST_FS_MULTIPLIER
+          value: "50"
 # ---
 # apiVersion: extensions/v1beta1
 # kind: Deployment
