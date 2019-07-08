@@ -26,7 +26,7 @@ PROG=$0
 ITER_NUM=1
 
 # generate 100 MB file under /tmp/file.txt
-gen_file 200 1048576
+gen_file 100 1048576
 LARGE_F_URL=$DEFAULT_FILE
 
 # curl -v -F myFile=@/usr/bin/ssh http://localhost:9000/uploadfile
