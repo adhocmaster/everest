@@ -23,11 +23,13 @@
 package com.futurewei.everest;
 
 public interface EverestDefaultValues {
+    static final int MB = 1048576;
+
     String PRJ_ID = "everest";
     String KAFKA_EVEREST_DATA_TOPIC = "everest-data-topic";
     String KAFKA_EVEREST_TRACE_TOPIC = "everest-trace-topic";
     String KAFKA_CG = "cg-" + PRJ_ID;
-    String KAFKA_OUTPUT_CPU_C_TOPIC = "cpu-h-topic";
+    String KAFKA_OUTPUT_CPU_C_TOPIC = "cpu-c-topic";
     String KAFKA_OUTPUT_CPU_H_TOPIC = "cpu-h-topic";
     String KAFKA_OUTPUT_MEM_C_TOPIC = "mem-c-topic";
     String KAFKA_OUTPUT_MEM_H_TOPIC = "mem-h-topic";
@@ -36,15 +38,17 @@ public interface EverestDefaultValues {
     Double VALID_VALUE_LOW_BOUND = 0.0;
     Double VALID_VALUE_HIGH_BOUND = 100.0;
     String CONCURENCY = "2";
-    int CPU_THRESHOLD_CRITICAL = 90;
-    int CPU_THRESHOLD_HIGH = 70;
-    int CPU_THRESHOLD_REGULAR = 50;
-    int MEM_THRESHOLD_CRITICAL = 90;
-    int MEM_THRESHOLD_HIGH = 70;
-    int MEM_THRESHOLD_REGULAR = 50;
-    int NET_THRESHOLD_CRITICAL = 90;
-    int NET_THRESHOLD_HIGH = 70;
-    int NET_THRESHOLD_REGULAR = 50;
+    double CPU_RATE_THRESHOLD_CRITICAL = 0.7;
+    double CPU_RATE_THRESHOLD_HIGH = 0.5;
+    double CPU_RATE_THRESHOLD_REGULAR = 0.25;
+
+    long MEM_RATE_THRESHOLD_CRITICAL = 50 * MB;
+    long MEM_RATE_THRESHOLD_HIGH = 35 * MB;
+    long MEM_RATE_THRESHOLD_REGULAR = 15 * MB;
+
+    long NET_RATE_THRESHOLD_CRITICAL = 9 * MB; //9 MB
+    long NET_RATE_THRESHOLD_HIGH = 6 * MB; // 6 MB
+    long NET_RATE_THRESHOLD_REGULAR = 4 * MB; // 4 MB
 
     /**
      * Type to select filters

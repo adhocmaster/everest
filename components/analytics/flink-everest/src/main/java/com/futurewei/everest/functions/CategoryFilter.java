@@ -55,7 +55,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     private transient int netLowNumbers = 0;
 
     // Thresholds
-    private static final transient int THRESHOLD = 11;
+    private static final transient int THRESHOLD = 11 - 8;
 
     // data structure to keep the information
     private Map<String, Integer> freqs;
@@ -63,18 +63,35 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     // A type of collection to filter everest data. This will be stored in memory
     // of a task manager
     String typeToFilter;
-    int memPercentThreshold;
-    int netPercentThreshold;
-    int _memThreshold;
-    int _netThreshold;
+    long memPercentThreshold;
+    long netPercentThreshold;
+    double cpuPercentThreshold;
+    long[] _memThresholds;
+    long[] _netThresholds;
+    double[] _cpuThresholds;
 
-    public CategoryFilter(String typeToFilter, int memThreshold, int netThreshold) {
+    public CategoryFilter(String typeToFilter, long memThreshold, long netThreshold, double cpuThreshold) {
 
         this.typeToFilter = typeToFilter;
-        this.memPercentThreshold = memThreshold; // 10000000
-        this.netPercentThreshold = netThreshold; // 10000
-        _memThreshold *= 10;
-        _netThreshold *= 1000;
+        this.cpuPercentThreshold = cpuThreshold;
+        this.memPercentThreshold = memThreshold; // 1000000
+        this.netPercentThreshold = netThreshold; // 1000000
+        if(cpuThreshold == EverestDefaultValues.CPU_RATE_THRESHOLD_CRITICAL) {
+            _cpuThresholds = new double[] {EverestDefaultValues.CPU_RATE_THRESHOLD_CRITICAL, EverestDefaultValues.CPU_RATE_THRESHOLD_HIGH, EverestDefaultValues.CPU_RATE_THRESHOLD_REGULAR};
+        } else {
+            _cpuThresholds = new double[]{cpuThreshold, cpuThreshold - 0.1, cpuThreshold - 0.2};
+        }
+        if(memThreshold == EverestDefaultValues.MEM_RATE_THRESHOLD_CRITICAL) {
+            _memThresholds = new long[] {EverestDefaultValues.MEM_RATE_THRESHOLD_CRITICAL, EverestDefaultValues.MEM_RATE_THRESHOLD_HIGH, EverestDefaultValues.MEM_RATE_THRESHOLD_REGULAR};
+        } else {
+            _memThresholds = new long[]{memThreshold, memThreshold - EverestDefaultValues.MB, memThreshold - (2 * EverestDefaultValues.MB)};
+        }
+        if(netThreshold == EverestDefaultValues.NET_RATE_THRESHOLD_CRITICAL) {
+            _netThresholds = new long[] {EverestDefaultValues.NET_RATE_THRESHOLD_CRITICAL, EverestDefaultValues.NET_RATE_THRESHOLD_HIGH, EverestDefaultValues.NET_RATE_THRESHOLD_REGULAR};
+        } else {
+            _netThresholds = new long[]{netThreshold, netThreshold - EverestDefaultValues.MB, netThreshold - (2 * EverestDefaultValues.MB)};
+        }
+
 
         freqs = new HashMap();
     }
@@ -227,125 +244,51 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
 //        if(data.getPercentage() > 100) {
 //            System.out.println("catfilter=" + typeToFilter + " metric=" + data.getMetric() + " P=" + data.getPercentage() + "%");
 //        }
-        boolean res = false;
-        if(typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_CRITICAL) && data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_CRITICAL) {
-//            System.out.println("CPU CRITICAL: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
-//                    data.getPercentage() + "% V=" + data.getValue());
+        if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_CRITICAL) && (data.getPercentage() >= _cpuThresholds[0])) {
             cpuCriticalNumbers++;
-            if(cpuCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return _filter0(data);
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_HIGH) && (data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_CRITICAL)) {
+            System.out.println("CPU Critical percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_HIGH) && (data.getPercentage() >= _cpuThresholds[1]) && (data.getPercentage() < _cpuThresholds[0])) {
             cpuHighNumbers++;
-            if(cpuHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return _filter0(data);
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_REGULAR) && (data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_HIGH)) {
+            System.out.println("CPU high percent= " + data.getPercentage() + " numbers= " + cpuHighNumbers);
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_REGULAR) && (data.getPercentage() >= _cpuThresholds[2]) && (data.getPercentage() < _cpuThresholds[1])) {
             cpuRegularNumbers++;
-            if(cpuRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return true;
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_LOW) && (data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_REGULAR)) {
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_LOW) && (data.getPercentage() < _cpuThresholds[2])) {
             cpuLowNumbers++;
-            if(cpuLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return true;
-            }
-        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && data.getPercentage() >= (memPercentThreshold * 2) &&
-                (data.getValue() >= (_memThreshold * 2))) {
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && (data.getPercentage() >= _memThresholds[0])) {
             memCriticalNumbers++;
-            if(memCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return _filter0(data);
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= memPercentThreshold && data.getPercentage() < (memPercentThreshold * 2)) &&
-                (data.getValue() >= _memThreshold && data.getValue() < (_memThreshold * 2))) {
+            System.out.println("MEM Critical percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= _memThresholds[1]) && (data.getPercentage() < _memThresholds[0])) {
             memHighNumbers++;
-            if(memHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return _filter0(data);
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= memPercentThreshold && data.getPercentage() < memPercentThreshold/2) &&
-                (data.getValue() >= _memThreshold/2 && data.getValue() < _memThreshold)) {
+            System.out.println("MEM High percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= _memThresholds[2]) && (data.getPercentage() < _memThresholds[1])) {
             memRegularNumbers++;
-            if(memRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return true;
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < (memPercentThreshold/2)) &&
-                (data.getValue() < _memThreshold/2)) {
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < _memThresholds[2])) {
             memLowNumbers++;
-            if(memLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return true;
-            }
-        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= (netPercentThreshold * 2) &&
-                (data.getValue() >= (_netThreshold *2))) {
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && (data.getPercentage() >= _netThresholds[0])) {
             netCriticalNumbers++;
-            if(netCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return _filter0(data);
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= netPercentThreshold &&
-                data.getPercentage() < (netPercentThreshold * 2)) && (data.getValue() >= _netThreshold && data.getValue() < (_netThreshold * 2))) {
+            System.out.println("NET Critical percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= _netThresholds[1]) && (data.getPercentage() < _netThresholds[0])) {
             netHighNumbers++;
-            if(netHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return _filter0(data);
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= netPercentThreshold/2 &&
-                data.getPercentage() < netPercentThreshold) && (data.getValue() >= _netThreshold/2 && data.getValue() < _netThreshold)) {
+            System.out.println("NET High percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= _netThresholds[2]) && (data.getPercentage() < _netThresholds[1])) {
             netRegularNumbers++;
-            if(netRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return true;
-            }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < netPercentThreshold/2) &&
-                (data.getValue() < _netThreshold/2)) {
+            return true;
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < _netThresholds[2])) {
             netLowNumbers++;
-            if(netLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return true;
-            }
+            return true;
         }
-
-
-
-//        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_CRITICAL) {
-//            memCriticalNumbers++;
-//            if(memCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_CRITICAL)) {
-//            memHighNumbers++;
-//            if(memHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_HIGH)) {
-//            memRegularNumbers++;
-//            if(memRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_REGULAR)) {
-//            memLowNumbers++;
-//            if(memLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
-//            netCriticalNumbers++;
-//            if(netCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_CRITICAL)) {
-//            netHighNumbers++;
-//            if(netHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_HIGH)) {
-//            netRegularNumbers++;
-//            if(netRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_REGULAR)) {
-//            netLowNumbers++;
-//            if(netLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-//                return (true);
-//            }
-//        }
-////            System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getPercentage());
-////            System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction CategoryFilter Class");
-////            throw (new Exception("unexpected type to filter in RichFilterFunction CategoryFilter Class " + " received = " + data.getPercentage()));
+//        System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getType() + " percent= " + data.getPercentage());
+//        System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction CategoryFilter Class");
         return false;
     }
 

@@ -90,7 +90,7 @@ const _exhaust_mem = (g) => {
     if(mu[field] > 1073741824)
         allocations = []
 
-    let allocationStep = g * 1024 * 1024
+    let allocationStep = g * 1024
     const allocation = alloc(allocationStep)
     allocations.push(allocation)
  

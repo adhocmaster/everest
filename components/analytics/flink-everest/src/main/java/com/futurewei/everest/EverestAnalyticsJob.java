@@ -36,8 +36,6 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import static org.apache.flink.streaming.connectors.kafka.config.StartupMode.LATEST;
@@ -92,8 +90,9 @@ public class EverestAnalyticsJob {
         final String bootstrapServers = params.get("bootstrap.servers", EverestDefaultValues.BOOTSTRAP_SERVERS);
         final int concurency = Integer.parseInt(params.get("concurency", EverestDefaultValues.CONCURENCY));
         final int windowSize = Integer.parseInt(params.get("window-size", EverestDefaultValues.WINDOW_SIZE)); //in secs
-        final int memThreshold = Integer.parseInt(params.get("mem-threshold", "10000000")); //in bytes
-        final int netThreshold = Integer.parseInt(params.get("net-threshold", "10000")); //in bytes
+        final long memThreshold = Integer.parseInt(params.get("mem-threshold", Long.toString(EverestDefaultValues.MEM_RATE_THRESHOLD_CRITICAL))); //in bytes
+        final long netThreshold = Integer.parseInt(params.get("net-threshold", Long.toString(EverestDefaultValues.NET_RATE_THRESHOLD_CRITICAL))); //in bytes
+        final double cpuThreshold = Double.parseDouble(params.get("cpu-threshold", Double.toString(EverestDefaultValues.CPU_RATE_THRESHOLD_CRITICAL))); //in percent
 
 		// set up the streaming execution environment
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -171,40 +170,40 @@ public class EverestAnalyticsJob {
          */
         DataStream<EverestCollectorDataT<Double, Double>> cpuCriticalDataStream = cpuDataStreamByKey
                 // filter out the elements that have values critical
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_CRITICAL, memThreshold, netThreshold)).name("F_Category_Filter_Critical_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_CRITICAL, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Critical_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> cpuHighDataStream = cpuDataStreamByKey
                 // filter out the elements that have values high
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_HIGH, memThreshold, netThreshold)).name("F_Category_Filter_High_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_HIGH, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_High_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> cpuRegularDataStream = cpuDataStreamByKey
                 // filter out the elements that have values regular
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR, memThreshold, netThreshold)).name("F_Category_Filter_Regular_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Regular_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
                 // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW, memThreshold, netThreshold)).name("F_Category_Filter_Low_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Low_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> memCriticalDataStream = memDataStreamByKey
                 // filter out the elements that have values critical
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL, memThreshold, netThreshold)).name("F_Category_Filter_Critical_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Critical_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> memHighDataStream = memDataStreamByKey
                 // filter out the elements that have values high
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_HIGH, memThreshold, netThreshold)).name("F_Category_Filter_High_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_HIGH, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_High_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> memRegularDataStream = memDataStreamByKey
                 // filter out the elements that have values regular
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_REGULAR, memThreshold, netThreshold)).name("F_Category_Filter_Regular_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_REGULAR, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Regular_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> memLowDataStream = memDataStreamByKey
                 // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_LOW, memThreshold, netThreshold)).name("F_Category_Filter_Low_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_LOW, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Low_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> netCriticalDataStream = netDataStreamByKey
                 // filter out the elements that have values critical
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_CRITICAL, memThreshold, netThreshold)).name("F_Category_Filter_Critical_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_CRITICAL, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Critical_NET");
         DataStream<EverestCollectorDataT<Double, Double>> netHighDataStream = netDataStreamByKey
                 // filter out the elements that have values high
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_HIGH, memThreshold, netThreshold)).name("F_Category_Filter_High_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_HIGH, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_High_NET");
         DataStream<EverestCollectorDataT<Double, Double>> netRegularDataStream = netDataStreamByKey
                 // filter out the elements that have values regular
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_REGULAR, memThreshold, netThreshold)).name("F_Category_Filter_Regular_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_REGULAR, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Regular_NET");
         DataStream<EverestCollectorDataT<Double, Double>> netLowDataStream = netDataStreamByKey
                 // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_LOW, memThreshold, netThreshold)).name("F_Category_Filter_Low_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_LOW, memThreshold, netThreshold, cpuThreshold)).name("F_Category_Filter_Low_NET");
 
 
         /**
@@ -212,17 +211,19 @@ public class EverestAnalyticsJob {
          * from there the command/control module will take actions
          */
 
-        cpuCriticalDataStream.addSink(
-                new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
-                        outputCpuCTopic,
-                        new EverestCollectorTSerializationSchema(),
-                        kafkaProps)).name("Si_CPU_Cricital_Kafka_Out_To_" + outputCpuCTopic);
-        // write the info back into Kafka
-        cpuHighDataStream.addSink(
-                new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
-                        outputCpuHTopic,
-                        new EverestCollectorTSerializationSchema(),
-                        kafkaProps)).name("Si_CPU_High_Kafka_Out_To_" + outputCpuHTopic);
+        cpuCriticalDataStream.
+                addSink(
+                    new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                            outputCpuCTopic,
+                            new EverestCollectorTSerializationSchema(),
+                            kafkaProps)).name("Si_CPU_Cricital_Kafka_Out_To_" + outputCpuCTopic);
+
+        cpuHighDataStream.
+                addSink(
+                    new FlinkKafkaProducer010<EverestCollectorDataT<Double, Double>>(
+                            outputCpuHTopic,
+                            new EverestCollectorTSerializationSchema(),
+                            kafkaProps)).name("Si_CPU_High_Kafka_Out_To_" + outputCpuHTopic);
 
         // JUST FOR DEBUGGING write the info back into Kafka
 /*
