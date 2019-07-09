@@ -15,7 +15,12 @@ This contains explanation how to set up a kubernetes cluster on virtualbox VMs
 192.168.26.10 master    
 192.168.26.11 node-0      
 192.168.26.12 node-1       
+```      
+- Upgrade your bash version to 4.x.x if you are on MacOS. It is needed for the script tstdi.sh to check actions on K8s.   
 ```
+% brew install bash
+```
+
 
 ## How to start/create
 1. Clone the project everest (URL is temp!!!) to your local machine which has vagrant and virtualbox installed.     

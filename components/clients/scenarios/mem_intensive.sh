@@ -21,22 +21,9 @@
 #
 
 
-export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
-export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-export INGRESS_HOST="master"
-
-export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
-
-check() {
-    url=$1
-    res=$2
-    if [ $res -ne 200 ]
-    then
-        echo "***** Error ***** FAILED: to execute $url return_code: -$res-"
-    else
-         echo "'$url' --> SUCCESS"   
-    fi
-}
+source ./common.sh
+PROG=$0
+ITER_NUM=1
 
 run_mem() {
     URLS="http://${GATEWAY_URL}/guide?goal= \
@@ -45,7 +32,7 @@ run_mem() {
     echo
     echo "Testing Scenario: Memory Usages"
 
-    for i in `seq 32 64`
+    for i in `seq 128 256`
     do
         echo "Run Computation Nr. $i"
         for _URL in $URLS
@@ -57,4 +44,33 @@ run_mem() {
     done
     echo
 }
-run_mem
+for arg in "$@"
+do
+    if [ "$1" = "" ]
+    then
+        shift
+        continue
+    fi
+    case "$1" in
+	-h)
+        usage $PROG "run memory intensive task (route_guide)"
+	    exit
+	    ;;
+	-n)
+        shift
+	    ITER_NUM=$1
+	    shift
+	    ;;
+	*)
+	    echo "Parameter error -$1-"
+	    shift
+        usage
+        exit 1
+	    ;;
+    esac
+done
+
+for i in $(seq 0 $ITER_NUM)
+do
+    run_mem
+done

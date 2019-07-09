@@ -39,12 +39,13 @@ metadata:
     app: fibo
     version: v1
 spec:
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
         app: fibo
         version: v1
+        status: normal
     spec:
       containers:
       - name: fibo
@@ -128,12 +129,13 @@ metadata:
     app: fs
     version: v1
 spec:
-  replicas: 2
+  replicas: 3
   template:
     metadata:
       labels:
         app: fs
         version: v1
+        status: normal
     spec:
       containers:
       - name: fs
@@ -154,6 +156,8 @@ spec:
           value: "fibo"
         - name: EVEREST_FS_FIBO_REMOTE_PORT
           value: "9001"
+        - name: EVEREST_FS_MULTIPLIER
+          value: "50"
 # ---
 # apiVersion: extensions/v1beta1
 # kind: Deployment
@@ -233,12 +237,13 @@ metadata:
     app: fs
     version: standalone-v1
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
         app: fs
         version: standalone-v1
+        status: normal
     spec:
       containers:
       - name: fs

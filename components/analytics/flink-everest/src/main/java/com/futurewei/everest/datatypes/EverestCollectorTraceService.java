@@ -19,6 +19,7 @@
 
 package com.futurewei.everest.datatypes;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
@@ -27,7 +28,9 @@ import java.util.Objects;
 
 @JsonSerialize
 public class EverestCollectorTraceService {
+    @JsonProperty("processes")
     Map<String, EverestCTProcess> processes;
+    @JsonProperty("spans")
     Map<String, EverestCTSpan> spans;
 
     @JsonSerialize
@@ -189,6 +192,7 @@ public class EverestCollectorTraceService {
         long startTime;
         String traceID;
         String warnings;
+        @JsonProperty("tags")
         List<EverestTag> tags;
 
         public EverestSpan() {

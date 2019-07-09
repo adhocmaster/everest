@@ -29,6 +29,23 @@ const path = require('path')
 const app = express()
 const mime = require('mime')
 const axios = require('axios')
+const bodyParser= require('body-parser')
+const multer = require('multer')
+
+// SET STORAGE
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, '/tmp')
+    },
+    filename: function (req, file, cb) {
+      // cb(null, file.fieldname + '-' + Date.now())
+      cb(null, file.fieldname)
+    }
+  })
+   
+var upload = multer({ storage: storage })
+
+const os = require('os')
 
 const cpu_task = require('./cpu-task')
 const guide = require('./guide')
@@ -37,12 +54,28 @@ const DEFAULT_VERBOSE = true
 const FS_PORT_DEFAULT = 9000
 const FS_NO_VIDEO_DEFAULT = false
 const FS_NO_FILE_DEFAULT = false
+const DEFAULT_FS_MULTIPLIER=25
+
+var hostname = os.hostname()
 
 app.use(express.static(path.join(__dirname, 'public')))
 
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname + '/index.htm'))
 })
+
+app.post('/uploadfile', upload.single('myFile'), (req, res, next) => {
+    const file = req.file
+    if (!file) {
+      const error = new Error('Please upload a file')
+      error.httpStatusCode = 400
+      return next(error)
+    }
+    //console.log("uploadfile ")
+    res.send(file)
+    
+  })
+
 
 const FIBO_ARG_DEFAULT = 10
 app.get('/fibo', function(req, res) {
@@ -54,7 +87,8 @@ app.get('/fibo', function(req, res) {
 
     return res.json(
       {
-        "data": cpu_task.fibo(n)
+        "data": cpu_task.fibo(n),
+        "hostname" : hostname
       }
     )
 })
@@ -66,6 +100,7 @@ var VERBOSE = process.env.EVEREST_FS_VERBOSE || DEFAULT_VERBOSE
 var FS_PORT = process.env.EVEREST_FS_PORT || FS_PORT_DEFAULT
 var FS_NO_VIDEO = process.env.EVEREST_FS_NO_VIDEO|| FS_NO_VIDEO_DEFAULT
 var FS_NO_FILE = process.env.EVEREST_FS_NO_VIDEO|| FS_NO_FILE_DEFAULT
+var FS_MULTIPLIER = process.env.EVEREST_FS_MULTIPLIER || DEFAULT_FS_MULTIPLIER
 var FIBO_REMOTE_HOST = process.env.EVEREST_FS_FIBO_REMOTE_HOST || DEFAULT_FIBO_REMOTE_HOST
 var FIBO_REMOTE_PORT = process.env.EVEREST_FS_FIBO_REMOTE_PORT || DEFAULT_FIBO_REMOTE_PORT
 
@@ -81,7 +116,9 @@ app.get('/fibo_remote', async (req, res) => {
         }
         return res.json(
             {
-            "data": response.data
+            "data": response.data,
+            "hostname" : hostname
+            // "hostname" : response.hostname
             }
         )
     })
@@ -100,7 +137,8 @@ app.get('/guide', function(req, res) {
 
     return res.json(
       {
-        "data": guide.goal(goal)
+        "data": guide.goal(goal),
+        "hostname" : hostname
       }
     )
 })
@@ -140,116 +178,217 @@ guide.VERBOSE = VERBOSE
 
 var DEFAULT_VIDEO = 'sample.mp4'
 var DEFAULT_FILE = 'eliot.jar'
+
+const download_video = (res, filename, n) => {
+    let path = 'assets/video/' + filename
+    if(VERBOSE) {
+        console.log(`video ---> File ${path}`)
+    }
+    if (fs.existsSync(path)) {
+        //file exists, NOOP
+        if(VERBOSE) {
+            console.log(`File ${path} OK`)
+        }
+    } else {
+        console.error(`WARNING:  File ${path} doesn't EXIST, setting default video file`)
+        path = 'assets/video/' + DEFAULT_VIDEO
+    }
+    if(VERBOSE) {
+        console.log(`video retrieve File ${path} ...`)
+    }
+
+    const stat = fs.statSync(path)
+    const fileSize = stat.size
+    const mimetype = mime.lookup(path)
+    const head = {
+        'Content-Length': fileSize * n,
+        'Content-Type': mimetype,
+        //'Content-Type': 'video/mp4',
+    }
+    res.writeHead(200, head)
+    
+
+    for(let i=0; i < n;++i) {
+        // console.log("iter " + i)
+        const reader = fs.createReadStream(path)
+        reader
+            // .on('data', function (chunk) {
+            //     console.log("OK");
+            // })
+            .on('end', function () {
+                // console.log('All the data in the file has been read');
+                reader.unpipe(res)
+            // })
+            // .on('close', function (err) {
+            //     console.log('Stream has been Closed');
+            });
+
+        reader.pipe(res)
+        //reader.unpipe(res)
+    }
+}
+
 if(!FS_NO_VIDEO) {
     app.get('/video', function(req, res) {
         let filename = req.query.name || DEFAULT_VIDEO
-        let path = 'assets/video/' + filename
+        download_video(res, filename, FS_MULTIPLIER)
 
-        if(VERBOSE) {
-            console.log(`video ---> File ${path}`)
-        }
+        // let path = 'assets/video/' + filename
 
-        if (fs.existsSync(path)) {
-            //file exists, NOOP
-            if(VERBOSE) {
-                console.log(`File ${path} OK`)
-            }
-        } else {
-            console.error(`WARNING:  File ${path} doesn't EXIST, setting default video file`)
-            path = 'assets/video/' + DEFAULT_VIDEO
-        }
-        if(VERBOSE) {
-            console.log(`video retrieve File ${path} ...`)
-        }
+        // if(VERBOSE) {
+        //     console.log(`video ---> File ${path}`)
+        // }
 
-        const stat = fs.statSync(path)
-        const fileSize = stat.size
-        const range = req.headers.range
-        const mimetype = mime.lookup(path)
+        // if (fs.existsSync(path)) {
+        //     //file exists, NOOP
+        //     if(VERBOSE) {
+        //         console.log(`File ${path} OK`)
+        //     }
+        // } else {
+        //     console.error(`WARNING:  File ${path} doesn't EXIST, setting default video file`)
+        //     path = 'assets/video/' + DEFAULT_VIDEO
+        // }
+        // if(VERBOSE) {
+        //     console.log(`video retrieve File ${path} ...`)
+        // }
+
+        // const stat = fs.statSync(path)
+        // const fileSize = stat.size
+        // const range = req.headers.range
+        // const mimetype = mime.lookup(path)
  
 
-        if (range) {
-            const parts = range.replace(/bytes=/, "").split("-")
-            const start = parseInt(parts[0], 10)
-            const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1
+        // if (range) {
+        //     const parts = range.replace(/bytes=/, "").split("-")
+        //     const start = parseInt(parts[0], 10)
+        //     const end = parts[1] ? parseInt(parts[1], 10) : fileSize-1
 
-            const chunksize = (end-start)+1
-            const file = fs.createReadStream(path, {start, end})
-            const head = {
-                'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-                'Accept-Ranges': 'bytes',
-                'Content-Length': chunksize,
-                'Content-Type': mimetype,
-                //'Content-Type': 'video/mp4',
-            }
+        //     const chunksize = (end-start)+1
+        //     const file = fs.createReadStream(path, {start, end})
+        //     const head = {
+        //         'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        //         'Accept-Ranges': 'bytes',
+        //         'Content-Length': chunksize,
+        //         'Content-Type': mimetype,
+        //         //'Content-Type': 'video/mp4',
+        //     }
 
-            res.writeHead(206, head)
-            file.pipe(res)
-        } else {
-            const head = {
-                'Content-Length': fileSize,
-                'Content-Type': mimetype,
-                //'Content-Type': 'video/mp4',
-            }
-            res.writeHead(200, head)
-            fs.createReadStream(path).pipe(res)
-        }
+        //     res.writeHead(206, head)
+        //     file.pipe(res)
+        // } else {
+        //     const head = {
+        //         'Content-Length': fileSize,
+        //         'Content-Type': mimetype,
+        //         //'Content-Type': 'video/mp4',
+        //     }
+        //     res.writeHead(200, head)
+        //     fs.createReadStream(path).pipe(res)
+        // }
     })
 }
 
+const download_file = (res, filename, n) => {
+    let path = 'assets/file/' + filename
+    if(VERBOSE) {
+        console.log(`file ---> File ${path}`)
+    }
+    if (fs.existsSync(path)) {
+        //file exists, NOOP
+        if(VERBOSE) {
+            console.log(`File ${path} OK`)
+        }
+    } else {
+        console.error(`WARNING:  File ${path} doesn't EXIST, setting default video file`)
+        path = 'assets/file/' + DEFAULT_FILE
+    }
+    if(VERBOSE) {
+        console.log(`video retrieve File ${path} ...`)
+    }
+
+    const stat = fs.statSync(path)
+    const fileSize = stat.size
+    const mimetype = mime.lookup(path)
+    const head = {
+        'Content-Length': fileSize * n,
+        'Content-Type': mimetype,
+    }
+    res.writeHead(200, head)
+    
+
+    for(let i=0; i < n;++i) {
+        // console.log("iter " + i)
+        const reader = fs.createReadStream(path)
+
+        reader
+        // .on('data', function (chunk) {
+        //     console.log("OK");
+        // })
+        .on('end', function () {
+            // console.log('All the data in the file has been read');
+            reader.unpipe(res)
+        // })
+        // .on('close', function (err) {
+        //     console.log('Stream has been Closed');
+        });
+
+        reader.pipe(res)
+        //reader.unpipe(res)
+    }
+}
 if(!FS_NO_FILE) {
     app.get('/file', function(req, res) {
         let filename = req.query.name || DEFAULT_FILE
-        let path = 'assets/file/' + filename
+        download_file(res, filename, FS_MULTIPLIER)
+        // let path = 'assets/file/' + filename
 
-        if(VERBOSE) {
-            console.log(`file ---> File ${path}`)
-        }
+        // if(VERBOSE) {
+        //     console.log(`file ---> File ${path}`)
+        // }
 
 
-        if (fs.existsSync(path)) {
-            //file exists, NOOP
-            console.log(`File ${path} OK`)
-        } else {
-            console.error(`WARNING:  File ${path} doesn't EXIST, setting default file`)
-            path = 'assets/file/' + DEFAULT_FILE
-        }
+        // if (fs.existsSync(path)) {
+        //     //file exists, NOOP
+        //     console.log(`File ${path} OK`)
+        // } else {
+        //     console.error(`WARNING:  File ${path} doesn't EXIST, setting default file`)
+        //     path = 'assets/file/' + DEFAULT_FILE
+        // }
 
-        if(VERBOSE) {
-            console.log(`file retrieve File ${path} ...`)
-        }
+        // if(VERBOSE) {
+        //     console.log(`file retrieve File ${path} ...`)
+        // }
 
-        const stat = fs.statSync(path)
-        const fileSize = stat.size
-        const range = req.headers.range
-        const mimetype = mime.lookup(path)
+        // const stat = fs.statSync(path)
+        // const fileSize = stat.size
+        // const range = req.headers.range
+        // const mimetype = mime.lookup(path)
     
-        if (range) {
-        const parts = range.replace(/bytes=/, "").split("-")
-        const start = parseInt(parts[0], 10)
-        const end = parts[1]
-            ? parseInt(parts[1], 10)
-            : fileSize-1
+        // if (range) {
+        // const parts = range.replace(/bytes=/, "").split("-")
+        // const start = parseInt(parts[0], 10)
+        // const end = parts[1]
+        //     ? parseInt(parts[1], 10)
+        //     : fileSize-1
     
-        const chunksize = (end-start)+1
-        const file = fs.createReadStream(path, {start, end})
-        const head = {
-            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-            'Accept-Ranges': 'bytes',
-            'Content-Length': chunksize,
-            'Content-Type': mimetype,
-        }
+        // const chunksize = (end-start)+1
+        // const file = fs.createReadStream(path, {start, end})
+        // const head = {
+        //     'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        //     'Accept-Ranges': 'bytes',
+        //     'Content-Length': chunksize,
+        //     'Content-Type': mimetype,
+        // }
     
-        res.writeHead(206, head)
-        file.pipe(res)
-        } else {
-            const head = {
-                'Content-Length': fileSize,
-                'Content-Type': mimetype,
-            }
-            res.writeHead(200, head)
-            fs.createReadStream(path).pipe(res)
-        }
+        // res.writeHead(206, head)
+        // file.pipe(res)
+        // } else {
+        //     const head = {
+        //         'Content-Length': fileSize,
+        //         'Content-Type': mimetype,
+        //     }
+        //     res.writeHead(200, head)
+        //     fs.createReadStream(path).pipe(res)
+        // }
     })
 }
 

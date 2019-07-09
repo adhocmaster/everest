@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+#
+
+# JUST HACK
+apt-get install emacs gdb
 
 CLOUD_TYPE=$1
 

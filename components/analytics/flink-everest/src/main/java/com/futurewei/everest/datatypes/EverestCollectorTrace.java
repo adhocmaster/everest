@@ -21,6 +21,7 @@ package com.futurewei.everest.datatypes;
 
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
@@ -33,6 +34,8 @@ public class EverestCollectorTrace {
     long ts;
     String type;
     String url;
+
+    @JsonProperty("traces")
     Map<String, EverestCollectorTraceService> traces;
 
 

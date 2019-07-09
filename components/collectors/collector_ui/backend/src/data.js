@@ -263,22 +263,28 @@ async function _trace_jaeger() {
 			ready_to_kafka()
 		}
 
-		// console.log("Ready to Insert Traces in Mongo wait ... " + JSON.stringify(jaegers[index][3].traces, null, 2))
-		// if(MONGO != null) {
-		// 	let origin = {id: jaegers[index][2],
-		// 		type: 'clover',
-		// 		tracer_url: jaegers[index][0] + ':' + jaegers[index][1] 
-		// 	}
+		if(jaegers[index][3].traces.length > 0) {
+			console.log("Ready to Insert Traces in Mongo wait ... " + JSON.stringify(jaegers[index][3].traces, null, 2))
+			if(MONGO != null) {
+				let origin = {id: jaegers[index][2],
+					type: 'clover',
+					tracer_url: jaegers[index][0] + ':' + jaegers[index][1] 
+				}
 
-		// 	//console.log("ORG " + origin)
-		// 	MONGO.create(origin, jaegers[index][3].traces)
-		// 	origin = {id: jaegers[index+1][2],
-		// 		type: 'clovisor',
-		// 		tracer_url: jaegers[index+1][0] + ':' + jaegers[index+1][1] 
-		// 	}
-		// 	//console.log("ORG " + origin)
-		// 	MONGO.create(origin, jaegers[index+1][3].traces)
-		// }
+				//console.log("ORG " + origin)
+				MONGO.create(origin, jaegers[index][3].traces)
+				origin = {id: jaegers[index+1][2],
+					type: 'clovisor',
+					tracer_url: jaegers[index+1][0] + ':' + jaegers[index+1][1] 
+				}
+				//console.log("ORG " + origin)
+				MONGO.create(origin, jaegers[index+1][3].traces)
+				console.log("data.js: mongoDB create successful with trace data")
+			}
+		} else {
+			console.log("data.js: WARNING no trace data to send to mongoDB???")
+		}
+
 	}
 
 
@@ -303,12 +309,6 @@ async function _trace_jaeger() {
 
 	// }
 }
-
-function _trace_it() {
-    console.log("*************** Capture Tracing/Monitoring Data, Date: " + new Date());
-    _trace_jaeger();
-    _trace_prom();
-};
 
 function _set_verbose(verbose) {
     VERBOSE=verbose
@@ -384,8 +384,8 @@ const ready_to_kafka = () => {
 			if(jaeger.length > 3) {
 				//let jaegerObj = jaeger[3]
 				let jaegerId = jaeger[2]
-				//if(VERBOSE)
-					console.log(`Ready to kafka ${jaegerId}: ${jaeger[3].traces}`)
+				if(VERBOSE)
+					console.log(`Ready to kafka ${jaegerId}: ${JSON.stringify(jaeger[3].traces, null, 2)}`)
 
 				// 'ts':
 				// 'url':
@@ -426,8 +426,8 @@ const ready_to_kafka = () => {
 			if(prom.length > 3) {
 				//let promObj = prom[3]
 				let promId = prom[2]
-				//if(VERBOSE)
-					console.log(`PROM Ready to kafka ${promId}: ${prom[3].metrics}`)
+				if(VERBOSE)
+					console.log(`PROM Ready to kafka ${promId}: ${JSON.stringify(prom[3].metrics, null, 2)}`)
 				json_data = prom[3].metrics
 				if ( typeof json_data !== 'undefined' && json_data ) {
 					//console.log(`Data: -${Object.keys(json_data).length}- -${json_data.cpuData.length}- -${json_data.memData.length}- -${json_data.netData.length}-`)
@@ -534,7 +534,7 @@ const _start_collector = (rest_aux='') => {
 			for(let app of apps) {
 				p.add_included_app(app)
 			}
-			p.step_capture = '5m' // 5 minutes rate
+			p.step_capture = PROM_CAPTURE_STEP // 5 minutes rate
 			// p.step_capture = `${POLL_INTERVAL / 1000}s`
 			console.log("Prometheus ID     	: " + prom[2])
 			console.log("Prometheus URL     	: " + p.url_query)
@@ -542,7 +542,7 @@ const _start_collector = (rest_aux='') => {
 		}
 		console.log("Prometheus INCLUDED NS : " + PROM_INCLUDED_NS)
 		console.log("Prometheus INCLUDED APP : " + PROM_INCLUDED_APP)
-		console.log("Prometheus CAPTURE STEP : " + PROM_CAPTURE_STEP)
+		console.log("Prometheus RATE UNIT : " + PROM_CAPTURE_STEP)
 	} else {
 		console.log("Prometheus: OFF")
 	}
@@ -603,9 +603,6 @@ module.exports = {
     DEFAULT_AUX_JAEGERS: DEFAULT_AUX_JAEGERS,
     DEFAULT_AUX_PROMS: DEFAULT_AUX_PROMS,
 	DEFAULT_REST_AUX: DEFAULT_REST_AUX,
-    trace_it() {
-		_trace_it();
-    },
     set_verbose(verbose) {
 		_set_verbose(verbose);
     },
