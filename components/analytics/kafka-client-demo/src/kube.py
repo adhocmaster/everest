@@ -27,6 +27,8 @@ class EverestK8s():
         print("Starting Kubernetes Client with incluster={}".format(incluster))
         self.k8s_v1 = None
         self.k8s_betav1 = None
+        self.k8s_custom_obj = None
+
         try:
             if incluster is True:
                 config.load_incluster_config()
@@ -39,8 +41,55 @@ class EverestK8s():
         except config.config_exception.ConfigException as cex:
             print("*** ERROR *** can not connect to Kubernetes Cluster msg = {}".format(cex))
  
+    def _check_K8s(self):
+        if self.k8s_v1 is None or self.k8s_betav1 is None or self.k8s_custom_obj is None:
+            return True
+        else:
+            return False
+
+    def action(self, **kwargs):
+        if self._check_K8s():
+            print("*** ERROR *** Did you already connect to Kubernetes Cluster Beta???")
+            return
+        try: 
+            print("---> Action is executed")
+            # for key, value in kwargs.items(): 
+            #     print ("%s == %s" % (key, pprint(value)))
+            # pprint(kwargs)
+            # pod_name = 'istio-galley-6c466bf5b6-4jvsn'
+            # namespace = 'istio-system'
+            pod_name = kwargs['data']['podName']
+            namespace = kwargs['data']['namespace']
+
+            #
+            # Set the pod acc. to which thread I am on
+            #
+            
+
+            #
+            # This is later TBD TBD TBD
+            # 
+            # services = self.k8s_v1.list_service_for_all_namespaces(watch=False)
+            # for svc in services.items:
+            #     if svc.spec.selector:
+            #         # convert the selector dict into a  string selector
+            #         # for example: {"app": "redis"} => "app=redis"
+            #         selector = ''
+            #         for k,v in svc.spec.selector.items():
+            #             selector += k + '=' + v + ','
+            #         selector = selector[:-1]
+            #         # print("SELECTOR: " + selector)
+            #         # get the pods that match the selector
+            #         pods = self.k8s_v1.list_pod_for_all_namespaces(label_selector=selector)
+            #         for pod in pods.items:
+            #             if pod.metadata.name == pod_name and pod.metadata.namespace == namespace:
+            #                 print("ACTION ON ---> Service {} {}@{}".format(svc.metadata.name, pod.metadata.name, pod.metadata.namespace))
+
+        except ApiException as e:
+            print("Exception when calling xxx: %s\n" % e)
+
     def list_pod(self):
-        if self.k8s_v1 is None:
+        if self._check_K8s():
             print("*** ERROR *** Did you already connect to Kubernetes Cluster???")
             return
         try:
@@ -53,7 +102,7 @@ class EverestK8s():
             print("Exception when calling CoreV1Api->list_pod_for_all_namespaces: %s\n" % e)
 
     def get_resources(self):
-        if self.k8s_v1 is None:
+        if self._check_K8s():
             print("*** ERROR *** Did you already connect to Kubernetes Cluster???")
             return
         try:
@@ -67,7 +116,7 @@ class EverestK8s():
             print("Exception when calling CoreV1Api->get_api_resources: %s\n" % e)
 
     def my_test(self):
-        if self.k8s_betav1 is None:
+        if self._check_K8s():
             print("*** ERROR *** Did you already connect to Kubernetes Cluster Beta???")
             return
         try:       
@@ -99,8 +148,11 @@ class EverestK8s():
         except ApiException as e:
             print("Exception when calling ApiextensionsV1beta1Api->list_custom_resource_definition: %s\n" % e)
     
+    #
+    # DON'T USE !!! just place holder 
+    #
     def my_test1(self):
-        if self.k8s_betav1 is None:
+        if self._check_K8s():
             print("*** ERROR *** Did you already connect to Kubernetes Cluster Beta???")
             return
         try:       
@@ -109,17 +161,6 @@ class EverestK8s():
             #     print(crd)
             # api_response = self.k8s_betav1.list_custom_resource_definition(pretty=pretty, _continue=_continue, field_selector=field_selector, label_selector=label_selector, limit=limit, resource_version=resource_version, timeout_seconds=timeout_seconds, watch=watch)
             watch = False
-
-            api_response = self.k8s_custom_obj.list_cluster_custom_object(
-                            group, version, plural, pretty=pretty, field_selector=field_selector, 
-                            label_selector=label_selector, resource_version=resource_version, 
-                            timeout_seconds=timeout_seconds, watch=watch)
-            pprint(api_response)
-            # for i in api_response.items:
-            #     if i.spec.names.kind.lower() in ['virtualservice', 'destinationrule']:
-            #         print("----------------------------------------")
-            #         pprint(i.spec)
-            #         print("----------------------------------------")
  
         except ApiException as e:
             print("Exception when calling ApiextensionsV1beta1Api->get_api_resources: %s\n" % e)

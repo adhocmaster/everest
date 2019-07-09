@@ -47,7 +47,7 @@ class Consumer(threading.Thread):
         self.consumer = None
         self.everest_k8s = None
  
-    def register_k8s(k8s):
+    def register_k8s(self, k8s):
         self.everest_k8s = k8s
 
     def run(self):
@@ -63,7 +63,8 @@ class Consumer(threading.Thread):
                     bdata = message.value.decode('utf8')
                     data = json.loads(bdata)
                     print("Topic {} RECEIVING ---> ".format(self.topic))
-                    print(json.dumps(data, sort_keys=True, indent=4))
+                    print("Executing action callback")
+                    self.everest_k8s.action(data=data)
                     print("Topic {} End of RECEIVING <--- ".format(self.topic))
                 except Exception as e:
                     print("error: {0}".format(e))

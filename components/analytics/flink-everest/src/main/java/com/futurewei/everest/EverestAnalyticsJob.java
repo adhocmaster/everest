@@ -85,13 +85,15 @@ public class EverestAnalyticsJob {
 		final String outputCpuCTopic = params.get("cpu-c-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_C_TOPIC);
         final String outputCpuHTopic = params.get("cpu-h-topic", EverestDefaultValues.KAFKA_OUTPUT_CPU_H_TOPIC);
         final String outputNetLTopic = params.get("net-l-topic", "net-l-topic");
-        final String outputMemCTopic = params.get("mem-c-topi c", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
+        final String outputMemCTopic = params.get("mem-c-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_C_TOPIC);
         final String outputMemHTopic = params.get("mem-h-topic", EverestDefaultValues.KAFKA_OUTPUT_MEM_H_TOPIC);
         final String outputNetCTopic = params.get("net-c-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_C_TOPIC);
         final String outputNetHTopic = params.get("net-h-topic", EverestDefaultValues.KAFKA_OUTPUT_NET_H_TOPIC);
         final String bootstrapServers = params.get("bootstrap.servers", EverestDefaultValues.BOOTSTRAP_SERVERS);
         final int concurency = Integer.parseInt(params.get("concurency", EverestDefaultValues.CONCURENCY));
         final int windowSize = Integer.parseInt(params.get("window-size", EverestDefaultValues.WINDOW_SIZE)); //in secs
+        final int memThreshold = Integer.parseInt(params.get("mem-threshold", "10000000")); //in bytes
+        final int netThreshold = Integer.parseInt(params.get("net-threshold", "10000")); //in bytes
 
 		// set up the streaming execution environment
 		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -169,40 +171,40 @@ public class EverestAnalyticsJob {
          */
         DataStream<EverestCollectorDataT<Double, Double>> cpuCriticalDataStream = cpuDataStreamByKey
                 // filter out the elements that have values critical
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_CRITICAL)).name("F_Category_Filter_Critical_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_CRITICAL, memThreshold, netThreshold)).name("F_Category_Filter_Critical_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> cpuHighDataStream = cpuDataStreamByKey
                 // filter out the elements that have values high
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_HIGH)).name("F_Category_Filter_High_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_HIGH, memThreshold, netThreshold)).name("F_Category_Filter_High_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> cpuRegularDataStream = cpuDataStreamByKey
                 // filter out the elements that have values regular
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR)).name("F_Category_Filter_Regular_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_REGULAR, memThreshold, netThreshold)).name("F_Category_Filter_Regular_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> cpuLowDataStream = cpuDataStreamByKey
                 // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW)).name("F_Category_Filter_Low_CPU");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_CPU_LOW, memThreshold, netThreshold)).name("F_Category_Filter_Low_CPU");
         DataStream<EverestCollectorDataT<Double, Double>> memCriticalDataStream = memDataStreamByKey
                 // filter out the elements that have values critical
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL)).name("F_Category_Filter_Critical_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_CRITICAL, memThreshold, netThreshold)).name("F_Category_Filter_Critical_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> memHighDataStream = memDataStreamByKey
                 // filter out the elements that have values high
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_HIGH)).name("F_Category_Filter_High_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_HIGH, memThreshold, netThreshold)).name("F_Category_Filter_High_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> memRegularDataStream = memDataStreamByKey
                 // filter out the elements that have values regular
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_REGULAR)).name("F_Category_Filter_Regular_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_REGULAR, memThreshold, netThreshold)).name("F_Category_Filter_Regular_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> memLowDataStream = memDataStreamByKey
                 // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_LOW)).name("F_Category_Filter_Low_MEM");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_MEM_LOW, memThreshold, netThreshold)).name("F_Category_Filter_Low_MEM");
         DataStream<EverestCollectorDataT<Double, Double>> netCriticalDataStream = netDataStreamByKey
                 // filter out the elements that have values critical
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_CRITICAL)).name("F_Category_Filter_Critical_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_CRITICAL, memThreshold, netThreshold)).name("F_Category_Filter_Critical_NET");
         DataStream<EverestCollectorDataT<Double, Double>> netHighDataStream = netDataStreamByKey
                 // filter out the elements that have values high
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_HIGH)).name("F_Category_Filter_High_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_HIGH, memThreshold, netThreshold)).name("F_Category_Filter_High_NET");
         DataStream<EverestCollectorDataT<Double, Double>> netRegularDataStream = netDataStreamByKey
                 // filter out the elements that have values regular
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_REGULAR)).name("F_Category_Filter_Regular_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_REGULAR, memThreshold, netThreshold)).name("F_Category_Filter_Regular_NET");
         DataStream<EverestCollectorDataT<Double, Double>> netLowDataStream = netDataStreamByKey
                 // filter out the elements that have values loiw
-                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_LOW)).name("F_Category_Filter_Low_NET");
+                .filter(new CategoryFilter(EverestDefaultValues.CATEGORY_NET_LOW, memThreshold, netThreshold)).name("F_Category_Filter_Low_NET");
 
 
         /**

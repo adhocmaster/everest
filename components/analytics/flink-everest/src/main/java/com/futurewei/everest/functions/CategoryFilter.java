@@ -30,6 +30,9 @@ import org.apache.flink.api.common.functions.RichFilterFunction;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Gauge;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A {@link FilterFunction} that continuously filter bad values (lower than lower bound or higher than higher bound).
  */
@@ -54,12 +57,26 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     // Thresholds
     private static final transient int THRESHOLD = 11;
 
+    // data structure to keep the information
+    private Map<String, Integer> freqs;
+
     // A type of collection to filter everest data. This will be stored in memory
     // of a task manager
     String typeToFilter;
+    int memPercentThreshold;
+    int netPercentThreshold;
+    int _memThreshold;
+    int _netThreshold;
 
-    public CategoryFilter(String typeToFilter) {
+    public CategoryFilter(String typeToFilter, int memThreshold, int netThreshold) {
+
         this.typeToFilter = typeToFilter;
+        this.memPercentThreshold = memThreshold; // 10000000
+        this.netPercentThreshold = netThreshold; // 10000
+        _memThreshold *= 10;
+        _netThreshold *= 1000;
+
+        freqs = new HashMap();
     }
 
     @Override
@@ -177,6 +194,24 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
 
     }
 
+    private boolean _filter0(EverestCollectorDataT<Double, Double> data) {
+        String _data = new String(data.getCluster_id() + "_" + data.getNamespace() + "_" + data.getPodName());
+        if(freqs.containsKey(_data) == false) {
+            freqs.put(_data, new Integer(1));
+        } else {
+            Integer nval = freqs.get(_data).intValue() + 1;
+            freqs.put(_data, nval);
+        }
+        if(freqs.get(_data).intValue() > CategoryFilter.THRESHOLD ) {
+            freqs.put(_data, new Integer(1));
+
+            System.out.println("threshold metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
+                    data.getPercentage() + "% V=" + data.getValue());
+            return true;
+        }
+        return false;
+    }
+
     /**
      *
      * @param data the incoming data
@@ -197,68 +232,121 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
 //            System.out.println("CPU CRITICAL: metric=" + data.getMetric() + " Pod=" + data.getPodName() + "@" + data.getNamespace() + " P=" +
 //                    data.getPercentage() + "% V=" + data.getValue());
             cpuCriticalNumbers++;
-            if(cpuLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+            if(cpuCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+                return _filter0(data);
             }
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_HIGH) && (data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_CRITICAL)) {
             cpuHighNumbers++;
             if(cpuHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return _filter0(data);
             }
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_REGULAR) && (data.getPercentage() >= EverestDefaultValues.CPU_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_HIGH)) {
             cpuRegularNumbers++;
             if(cpuRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return true;
             }
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_LOW) && (data.getPercentage() < EverestDefaultValues.CPU_THRESHOLD_REGULAR)) {
             cpuLowNumbers++;
             if(cpuLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return true;
             }
-        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_CRITICAL) {
+        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && data.getPercentage() >= (memPercentThreshold * 2) &&
+                (data.getValue() >= (_memThreshold * 2))) {
             memCriticalNumbers++;
             if(memCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return _filter0(data);
             }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_CRITICAL)) {
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= memPercentThreshold && data.getPercentage() < (memPercentThreshold * 2)) &&
+                (data.getValue() >= _memThreshold && data.getValue() < (_memThreshold * 2))) {
             memHighNumbers++;
             if(memHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return _filter0(data);
             }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_HIGH)) {
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= memPercentThreshold && data.getPercentage() < memPercentThreshold/2) &&
+                (data.getValue() >= _memThreshold/2 && data.getValue() < _memThreshold)) {
             memRegularNumbers++;
             if(memRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return true;
             }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_REGULAR)) {
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < (memPercentThreshold/2)) &&
+                (data.getValue() < _memThreshold/2)) {
             memLowNumbers++;
             if(memLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return true;
             }
-        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= (netPercentThreshold * 2) &&
+                (data.getValue() >= (_netThreshold *2))) {
             netCriticalNumbers++;
             if(netCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return _filter0(data);
             }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_CRITICAL)) {
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= netPercentThreshold &&
+                data.getPercentage() < (netPercentThreshold * 2)) && (data.getValue() >= _netThreshold && data.getValue() < (_netThreshold * 2))) {
             netHighNumbers++;
             if(netHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return _filter0(data);
             }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_HIGH)) {
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= netPercentThreshold/2 &&
+                data.getPercentage() < netPercentThreshold) && (data.getValue() >= _netThreshold/2 && data.getValue() < _netThreshold)) {
             netRegularNumbers++;
             if(netRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return true;
             }
-        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_REGULAR)) {
+        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < netPercentThreshold/2) &&
+                (data.getValue() < _netThreshold/2)) {
             netLowNumbers++;
             if(netLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
-                return (true);
+                return true;
             }
         }
-//            System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getPercentage());
-//            System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction CategoryFilter Class");
-//            throw (new Exception("unexpected type to filter in RichFilterFunction CategoryFilter Class " + " received = " + data.getPercentage()));
+
+
+
+//        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_CRITICAL) {
+//            memCriticalNumbers++;
+//            if(memCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_CRITICAL)) {
+//            memHighNumbers++;
+//            if(memHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= EverestDefaultValues.MEM_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_HIGH)) {
+//            memRegularNumbers++;
+//            if(memRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < EverestDefaultValues.MEM_THRESHOLD_REGULAR)) {
+//            memLowNumbers++;
+//            if(memLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if(typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+//            netCriticalNumbers++;
+//            if(netCriticalNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_HIGH && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_CRITICAL)) {
+//            netHighNumbers++;
+//            if(netHighNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= EverestDefaultValues.NET_THRESHOLD_REGULAR && data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_HIGH)) {
+//            netRegularNumbers++;
+//            if(netRegularNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < EverestDefaultValues.NET_THRESHOLD_REGULAR)) {
+//            netLowNumbers++;
+//            if(netLowNumbers % CategoryFilter.THRESHOLD == CategoryFilter.THRESHOLD - 1) {
+//                return (true);
+//            }
+//        }
+////            System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getPercentage());
+////            System.out.println("***** ERROR *****: unexpected type to filter in RichFilterFunction CategoryFilter Class");
+////            throw (new Exception("unexpected type to filter in RichFilterFunction CategoryFilter Class " + " received = " + data.getPercentage()));
         return false;
     }
+
 }

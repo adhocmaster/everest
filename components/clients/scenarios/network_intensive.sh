@@ -21,31 +21,27 @@
 #
 
 
-export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
-export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-export INGRESS_HOST="master"
+source ./common.sh
+PROG=$0
+ITER_NUM=1
 
-export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+# generate 100 MB file under /tmp/file.txt
+gen_file 100 1048576
+LARGE_F_URL=$DEFAULT_FILE
 
-check() {
-    url=$1
-    res=$2
-    if [ $res -ne 200 ]
-    then
-        echo "***** Error ***** FAILED: to execute $url return_code: -$res-"
-    else
-         echo "'$url' --> SUCCESS"   
-    fi
-}
-
+# curl -v -F myFile=@/usr/bin/ssh http://localhost:9000/uploadfile
+# cat mem_intensive.sh | curl -v -F myFile=@- http://localhost:9000/uploadfile
+# curl -vs $LARGE_F_URL 2>&1 | curl -v -F myFile=@- http://localhost:9000/uploadfile
 run_network() {
     URLS="http://${GATEWAY_URL}/file?name=everest.ppt \
         http://${GATEWAY_URL}/video?name=combat.mov \
         http://${GATEWAY_URL}/video?name=music-box.mp4 \
         http://${GATEWAY_URL}/video?name=small.mp4"
 
-    echo
-    echo "Testing Scenario: Network Usages"
+    l_files=`ls`
+
+    # echo
+    # echo "Testing Scenario: Network Usages"
 
     for i in `seq 1 11`
     do
@@ -55,10 +51,50 @@ run_network() {
             res=`curl -sL -w "%{http_code}\\n" $URL -o /dev/null`
             check $URL $res
         done
+        echo "Uploading large file Nr. $i"
+        URL="http://${GATEWAY_URL}/uploadfile"
+        res=`curl --silent -w "%{http_code}\\n" -F myFile=@$LARGE_F_URL $URL -o /dev/null`
+        check "$URL@$LARGE_F_URL" $res
+        for file in $l_files
+        do
+            #echo "Uploading file $file"
+            res=`curl --silent -w "%{http_code}\\n" -F myFile=@$file $URL -o /dev/null`
+            check "$URL@$file" $res
+        done
+
     done
     echo
 }
-run_network
+for arg in "$@"
+do
+    if [ "$1" = "" ]
+    then
+        shift
+        continue
+    fi
+    case "$1" in
+	-h)
+        usage $PROG "run network task"
+	    exit
+	    ;;
+	-n)
+        shift
+	    ITER_NUM=$1
+	    shift
+	    ;;
+	*)
+	    echo "Parameter error -$1-"
+	    shift
+        usage
+        exit 1
+	    ;;
+    esac
+done
+
+for i in $(seq 0 $ITER_NUM)
+do
+    run_network
+done
 
 # # TODO TODO TODO
 # URLS="http://${GATEWAY_URL}/guide_chat?goal="

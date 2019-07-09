@@ -56,25 +56,27 @@ spec:
         prefix: /file
     - uri:
         prefix: /video
+    - uri:
+        prefix: /uploadfile
     route:
     - destination:
         host: fs
+        port:
+          number: 9000
         subset: v1
-        port:
-          number: 9000
-      weight: 70
+      weight: 100
+    # - destination:
+    #     host: fs
+    #     port:
+    #       number: 9000
+    #     subset: v1-idle
+    #   weight: 0
     - destination:
         host: fs
+        port:
+          number: 9000
         subset: v1-busy
-        port:
-          number: 9000
-      weight: 5
-    - destination:
-        host: fs
-        subset: standalone-v1
-        port:
-          number: 9000
-      weight: 25      
+      weight: 0
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -92,4 +94,18 @@ spec:
         host: fibo
         port:
           number: 9001
+        subset: v1
+      weight: 100
+    # - destination:
+    #     host: fibo
+    #     port:
+    #       number: 9001
+    #     subset: v1-idle
+    #   weight: 0
+    - destination:
+        host: fibo
+        port:
+          number: 9001
+        subset: v1-busy
+      weight: 0
 ---

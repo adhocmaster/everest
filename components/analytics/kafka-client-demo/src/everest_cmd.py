@@ -46,6 +46,7 @@ from kube import EverestK8s
 import atexit
 
 consumers = []
+DRYRUN = False
 def shutdown_hook():
     """
     a shutdown hook to be called before the shutdown
@@ -59,14 +60,18 @@ def shutdown_hook():
     print('All Consumer closed')
 
 def main(bootstrapper, kafka_topic=[], group_id='everest-c-group', outside=False):
+    global DRYRUN
     threads = []
-    everest_k8s = EverestK8s(incluster=False)
+    
     for topic in kafka_topic:
-        c = Consumer(bootstrapper, topic, group_id)
-        c.register_k8s(everest_k8s)
-        consumers.append(c)
-        threads.append(c)
-        c.start()
+        everest_k8s = EverestK8s(incluster=outside)
+        if DRYRUN is False:
+            c = Consumer(bootstrapper, topic, group_id)
+            c.register_k8s(everest_k8s)
+            consumers.append(c)
+            threads.append(c)
+            c.start()
+
     for t in threads:
         t.join()
 
@@ -87,7 +92,8 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--group", help="Kafka Group ID, default is {0}".format(GROUP_ID), default=GROUP_ID)
     parser.add_argument("-v", "--verbose", help="print out the logging info, default is {0}".format(VERBOSE), default=VERBOSE, action="store_true")
     parser.add_argument("-o", "--outside", help="run the program outside k8s cluster {0}".format(OUTSIDE), default=OUTSIDE, action="store_true")
-   
+    parser.add_argument("-d", "--dry", help="DON'T USE THIS, only for testing", default=False,  action="store_true")
+
     args = parser.parse_args()
 
     # import logging
@@ -104,7 +110,8 @@ if __name__ == "__main__":
     if 'EVEREST_CMD_TOPICS_GRP' in os.environ:
         GROUP_ID = os.environ['EVEREST_CMD_TOPICS_GRP']
     if 'EVEREST_CMD_OUTSIDE' in os.environ:
-        OUTSIDE = os.environ['EVEREST_CMD_OUTSIDE']
+        OUTSIDE = os.environ['EVEREST_CMD_OUTSIDE'].lower() == 'false'
+
 
     if args.bootstrapper != '':
         BOOTSTRAPPER = args.bootstrapper
@@ -114,9 +121,12 @@ if __name__ == "__main__":
         GROUP_ID = args.group
     if args.outside is True:
         OUTSIDE = args.outside
+    if args.dry is True:
+        DRYRUN = True
     
     TOPIC = TOPICS.split(",")
 
     atexit.register(shutdown_hook)
 
+    print(OUTSIDE)
     main(BOOTSTRAPPER, TOPIC, GROUP_ID, OUTSIDE)

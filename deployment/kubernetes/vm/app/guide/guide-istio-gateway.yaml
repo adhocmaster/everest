@@ -49,4 +49,12 @@ spec:
         host: guide
         port:
           number: 9999
+        subset: v1
+      weight: 100
+    - destination:
+        host: guide
+        port:
+          number: 9999
+        subset: v1-busy
+      weight: 0
 ---
