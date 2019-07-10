@@ -6,7 +6,7 @@
 #
 CLOUD_TYPE = ENV["CLOUD_TYPE"] || "vm"
 NUM_CPU = ENV["NUM_CPU"] || "2"
-NUM_MEM = ENV["NUM_MEM"] || "1"
+NUM_MEM = ENV["NUM_MEM"] || "2"
 
 
 MASTER_MEM = NUM_MEM.to_i * 2048
