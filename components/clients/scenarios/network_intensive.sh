@@ -77,6 +77,9 @@ do
         usage $PROG "run network task"
 	    exit
 	    ;;
+    -f)
+        shift
+        ;;
 	-n)
         shift
 	    ITER_NUM=$1

@@ -56,6 +56,9 @@ do
         usage $PROG "run memory intensive task (route_guide)"
 	    exit
 	    ;;
+    -f)
+        shift
+        ;;
 	-n)
         shift
 	    ITER_NUM=$1

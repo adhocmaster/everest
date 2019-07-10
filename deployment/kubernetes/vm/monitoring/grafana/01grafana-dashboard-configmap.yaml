@@ -4123,7 +4123,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_pod_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_pod_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4213,7 +4213,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_cpu_critical_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_cpu_critical_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4303,7 +4303,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_cpu_low_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_cpu_low_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4753,7 +4753,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_net_regular_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_net_regular_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
