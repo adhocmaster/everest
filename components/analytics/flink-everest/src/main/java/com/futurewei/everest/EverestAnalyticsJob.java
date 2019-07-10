@@ -36,7 +36,9 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer010;
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaProducer010;
 
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.apache.flink.streaming.connectors.kafka.config.StartupMode.LATEST;
 
@@ -117,15 +119,18 @@ public class EverestAnalyticsJob {
         /**
          * Transform by sorting between CPU and MEM data
          */
+        Set<String> clusterSeen = new HashSet<>();
+        Set<String> podSeen = new HashSet<>();
+
         DataStream<EverestCollectorDataT<Double, Double>> cpuDataStream = everestCollectorDataStream.flatMap(
-                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_CPU)
+                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_CPU, clusterSeen, podSeen)
         );
 
         DataStream<EverestCollectorDataT<Double, Double>> memDataStream = everestCollectorDataStream.flatMap(
-                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_MEM)
+                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_MEM, clusterSeen, podSeen)
         );
         DataStream<EverestCollectorDataT<Double, Double>> netDataStream = everestCollectorDataStream.flatMap(
-                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_NET)
+                new ValueFlatMap(EverestDefaultValues.TYPE_TO_COLLECT_NET, clusterSeen, podSeen)
         );
 
         /**

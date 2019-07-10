@@ -33,8 +33,9 @@ import org.apache.flink.metrics.Gauge;
 import org.apache.flink.metrics.Meter;
 import org.apache.flink.util.Collector;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, EverestCollectorDataT<Double, Double>> {
     private static final long serialVersionUID = 8273479696640556346L;
@@ -45,41 +46,41 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
     private transient Meter cpuThroughput;
     private transient Meter memThroughput;
     private transient Meter netThroughput;
-    private transient int clusterNumbers = 0;
-    private transient List<String> clusterSeen;
-    private transient int podNumbers = 0;
-    private transient List<String> podSeen;
+    private transient Set<String> clusterSeen;
+    private transient Set<String> podSeen;
 
 
     // A type of collection to store everest data. This will be stored in memory
     // of a task manager
     String typeToCollect;
 
-    public ValueFlatMap(String typeToCollect) {
+    public ValueFlatMap(String typeToCollect, Set<String> clusterSeen, Set<String> podSeen) {
         this.typeToCollect = typeToCollect;
+        this.clusterSeen = clusterSeen;
+        this.podSeen = podSeen;
     }
 
     @Override
     public void open(Configuration config) {
-        clusterSeen = new ArrayList<String>();
+        //clusterSeen = new HashSet<>();
         getRuntimeContext()
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .gauge(EverestDefaultValues.CLUSTER_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return clusterNumbers;
+                        return clusterSeen.size();
                     }
                 });
 
-        podSeen = new ArrayList<String>();
+        //podSeen = new HashSet<>();
         getRuntimeContext()
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .gauge(EverestDefaultValues.POD_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return podNumbers;
+                        return podSeen.size();
                     }
                 });
 
@@ -98,15 +99,11 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .meter(EverestDefaultValues.NET_THROUGHPUT, new DropwizardMeterWrapper(memDropwizardMeter));
-
     }
 
     @Override
     public void flatMap(EverestCollectorData data, Collector<EverestCollectorDataT<Double, Double>> out) throws Exception {
-        if(!clusterSeen.contains(data.getCluster_id())) {
-            clusterNumbers++;
-            clusterSeen.add(data.getCluster_id());
-        }
+        clusterSeen.add(data.getCluster_id());
 
         List<EverestCollectorDataT<Double, Double>> listDatas;
         String type = EverestDefaultValues.TYPE_TO_COLLECT_CPU;
@@ -132,10 +129,7 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
             throw (new Exception("unexpected type to filter in RichFlatMapFunction ValueFlatMap Class"));
         }
         for(EverestCollectorDataT<Double, Double> lData: listDatas) {
-            if(!podSeen.contains(lData.getContainerName())) {
-                podNumbers++;
-                podSeen.add(lData.getPodName());
-            }
+            podSeen.add(data.getCluster_id() + "@" + lData.getPodName() + "@" + lData.getNamespace());
             lData.setCluster_id(data.getCluster_id());
             lData.setType(type);
             out.collect(lData);

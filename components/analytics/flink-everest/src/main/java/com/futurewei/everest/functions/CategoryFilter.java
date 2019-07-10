@@ -31,7 +31,9 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.metrics.Gauge;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A {@link FilterFunction} that continuously filter bad values (lower than lower bound or higher than higher bound).
@@ -41,18 +43,18 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     /**
      * Metrics for Prometheus
      */
-    private transient int cpuCriticalNumbers = 0;
-    private transient int cpuHighNumbers = 0;
-    private transient int cpuRegularNumbers = 0;
-    private transient int cpuLowNumbers = 0;
-    private transient int memCriticalNumbers = 0;
-    private transient int memHighNumbers = 0;
-    private transient int memRegularNumbers = 0;
-    private transient int memLowNumbers = 0;
-    private transient int netCriticalNumbers = 0;
-    private transient int netHighNumbers = 0;
-    private transient int netRegularNumbers = 0;
-    private transient int netLowNumbers = 0;
+    private transient Set<String> setCpuCriticalNumbers;
+    private transient Set<String> setCpuHighNumbers;
+    private transient Set<String> setCpuRegularNumbers;
+    private transient Set<String> setCpuLowNumbers;
+    private transient Set<String> setMemCriticalNumbers;
+    private transient Set<String> setMemHighNumbers;
+    private transient Set<String> setMemRegularNumbers;
+    private transient Set<String> setMemLowNumbers;
+    private transient Set<String> setNetCriticalNumbers;
+    private transient Set<String> setNetHighNumbers;
+    private transient Set<String> setNetRegularNumbers;
+    private transient Set<String> setNetLowNumbers;
 
     // Thresholds
     private static final transient int THRESHOLD = 11 - 8;
@@ -73,6 +75,23 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     public CategoryFilter(String typeToFilter, long memThreshold, long netThreshold, double cpuThreshold) {
 
         this.typeToFilter = typeToFilter;
+
+        setCpuCriticalNumbers = new HashSet<String>();
+        setCpuHighNumbers = new HashSet<String>();
+        setCpuLowNumbers = new HashSet<String>();
+        setCpuRegularNumbers = new HashSet<String>();
+        setMemCriticalNumbers = new HashSet<String>();
+        setMemHighNumbers = new HashSet<String>();
+        setMemLowNumbers = new HashSet<String>();
+        setMemRegularNumbers = new HashSet<String>();
+        setNetCriticalNumbers = new HashSet<String>();
+        setNetHighNumbers = new HashSet<String>();
+        setNetLowNumbers = new HashSet<String>();
+        setNetRegularNumbers = new HashSet<String>();
+
+
+
+
         this.cpuPercentThreshold = cpuThreshold;
         this.memPercentThreshold = memThreshold; // 1000000
         this.netPercentThreshold = netThreshold; // 1000000
@@ -104,7 +123,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_CRITICAL_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return cpuCriticalNumbers;
+                        return setCpuCriticalNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -113,7 +132,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_HIGH_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return cpuHighNumbers;
+                        return setCpuHighNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -122,7 +141,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_REGULAR_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return cpuRegularNumbers;
+                        return setCpuRegularNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -131,7 +150,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_LOW_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return cpuLowNumbers;
+                        return setCpuLowNumbers.size();
                     }
                 });
 
@@ -141,7 +160,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_CRITICAL_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return memCriticalNumbers;
+                        return setMemCriticalNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -150,7 +169,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_HIGH_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return memHighNumbers;
+                        return setMemHighNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -159,7 +178,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_REGULAR_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return memRegularNumbers;
+                        return setMemRegularNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -168,7 +187,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_LOW_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return memLowNumbers;
+                        return setMemLowNumbers.size();
                     }
                 });
 
@@ -178,7 +197,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_CRITICAL_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return netCriticalNumbers;
+                        return setNetCriticalNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -187,7 +206,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_HIGH_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return netHighNumbers;
+                        return setNetHighNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -196,7 +215,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_REGULAR_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return netRegularNumbers;
+                        return setNetRegularNumbers.size();
                     }
                 });
         getRuntimeContext()
@@ -205,7 +224,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_LOW_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return netLowNumbers;
+                        return setNetLowNumbers.size();
                     }
                 });
 
@@ -229,6 +248,71 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
         return false;
     }
 
+    void setNumbers(String cat, EverestCollectorDataT<Double, Double> data) {
+        String _data = new String(data.getCluster_id() + "_" + data.getNamespace() + "_" + data.getPodName());
+        if(EverestDefaultValues.CATEGORY_CPU_CRITICAL.equals(cat)) {
+            setCpuCriticalNumbers.add(_data);
+            setCpuRegularNumbers.remove(_data);
+            setCpuHighNumbers.remove(_data);
+            setCpuLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_CPU_HIGH.equals(cat)) {
+            setCpuHighNumbers.add(_data);
+            setCpuRegularNumbers.remove(_data);
+            setCpuCriticalNumbers.remove(_data);
+            setCpuLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_CPU_REGULAR.equals(cat)) {
+            setCpuRegularNumbers.add(_data);
+            setCpuHighNumbers.remove(_data);
+            setCpuCriticalNumbers.remove(_data);
+            setCpuLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_CPU_LOW.equals(cat)) {
+            setCpuLowNumbers.add(_data);
+            setCpuRegularNumbers.remove(_data);
+            setCpuCriticalNumbers.remove(_data);
+            setCpuHighNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_MEM_CRITICAL.equals(cat)) {
+            setMemCriticalNumbers.add(_data);
+            setMemRegularNumbers.remove(_data);
+            setMemHighNumbers.remove(_data);
+            setMemLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_MEM_HIGH.equals(cat)) {
+            setMemHighNumbers.add(_data);
+            setMemRegularNumbers.remove(_data);
+            setMemCriticalNumbers.remove(_data);
+            setMemLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_MEM_REGULAR.equals(cat)) {
+            setMemRegularNumbers.add(_data);
+            setMemHighNumbers.remove(_data);
+            setMemCriticalNumbers.remove(_data);
+            setMemLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_MEM_LOW.equals(cat)) {
+            setMemLowNumbers.add(_data);
+            setMemRegularNumbers.remove(_data);
+            setMemCriticalNumbers.remove(_data);
+            setMemHighNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_NET_CRITICAL.equals(cat)) {
+            setNetCriticalNumbers.add(_data);
+            setNetRegularNumbers.remove(_data);
+            setNetHighNumbers.remove(_data);
+            setNetLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_NET_HIGH.equals(cat)) {
+            setNetHighNumbers.add(_data);
+            setNetRegularNumbers.remove(_data);
+            setNetCriticalNumbers.remove(_data);
+            setNetLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_NET_REGULAR.equals(cat)) {
+            setNetRegularNumbers.add(_data);
+            setNetHighNumbers.remove(_data);
+            setNetCriticalNumbers.remove(_data);
+            setNetLowNumbers.remove(_data);
+        } else if(EverestDefaultValues.CATEGORY_NET_LOW.equals(cat)) {
+            setNetLowNumbers.add(_data);
+            setNetRegularNumbers.remove(_data);
+            setNetCriticalNumbers.remove(_data);
+            setNetHighNumbers.remove(_data);
+        }
+    }
+
     /**
      *
      * @param data the incoming data
@@ -245,46 +329,46 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
 //            System.out.println("catfilter=" + typeToFilter + " metric=" + data.getMetric() + " P=" + data.getPercentage() + "%");
 //        }
         if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_CRITICAL) && (data.getPercentage() >= _cpuThresholds[0])) {
-            cpuCriticalNumbers++;
-            System.out.println("CPU Critical percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            setNumbers(EverestDefaultValues.CATEGORY_CPU_CRITICAL, data);
+            System.out.println("CPU Critical percent= " + data.getPercentage() + " numbers= " + setCpuCriticalNumbers);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_HIGH) && (data.getPercentage() >= _cpuThresholds[1]) && (data.getPercentage() < _cpuThresholds[0])) {
-            cpuHighNumbers++;
-            System.out.println("CPU high percent= " + data.getPercentage() + " numbers= " + cpuHighNumbers);
+            setNumbers(EverestDefaultValues.CATEGORY_CPU_HIGH, data);
+            System.out.println("CPU high percent= " + data.getPercentage() + " numbers= " + setCpuHighNumbers);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_REGULAR) && (data.getPercentage() >= _cpuThresholds[2]) && (data.getPercentage() < _cpuThresholds[1])) {
-            cpuRegularNumbers++;
+            setNumbers(EverestDefaultValues.CATEGORY_CPU_REGULAR, data);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_CPU_LOW) && (data.getPercentage() < _cpuThresholds[2])) {
-            cpuLowNumbers++;
+            setNumbers(EverestDefaultValues.CATEGORY_CPU_LOW, data);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_CRITICAL) && (data.getPercentage() >= _memThresholds[0])) {
-            memCriticalNumbers++;
-            System.out.println("MEM Critical percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            setNumbers(EverestDefaultValues.CATEGORY_MEM_CRITICAL, data);
+            System.out.println("MEM Critical percent= " + data.getPercentage() + " numbers= " + setCpuCriticalNumbers);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_HIGH) && (data.getPercentage() >= _memThresholds[1]) && (data.getPercentage() < _memThresholds[0])) {
-            memHighNumbers++;
-            System.out.println("MEM High percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            setNumbers(EverestDefaultValues.CATEGORY_MEM_HIGH, data);
+            System.out.println("MEM High percent= " + data.getPercentage() + " numbers= " + setCpuCriticalNumbers);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_REGULAR) && (data.getPercentage() >= _memThresholds[2]) && (data.getPercentage() < _memThresholds[1])) {
-            memRegularNumbers++;
+            setNumbers(EverestDefaultValues.CATEGORY_MEM_REGULAR, data);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_MEM_LOW) && (data.getPercentage() < _memThresholds[2])) {
-            memLowNumbers++;
+            setNumbers(EverestDefaultValues.CATEGORY_MEM_LOW, data);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_CRITICAL) && (data.getPercentage() >= _netThresholds[0])) {
-            netCriticalNumbers++;
-            System.out.println("NET Critical percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            setNumbers(EverestDefaultValues.CATEGORY_NET_CRITICAL, data);
+            System.out.println("NET Critical percent= " + data.getPercentage() + " numbers= " + setCpuCriticalNumbers);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_HIGH) && (data.getPercentage() >= _netThresholds[1]) && (data.getPercentage() < _netThresholds[0])) {
-            netHighNumbers++;
-            System.out.println("NET High percent= " + data.getPercentage() + " numbers= " + cpuCriticalNumbers);
+            setNumbers(EverestDefaultValues.CATEGORY_NET_HIGH, data);
+            System.out.println("NET High percent= " + data.getPercentage() + " numbers= " + setCpuCriticalNumbers);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_REGULAR) && (data.getPercentage() >= _netThresholds[2]) && (data.getPercentage() < _netThresholds[1])) {
-            netRegularNumbers++;
+            setNumbers(EverestDefaultValues.CATEGORY_NET_REGULAR, data);
             return true;
         } else if (typeToFilter.equals(EverestDefaultValues.CATEGORY_NET_LOW) && (data.getPercentage() < _netThresholds[2])) {
-            netLowNumbers++;
+            setNumbers(EverestDefaultValues.CATEGORY_NET_LOW, data);
             return true;
         }
 //        System.out.println("***** ERROR ***** expected = " + typeToFilter + " received = " + data.getType() + " percent= " + data.getPercentage());
