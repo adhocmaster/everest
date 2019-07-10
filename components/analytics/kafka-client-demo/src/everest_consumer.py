@@ -35,7 +35,6 @@ from kafka.errors import KafkaError
 
 from kafka import KafkaConsumer
 import json
-import time
 
 class Consumer(threading.Thread):
     daemon = True
@@ -78,9 +77,7 @@ class Consumer(threading.Thread):
                     namespace = data['namespace']
                     val = data['value']
                     percent = data['percentage']
-                    print("Thread ID {} RECEIVING EVENT ---> Value = {}".format(self.id, val))
-                    t = time.time()
-                    k = pod_name + "@" + namespace
+                    print("Thread ID {} RECEIVING EVENT ---> Percentage = {}".format(self.id, percent))
                     self.everest_k8s.action(data=data)
                     print("Thread ID {} END Executing ACTION <--- \n".format(self.id))
                 except Exception as e:

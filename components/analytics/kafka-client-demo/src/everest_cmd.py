@@ -63,9 +63,6 @@ def shutdown_hook():
     print('All Consumer closed')
 
 
-def hello(name):
-    print("Hello %s!" % name)
-
 def main(bootstrapper, kafka_topic=[], group_id='everest-c-group', outside=False):
     global DRYRUN
     threads = []

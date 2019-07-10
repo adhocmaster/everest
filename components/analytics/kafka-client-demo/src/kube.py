@@ -24,6 +24,7 @@ import json
 import copy
 import subprocess
 import time
+from cmd import cmd
 
 MINUTES=60
 CLEANING_ELAPSED_THRESHOLD = 0.5 * MINUTES # seconds
@@ -71,15 +72,17 @@ class EverestK8s():
         self._clean_args['containers'] = self._containers
 
         try:
-            self.rt = RepeatedTimer(CLEANING_ELAPSED_THRESHOLD/5, self.cleaning, self._clean_args)
+            self.rt = RepeatedTimer(CLEANING_ELAPSED_THRESHOLD, self.cleaning, self._clean_args)
 
             if incluster is True:
                 config.load_incluster_config()
             else:
                 config.load_kube_config()
             self.k8s_v1 = client.CoreV1Api()
+            self.k8s_apps = client.AppsV1Api()
             self.k8s_betav1 = client.ApiextensionsV1beta1Api()
             self.k8s_custom_obj = client.CustomObjectsApi()
+            self.cmd = cmd(self.k8s_v1, self.k8s_apps, self.k8s_custom_obj)
 
         except config.config_exception.ConfigException as cex:
             print("*** ERROR *** can not connect to Kubernetes Cluster msg = {}".format(cex))
@@ -91,11 +94,15 @@ class EverestK8s():
         # print("K8S Start Cleaning self._containers = {} \n containers = {}".format(self._containers, args))
         id = args['id']
         containers = args['containers']
-        for key,c_data in containers.items():
+        for key in list(containers):
+            c_data = containers[key]
             last_ts = c_data[0]
             elapsed_time = time.time() - last_ts
             if elapsed_time > RESET_ELAPSED_THRESHOLD:
-                print("{}: Elapsed {} bigger than {}, so reset to normal now".format(key, elapsed_time, RESET_ELAPSED_THRESHOLD))
+                podName = key[0]
+                ns = key[1]
+                print("{}@{}: Elapsed {} bigger than {}, so reset to normal now".format(podName, ns, elapsed_time, RESET_ELAPSED_THRESHOLD))
+                self.cmd.setStatus(podName, 'normal', namespace=ns)
                 containers.pop(key, None)
         
         # print("K8S Done Cleaning ")
@@ -118,15 +125,15 @@ class EverestK8s():
             # namespace = 'istio-system'
             pod_name = kwargs['data']['podName']
             namespace = kwargs['data']['namespace']
-            key = "{}@{}".format(pod_name, namespace)
+            key = (pod_name, namespace)
 
             action = 'add'
-            print("---> Action is executed on {}".format(key))
             if 'action' in kwargs:
                 action = kwargs['action']
             if not key in self._containers:
-                print("---> Action is executed on {}".format(key))
+                print("---> Action is executed on {}@{}".format(key[0], key[1]))
                 self._containers[key] = [time.time()]
+                self.cmd.setStatus(key[0], 'busy', namespace=key[1])
             else:
                 print("---> Action ALREADY is executed on {}, DO NOTHING".format(key))
                 pass
