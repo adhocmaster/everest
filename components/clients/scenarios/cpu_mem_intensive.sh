@@ -82,6 +82,9 @@ do
 	    ITER_NUM=$1
 	    shift
 	    ;;
+    -f)
+        shift
+        ;;
 	*)
 	    echo "Parameter error -$1-"
 	    shift

@@ -46,31 +46,31 @@ public class ValueSplitter implements OutputSelector<EverestCollectorDataT<Doubl
         String cat = "low";
 
         if(typeToCollect.equals("cpu")) {
-            if (percent >= EverestDefaultValues.CPU_THRESHOLD_CRITICAL) {
+            if (percent >= EverestDefaultValues.CPU_RATE_THRESHOLD_CRITICAL) {
                 cat = "critical";
-            } else if (percent >= EverestDefaultValues.CPU_THRESHOLD_HIGH && percent < EverestDefaultValues.CPU_THRESHOLD_CRITICAL) {
+            } else if (percent >= EverestDefaultValues.CPU_RATE_THRESHOLD_HIGH && percent < EverestDefaultValues.CPU_RATE_THRESHOLD_CRITICAL) {
                 cat = "high";
-            } else if (percent >= EverestDefaultValues.CPU_THRESHOLD_REGULAR && percent < EverestDefaultValues.CPU_THRESHOLD_HIGH) {
+            } else if (percent >= EverestDefaultValues.CPU_RATE_THRESHOLD_REGULAR && percent < EverestDefaultValues.CPU_RATE_THRESHOLD_HIGH) {
                 cat = "regular";
             } else {
                 cat = "low";
             }
         } else if(typeToCollect.equals("mem")) {
-            if (percent >= EverestDefaultValues.MEM_THRESHOLD_CRITICAL) {
+            if (percent >= EverestDefaultValues.MEM_RATE_THRESHOLD_CRITICAL) {
                 cat = "critical";
-            } else if (percent >= EverestDefaultValues.MEM_THRESHOLD_HIGH && percent < EverestDefaultValues.MEM_THRESHOLD_CRITICAL) {
+            } else if (percent >= EverestDefaultValues.MEM_RATE_THRESHOLD_HIGH && percent < EverestDefaultValues.MEM_RATE_THRESHOLD_CRITICAL) {
                 cat = "high";
-            } else if (percent >= EverestDefaultValues.MEM_THRESHOLD_REGULAR && percent < EverestDefaultValues.MEM_THRESHOLD_HIGH) {
+            } else if (percent >= EverestDefaultValues.MEM_RATE_THRESHOLD_REGULAR && percent < EverestDefaultValues.MEM_RATE_THRESHOLD_HIGH) {
                 cat = "regular";
             } else {
                 cat = "low";
             }
         } else if(typeToCollect.equals("net")) {
-            if (percent >= EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+            if (percent >= EverestDefaultValues.NET_RATE_THRESHOLD_CRITICAL) {
                 cat = "critical";
-            } else if (percent >= EverestDefaultValues.NET_THRESHOLD_HIGH && percent < EverestDefaultValues.NET_THRESHOLD_CRITICAL) {
+            } else if (percent >= EverestDefaultValues.NET_RATE_THRESHOLD_HIGH && percent < EverestDefaultValues.NET_RATE_THRESHOLD_CRITICAL) {
                 cat = "high";
-            } else if (percent >= EverestDefaultValues.NET_THRESHOLD_REGULAR && percent < EverestDefaultValues.NET_THRESHOLD_HIGH) {
+            } else if (percent >= EverestDefaultValues.NET_RATE_THRESHOLD_REGULAR && percent < EverestDefaultValues.NET_RATE_THRESHOLD_HIGH) {
                 cat = "regular";
             } else {
                 cat = "low";

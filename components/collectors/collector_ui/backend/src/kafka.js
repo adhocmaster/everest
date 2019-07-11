@@ -37,6 +37,7 @@ class Kafka {
       this._port = port
       this._type = type
       this._topic = topic
+      this._sim = false
       this.connect()
     }
     get host() {
@@ -55,6 +56,9 @@ class Kafka {
     set topic(new_topic) {
         this._topic = new_topic
     }
+    set sim(on_off) {
+        this._sim = on_off
+    }
 
     kafka_err (err) {
         console.log(err)
@@ -63,6 +67,12 @@ class Kafka {
     }
 
     async send(topic, key, json_data) {  
+        if(this._sim) {
+            console.log("Kafka SIM send: OK")
+            console.log(`Producer: ${this.producer}`)
+            return
+        }
+
         // if(VERBOSE)
         //     console.log(JSON.stringify(json_data))
         if (typeof this.producer !== 'undefined' && this.producer ) {
@@ -89,8 +99,10 @@ class Kafka {
     }
 
     async _send(topic, key, json_data) {
-        console.log("Kafka send: OK")
-        console.log(`Producer: ${this.producer}`)
+        if(this._sim) {
+            console.log("Kafka SIM send: OK")
+            console.log(`Producer: ${this.producer}`)
+        }
     }
 
     connect() {

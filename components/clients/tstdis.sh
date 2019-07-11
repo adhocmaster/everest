@@ -7,7 +7,7 @@ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 declare -A NUMMAP
 if [ -z "$1" ]
 then
-	TOTAL=500
+	TOTAL=100
 else
 	TOTAL=$1
 fi

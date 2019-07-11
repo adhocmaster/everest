@@ -61,6 +61,9 @@ class Prom {
         // 
         return ["container_cpu_usage_seconds_total", "container_cpu_load_average_10s", 
                 "container_cpu_user_seconds_total", "container_cpu_system_seconds_total",]
+        // "sum (rate (container_cpu_usage_seconds_total{image!=\"\",name=~\"^k8s_.*\",
+        // container_name!=\"POD\",kubernetes_io_hostname=~\"^$Node$\"}[1m])) by (container_name, pod_name)",
+
     }
     static get PROM_MEM() {
         // Cluster memory usage
@@ -121,7 +124,7 @@ class Prom {
         return ""
     }
     static get CAPTURE_STEP() {
-        return "5m" // rate of 5 minutes
+        return "1m" // rate of 1 minute
     }
     static get PROM_JSON_KEY() {
         return 'collector-data'
@@ -242,8 +245,8 @@ class Prom {
                         // console.log(`MEM POD ---> ${metric.pod}`)
                         // console.log(`POD NAME ---> ${metric.pod_name}`)
                         // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                        // if(values[1] > 10)
-                        //    console.log(`MEM VALUE > 10 ---> ${values[1]}`)
+                        // if(values[1] > 50000000)
+                        //   console.log(`MEM VALUE > 50MB ---> ${metric.pod}@${metric.namespace} | ${values[1]} metric ${element}`)
                         //console.log(`PERCENT ---> ${values[1]}`)
                     //}
                     _memData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1],
@@ -262,8 +265,8 @@ class Prom {
                             let rmetric = rresult.metric
                             let rvalues = rresult.value
                             //console.log(`MEM RATE VALUE ---> ${rvalues[1]}`)
-                            //if(rvalues[1] > 10)
-                            //    console.log(`MEM RATE VALUE > 10 ---> ${rvalues[1]}`)
+                            if(rvalues[1] > 50000000)
+                                console.log(`MEM RATE VALUE > 50MB ---> ${rmetric.pod}@${rmetric.namespace} | ${rvalues[1]} metric ${element}`)
                             _memData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {
@@ -308,8 +311,8 @@ class Prom {
                         // console.log(`POD NET ---> ${metric.pod}`)
                         // console.log(`POD NAME ---> ${metric.pod_name}`)
                         // console.log(`NAMESPACE ---> ${metric.namespace}`)
-                        //if(values[1] > 10)
-                        //    console.log(`NET VALUE > 10 ---> ${values[1]}`)
+                        // if(values[1] > 10000000)
+                        //    console.log(`NET VALUE > 10MB ---> ${metric.pod}@${metric.namespace} | ${values[1]} metric ${element}`)
                         //console.log(`VALUE NET ---> ${values[1]})`
                     //}
                     _netData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1],
@@ -329,8 +332,8 @@ class Prom {
                             let rmetric = rresult.metric
                             let rvalues = rresult.value
                             // if(this._verbose) {
-                            // if(rvalues[1] > 100)    
-                            //    console.log(`NET PERCENT > 100 ---> ${rvalues[1]} metric ${element}`)
+                            if(rvalues[1] > 10000000)    
+                               console.log(`NET RATE VALUE > 10 MB ---> ${rmetric.pod}@${rmetric.namespace} | ${rvalues[1]} metric ${element}`)
                             // }
                             _netData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
@@ -378,8 +381,8 @@ class Prom {
                         // console.log(`POD NAME ---> ${metric.pod_name}`)
                         // console.log(`NAMESPACE ---> ${metric.namespace}`)
                         // console.log(`VALUE CPU ---> ${values}`)
-                        // if(values[1] > 10)
-                        //     console.log(`CPU VALUE > 10 ---> ${values[1]}`)
+                        // if(values[1] > 100)
+                        //    console.log(`CPU VALUE > 100 ---> ${metric.pod}@${metric.namespace} | ${values[1]} metric ${element}`)
                     //}
                     _cpuData[metric.pod_name] = {'containerName': metric.pod, 'ts': values[0], 'value': values[1], 
                     'percentage': 0,
@@ -397,10 +400,8 @@ class Prom {
                         for(let rresult of rresults) {
                             let rmetric = rresult.metric
                             let rvalues = rresult.value
-                            // if(this._verbose) {
-                            //if(rvalues[1] > 10)
-                            //        console.log(`CPU RVALUE > 10 ---> ${rvalues[1]}`)
-                            // }
+                            if(rvalues[1] > 0.7)
+                                console.log(`CPU RATE VALUE > 0.7 ---> ${rmetric.pod}@${rmetric.namespace} | ${rvalues[1]} metric ${element}`)
                             _cpuData[rmetric.pod_name]['percentage'] = rvalues[1]
                         }
                     } else {

@@ -30,10 +30,11 @@ export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 usage() {
     cmd=$1
     desc=$2
-    echo "$cmd [-h] [-n]"
+    echo "$cmd [-h] [-n iter_num] [-f]"
     echo "$desc against everest-app"
     echo "-h print this page"
-    echo "-n iteration number"
+    echo "-n iter_num run loop with iter_num iterations"
+    echo "-f make it more excessive"
 }
 
 check() {

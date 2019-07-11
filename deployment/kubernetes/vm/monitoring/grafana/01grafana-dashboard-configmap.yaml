@@ -4123,7 +4123,7 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_pod_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_pod_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
@@ -4213,14 +4213,14 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_cpu_critical_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_cpu_critical_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with critical category of CPU",
+          "title": "Pods: critical CPU",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4303,14 +4303,14 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_cpu_low_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_cpu_low_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with Category low of CPU",
+          "title": "Pods: low CPU",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4400,7 +4400,7 @@ data:
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with category low of MEMORY",
+          "title": "Pods: low MEMORY",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4490,7 +4490,7 @@ data:
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with high usage of MEMORY",
+          "title": "Pods: high MEMORY",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4580,7 +4580,7 @@ data:
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with category of critical in NETWORK",
+          "title": "Pods: critical NETWORK",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4670,7 +4670,7 @@ data:
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with the category of High usage of NETWORK",
+          "title": "Pods: high NETWORK",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4753,14 +4753,14 @@ data:
           "tableColumn": "",
           "targets": [
             {
-              "expr": "sum(flink_taskmanager_job_task_operator_EliotMetrics_net_regular_numbers{job_name=\"$job\"})",
+              "expr": "sum(flink_taskmanager_job_task_operator_EverestMetrics_net_regular_numbers{job_name=\"$job\"})",
               "format": "time_series",
               "intervalFactor": 1,
               "refId": "A"
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with category of regular usage of NETWORK",
+          "title": "Pods: regular NETWORK",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -4940,7 +4940,7 @@ data:
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with category high in usage of CPU",
+          "title": "Pods: high CPU",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [
@@ -5030,7 +5030,7 @@ data:
             }
           ],
           "thresholds": "",
-          "title": "Number of Pods with category of regular usage of MEMORY ",
+          "title": "Pods: regular MEMORY ",
           "type": "singlestat",
           "valueFontSize": "80%",
           "valueMaps": [

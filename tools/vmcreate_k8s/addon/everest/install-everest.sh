@@ -155,7 +155,7 @@ then
     EVEREST_OSERVICES_DIR="./everest/deployment/kubernetes/vm/outside"
     if [ "$CLOUD_TYPE" = "vm" ]
     then
-        kubectl $KUBE_APPLY -R -f $EVEREST_SERVICES_DIR $EVEREST_NAMESPACE_N
+        kubectl $KUBE_APPLY -R -f $EVEREST_OSERVICES_DIR $EVEREST_NAMESPACE_N
     else
         echo "WARNING WARNING WARNING !!!!, implement here to deploy service in NON VM environment"
         # TODO here if you run above in public Cloud
@@ -168,10 +168,10 @@ then
     EVEREST_MONITORING_DIR="./everest/deployment/kubernetes/vm/monitoring"
     (cd $EVEREST_MONITORING_DIR; kubectl $KUBE_APPLY -R -f grafana/ $EVEREST_NAMESPACE_N)
     
-    # Everest MongoDB
-    echo "Installing Everest MongoDB..."
-    EVEREST_MONGODB_DIR="./everest/deployment/kubernetes/vm/mongo"
-    kubectl $KUBE_CREATE -f $EVEREST_MONGODB_DIR/mongo-replicator.yaml $EVEREST_NAMESPACE_N
+    # # Everest MongoDB
+    # echo "Installing Everest MongoDB..."
+    # EVEREST_MONGODB_DIR="./everest/deployment/kubernetes/vm/mongo"
+    # kubectl $KUBE_CREATE -f $EVEREST_MONGODB_DIR/mongo-replicator.yaml $EVEREST_NAMESPACE_N
 
     # EVEREST UI
     echo "Installing Everest Collector and Web UI..."
@@ -219,7 +219,7 @@ then
             kubectl expose -n istio-system svc tracing --type=$SVC_TYPE --name=$ITRACING_SVC_NAME  
             kubectl expose -n istio-system svc grafana --type=$SVC_TYPE --name=$IGRAFANA_SVC_NAME 
             kubectl expose -n istio-system svc prometheus --type=$SVC_TYPE --name=$PROM_SVC_NAME   
-            ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $IGRAFANA_SVC_NAME`
+            IGRAFANA_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $IGRAFANA_SVC_NAME`
             IGRAFANA_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $IGRAFANA_SVC_NAME`
             ITRACING_HOST=`kubectl -n istio-system get -o jsonpath="{.status.loadBalancer.ingress[0].ip}" services $ITRACING_SVC_NAME`
             ITRACING_PORT=`kubectl -n istio-system get -o jsonpath="{.spec.ports[0].port}" services $ITRACING_SVC_NAME`

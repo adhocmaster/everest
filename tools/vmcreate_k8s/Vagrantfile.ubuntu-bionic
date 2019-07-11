@@ -6,11 +6,11 @@
 #
 CLOUD_TYPE = ENV["CLOUD_TYPE"] || "vm"
 NUM_CPU = ENV["NUM_CPU"] || "2"
-NUM_MEM = ENV["NUM_MEM"] || "1"
+NUM_MEM = ENV["NUM_MEM"] || "2"
 
 
 MASTER_MEM = NUM_MEM.to_i * 2048
-SLAVE_MEM = NUM_MEM.to_i * 4096
+SLAVE_MEM = NUM_MEM.to_i * 2048
 
 #puts "SETTING MASTER MEM -> #{MASTER_MEM}"
 #puts "SETTING SLAVE MEM -> #{SLAVE_MEM}"
@@ -86,8 +86,8 @@ Vagrant.configure("2") do |config|
     # vb.memory = "4096"
     # vb.cpus = 2
     vb.memory = SLAVE_MEM.to_s
-    vb.cpus = (NUM_CPU.to_i * 2).to_s
-    # vb.cpus = NUM_CPU
+    # vb.cpus = (NUM_CPU.to_i * 2).to_s
+    vb.cpus = NUM_CPU
   end
   #
   # View the documentation for the provider you are using for more

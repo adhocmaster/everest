@@ -23,6 +23,8 @@
 source ./common.sh
 PROG=$0
 ITER_NUM=1
+SEQ_BEGIN=40
+SEQ_END=`expr $SEQ_BEGIN + 5`
 
 run_cpu() {
     URLS="http://${GATEWAY_URL}/fibo?n= \
@@ -31,7 +33,7 @@ run_cpu() {
     echo
     echo "Testing Scenario: CPU Usages"
 
-    for i in `seq 40 45`
+    for i in `seq $SEQ_BEGIN $SEQ_END`
     do
         
         
@@ -64,6 +66,11 @@ do
 	    ITER_NUM=$1
 	    shift
 	    ;;
+    -f)
+        SEQ_BEGIN=`expr $SEQ_BEGIN + 2`
+        SEQ_END=`expr $SEQ_BEGIN + 5`
+        shift
+        ;;
 	*)
 	    echo "Parameter error -$1-"
 	    shift
