@@ -235,16 +235,16 @@ then
         echo "Setting ITRACING to $ITRACING_HOST:$ITRACING_PORT on $COLLECTOR_UI_TMPL"
         sed "s/___IGRAFANA_HOST___:___IGRAFANA_PORT___/$IGRAFANA_HOST:$IGRAFANA_PORT/g;s/___IKIALI_HOST___:___IKIALI_PORT___/$IKIALI_HOST:$IKIALI_PORT/g;s/___ITRACING_HOST___:___ITRACING_PORT___/$ITRACING_HOST:$ITRACING_PORT/g" $COLLECTOR_UI_TMPL > $COLLECTOR_UI_YML
     fi
-    kubectl $KUBE_APPLY -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
+    # kubectl $KUBE_APPLY -f $COLLECTOR_UI_YML $EVEREST_NAMESPACE_N
 
 
-    echo "Installing Everest Analytics: Flink..."
-    FLINK_DIR="./everest/deployment/kubernetes/vm/analytics/flink/session-cluster"
-    kubectl $KUBE_APPLY -R -f $FLINK_DIR $EVEREST_NAMESPACE_N
-    FLINK_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/flink-everest"
-    #kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest.yaml $EVEREST_NAMESPACE_N
-    kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-rbac.yaml $EVEREST_NAMESPACE_N
-    kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-sinks.yaml $EVEREST_NAMESPACE_N
+    # echo "Installing Everest Analytics: Flink..."
+    # FLINK_DIR="./everest/deployment/kubernetes/vm/analytics/flink/session-cluster"
+    # kubectl $KUBE_APPLY -R -f $FLINK_DIR $EVEREST_NAMESPACE_N
+    # FLINK_EVEREST_DIR="./everest/deployment/kubernetes/vm/analytics/flink-everest"
+    # #kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest.yaml $EVEREST_NAMESPACE_N
+    # kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-rbac.yaml $EVEREST_NAMESPACE_N
+    # kubectl $KUBE_CREATE -f $FLINK_EVEREST_DIR/flink-everest-sinks.yaml $EVEREST_NAMESPACE_N
 
     echo "DONE Installing All Everest Apps and Services ..."
 fi

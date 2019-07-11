@@ -48,41 +48,45 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
     private transient Meter netThroughput;
     private transient Set<String> clusterSeen;
     private transient Set<String> podSeen;
-
+    private transient int _clusterSeen;
+    private transient int _podSeen;
 
     // A type of collection to store everest data. This will be stored in memory
     // of a task manager
     String typeToCollect;
 
-    public ValueFlatMap(String typeToCollect, Set<String> clusterSeen, Set<String> podSeen) {
+    public ValueFlatMap(String typeToCollect) {
         this.typeToCollect = typeToCollect;
-        this.clusterSeen = clusterSeen;
-        this.podSeen = podSeen;
+        this._clusterSeen = 0;
+        this._podSeen = 0;
     }
 
     @Override
     public void open(Configuration config) {
-        //clusterSeen = new HashSet<>();
+        clusterSeen = new HashSet<>();
+        _clusterSeen = clusterSeen.size();
         getRuntimeContext()
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .gauge(EverestDefaultValues.CLUSTER_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return clusterSeen.size();
+                        return _clusterSeen;
                     }
                 });
 
-        //podSeen = new HashSet<>();
+        podSeen = new HashSet<>();
+        _podSeen = podSeen.size();
         getRuntimeContext()
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .gauge(EverestDefaultValues.POD_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return podSeen.size();
+                        return _podSeen;
                     }
                 });
+
 
         com.codahale.metrics.Meter cpuDropwizardMeter = new com.codahale.metrics.Meter();
         this.cpuThroughput = getRuntimeContext()
@@ -101,9 +105,12 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
                 .meter(EverestDefaultValues.NET_THROUGHPUT, new DropwizardMeterWrapper(memDropwizardMeter));
     }
 
+
+
     @Override
     public void flatMap(EverestCollectorData data, Collector<EverestCollectorDataT<Double, Double>> out) throws Exception {
         clusterSeen.add(data.getCluster_id());
+        _clusterSeen = clusterSeen.size();
 
         List<EverestCollectorDataT<Double, Double>> listDatas;
         String type = EverestDefaultValues.TYPE_TO_COLLECT_CPU;
@@ -130,6 +137,7 @@ public class ValueFlatMap extends RichFlatMapFunction<EverestCollectorData, Ever
         }
         for(EverestCollectorDataT<Double, Double> lData: listDatas) {
             podSeen.add(data.getCluster_id() + "@" + lData.getPodName() + "@" + lData.getNamespace());
+            _podSeen = podSeen.size();
             lData.setCluster_id(data.getCluster_id());
             lData.setType(type);
             out.collect(lData);

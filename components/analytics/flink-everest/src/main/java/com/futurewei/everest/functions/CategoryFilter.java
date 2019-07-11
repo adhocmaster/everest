@@ -56,6 +56,19 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     private transient Set<String> setNetRegularNumbers;
     private transient Set<String> setNetLowNumbers;
 
+    private transient int _CpuCriticalNumbers;
+    private transient int _CpuHighNumbers;
+    private transient int _CpuRegularNumbers;
+    private transient int _CpuLowNumbers;
+    private transient int _MemCriticalNumbers;
+    private transient int _MemHighNumbers;
+    private transient int _MemRegularNumbers;
+    private transient int _MemLowNumbers;
+    private transient int _NetCriticalNumbers;
+    private transient int _NetHighNumbers;
+    private transient int _NetRegularNumbers;
+    private transient int _NetLowNumbers;
+
     // Thresholds
     private static final transient int THRESHOLD = 11 - 8;
 
@@ -75,22 +88,6 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
     public CategoryFilter(String typeToFilter, long memThreshold, long netThreshold, double cpuThreshold) {
 
         this.typeToFilter = typeToFilter;
-
-        setCpuCriticalNumbers = new HashSet<String>();
-        setCpuHighNumbers = new HashSet<String>();
-        setCpuLowNumbers = new HashSet<String>();
-        setCpuRegularNumbers = new HashSet<String>();
-        setMemCriticalNumbers = new HashSet<String>();
-        setMemHighNumbers = new HashSet<String>();
-        setMemLowNumbers = new HashSet<String>();
-        setMemRegularNumbers = new HashSet<String>();
-        setNetCriticalNumbers = new HashSet<String>();
-        setNetHighNumbers = new HashSet<String>();
-        setNetLowNumbers = new HashSet<String>();
-        setNetRegularNumbers = new HashSet<String>();
-
-
-
 
         this.cpuPercentThreshold = cpuThreshold;
         this.memPercentThreshold = memThreshold; // 1000000
@@ -112,18 +109,46 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
         }
 
 
-        freqs = new HashMap();
+
     }
 
     @Override
     public void open(Configuration config) {
+
+        freqs = new HashMap();
+
+        setCpuCriticalNumbers = new HashSet<String>();
+        setCpuHighNumbers = new HashSet<String>();
+        setCpuLowNumbers = new HashSet<String>();
+        setCpuRegularNumbers = new HashSet<String>();
+        setMemCriticalNumbers = new HashSet<String>();
+        setMemHighNumbers = new HashSet<String>();
+        setMemLowNumbers = new HashSet<String>();
+        setMemRegularNumbers = new HashSet<String>();
+        setNetCriticalNumbers = new HashSet<String>();
+        setNetHighNumbers = new HashSet<String>();
+        setNetLowNumbers = new HashSet<String>();
+        setNetRegularNumbers = new HashSet<String>();
+
+        _CpuCriticalNumbers = 0;
+        _CpuHighNumbers = 0;
+        _CpuLowNumbers = 0;
+        _CpuRegularNumbers = 0;
+        _MemCriticalNumbers = 0;
+        _MemHighNumbers = 0;
+        _MemLowNumbers = 0;
+        _MemRegularNumbers = 0;
+        _NetCriticalNumbers = 0;
+        _NetHighNumbers = 0;
+        _NetLowNumbers = 0;
+        _NetRegularNumbers = 0;
         getRuntimeContext()
                 .getMetricGroup()
                 .addGroup(EverestDefaultValues.EVEREST_METRICS_GROUP)
                 .gauge(EverestDefaultValues.CPU_CRITICAL_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setCpuCriticalNumbers.size();
+                        return _CpuCriticalNumbers;
                     }
                 });
         getRuntimeContext()
@@ -132,7 +157,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_HIGH_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setCpuHighNumbers.size();
+                        return _CpuHighNumbers;
                     }
                 });
         getRuntimeContext()
@@ -141,7 +166,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_REGULAR_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setCpuRegularNumbers.size();
+                        return _CpuRegularNumbers;
                     }
                 });
         getRuntimeContext()
@@ -150,7 +175,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.CPU_LOW_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setCpuLowNumbers.size();
+                        return _CpuLowNumbers;
                     }
                 });
 
@@ -160,7 +185,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_CRITICAL_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setMemCriticalNumbers.size();
+                        return _MemCriticalNumbers;
                     }
                 });
         getRuntimeContext()
@@ -169,7 +194,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_HIGH_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setMemHighNumbers.size();
+                        return _MemHighNumbers;
                     }
                 });
         getRuntimeContext()
@@ -178,7 +203,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_REGULAR_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setMemRegularNumbers.size();
+                        return _MemRegularNumbers;
                     }
                 });
         getRuntimeContext()
@@ -187,7 +212,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.MEM_LOW_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setMemLowNumbers.size();
+                        return _MemLowNumbers;
                     }
                 });
 
@@ -197,7 +222,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_CRITICAL_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setNetCriticalNumbers.size();
+                        return _NetCriticalNumbers;
                     }
                 });
         getRuntimeContext()
@@ -206,7 +231,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_HIGH_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setNetHighNumbers.size();
+                        return _NetHighNumbers;
                     }
                 });
         getRuntimeContext()
@@ -215,7 +240,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_REGULAR_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setNetRegularNumbers.size();
+                        return _NetRegularNumbers;
                     }
                 });
         getRuntimeContext()
@@ -224,7 +249,7 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
                 .gauge(EverestDefaultValues.NET_LOW_NUMBERS, new Gauge<Integer>() {
                     @Override
                     public Integer getValue() {
-                        return setNetLowNumbers.size();
+                        return _NetLowNumbers;
                     }
                 });
 
@@ -311,6 +336,21 @@ public class CategoryFilter extends RichFilterFunction<EverestCollectorDataT<Dou
             setNetCriticalNumbers.remove(_data);
             setNetHighNumbers.remove(_data);
         }
+
+        _CpuCriticalNumbers = setCpuCriticalNumbers.size();
+        _CpuHighNumbers = setCpuHighNumbers.size();
+        _CpuLowNumbers = setCpuLowNumbers.size();
+        _CpuRegularNumbers = setCpuRegularNumbers.size();
+        _MemCriticalNumbers = setMemCriticalNumbers.size();
+        _MemHighNumbers = setMemHighNumbers.size();
+        _MemLowNumbers = setMemLowNumbers.size();
+        _MemRegularNumbers = setMemRegularNumbers.size();
+        _NetCriticalNumbers = setNetCriticalNumbers.size();
+        _NetHighNumbers = setNetHighNumbers.size();
+        _NetLowNumbers = setNetLowNumbers.size();
+        _NetRegularNumbers = setNetRegularNumbers.size();
+
+
     }
 
     /**
