@@ -39,6 +39,10 @@ metadata:
     app: guide
     version: v1
 spec:
+  selector:
+    matchLabels:
+        app: guide
+        version: v1
   replicas: 3
   template:
     metadata:

@@ -42,10 +42,13 @@ import os
 import sys # used to exit
 from everest_consumer import Consumer
 from kube import EverestK8s
+from kube import RepeatedTimer
 
 import atexit
 
 consumers = []
+k8ss = []
+
 DRYRUN = False
 def shutdown_hook():
     """
@@ -59,31 +62,34 @@ def shutdown_hook():
         consumer.close()
     print('All Consumer closed')
 
+
 def main(bootstrapper, kafka_topic=[], group_id='everest-c-group', outside=False):
     global DRYRUN
     threads = []
     
     for topic in kafka_topic:
-        everest_k8s = EverestK8s(incluster=outside)
+        everest_k8s = EverestK8s(incluster=(not outside), id=topic)
+        k8ss.append(everest_k8s)
         if DRYRUN is False:
             c = Consumer(bootstrapper, topic, group_id)
             c.register_k8s(everest_k8s)
             consumers.append(c)
             threads.append(c)
             c.start()
-
     for t in threads:
         t.join()
+
 
 if __name__ == "__main__":
     #BOOTSTRAPPER='bootstrap.kafka.svc.cluster.local:9092'
     #BOOTSTRAPPER='master:32400'
     BOOTSTRAPPER='localhost:9092'
-    TOPICS=''
+    TOPICS='cpu-c-topic,mem-c-topic,net-c-topic'
     TOPIC=[]
     GROUP_ID='everest-c-group'
     OUTSIDE=False
     VERBOSE=False
+    RESET_INTERVAL=60
 
     import argparse
     parser = argparse.ArgumentParser()
@@ -92,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument("-g", "--group", help="Kafka Group ID, default is {0}".format(GROUP_ID), default=GROUP_ID)
     parser.add_argument("-v", "--verbose", help="print out the logging info, default is {0}".format(VERBOSE), default=VERBOSE, action="store_true")
     parser.add_argument("-o", "--outside", help="run the program outside k8s cluster {0}".format(OUTSIDE), default=OUTSIDE, action="store_true")
+    parser.add_argument("-i", "--interval", help="interval (in seconds) to reset the container", default=RESET_INTERVAL)
     parser.add_argument("-d", "--dry", help="DON'T USE THIS, only for testing", default=False,  action="store_true")
 
     args = parser.parse_args()
@@ -128,5 +135,4 @@ if __name__ == "__main__":
 
     atexit.register(shutdown_hook)
 
-    print(OUTSIDE)
     main(BOOTSTRAPPER, TOPIC, GROUP_ID, OUTSIDE)

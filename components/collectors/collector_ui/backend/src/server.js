@@ -30,6 +30,7 @@ const DEFAULT_KAFKA_HOST = ''
 const DEFAULT_KAFKA_PORT = 9092
 const DEFAULT_KAFKA_DEBUG = false
 const DEFAULT_KAFKA_DATA_TOPIC = 'everest'
+const DEFAULT_KAFKA_SIM = false
 
 // (optional) only made for logging and
 // bodyParser, parses the request body to be a readable json format
@@ -66,6 +67,7 @@ KAFKA_HOST = process.env.CCOLLECTOR_KAFKA_HOST || DEFAULT_KAFKA_HOST
 KAFKA_PORT = process.env.CCOLLECTOR_KAFKA_PORT || DEFAULT_KAFKA_PORT
 KAFKA_DEBUG = process.env.CCOLLECTOR_KAFKA_DEBUG || DEFAULT_KAFKA_DEBUG
 KAFKA_DATA_TOPIC = process.env.CCOLLECTOR_KAFKA_DATA_TOPIC || DEFAULT_KAFKA_DATA_TOPIC
+KAFKA_SIM = (process.env.CCOLLECTOR_KAFKA_SIM == 'true') || DEFAULT_KAFKA_SIM
 
 aux_jaeger_list = AUX_JAEGERS.split(",")
 aux_prom_list = AUX_PROMS.split(",")
@@ -87,6 +89,7 @@ if(KAFKA_HOST != '') {
 	_kafka = new kafka(KAFKA_HOST, KAFKA_PORT)
 	_kafka.verbose = KAFKA_DEBUG
 	_kafka.topic = KAFKA_DATA_TOPIC
+	_kafka.sim = KAFKA_SIM
 	// _kafka = new kafka()
 	// for(i=0; i < 40; i++) {
 	// 	_kafka.send()

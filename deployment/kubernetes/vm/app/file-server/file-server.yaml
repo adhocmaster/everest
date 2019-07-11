@@ -39,6 +39,10 @@ metadata:
     app: fibo
     version: v1
 spec:
+  selector:
+    matchLabels:
+        app: fibo
+        version: v1
   replicas: 3
   template:
     metadata:
@@ -129,6 +133,10 @@ metadata:
     app: fs
     version: v1
 spec:
+  selector:
+    matchLabels:
+        app: fs
+        version: v1
   replicas: 3
   template:
     metadata:

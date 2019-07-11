@@ -17,7 +17,7 @@ usage() {
 		echo "-k proxy_port				: start with kubectl proxy as a sidecar/background process listening at proxy_port, default '$K8S_PORT'"
 		echo 
 }
-echo "-$#-"
+# echo "-$#-"
 for arg in "$@"
 do
     #echo "arg -$1-"
@@ -74,7 +74,8 @@ then
 		exit 1
 	fi
 	echo "(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER -t $TOPIC)"
-	(cd /app/pipeline/sinks; python everest_cmd.py -b $BOOTSTRAPPER -t $TOPIC)
+	(cd /app/pipeline/sinks; python -u everest_cmd.py -b $BOOTSTRAPPER -t $TOPIC)
+	echo "Everest Sinks started and the Tools is DONE and READY..."
 else
 	echo "Start the container cmd entry point"
 	echo "Everest Tools is DONE and READY..."
